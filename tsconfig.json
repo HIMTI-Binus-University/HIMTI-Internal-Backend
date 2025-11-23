@@ -1,0 +1,25 @@
+{
+   "compilerOptions": {
+      "target": "ES2022",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+
+      // Project Structure 
+      "outDir": "./dist",
+      "rootDir": "./src",
+
+      // Rules
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "baseUrl": ".",
+      "paths": {
+         "@/*": [
+            "./src/*"
+         ]
+      }
+   },
+   // Only look for .ts in /src
+   "include": ["src"] 
+}
