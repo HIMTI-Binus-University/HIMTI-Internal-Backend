@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
-import { CreateUrlSchema } from '@/features/url-shortener/urlTypes.js';
+import {
+   CreateUrlSchema,
+   UpdateUrlSchema,
+} from '@/features/url-shortener/urlTypes.js';
 import { urlService } from './urlService.js';
 
 export const createUrl = async (req: Request, res: Response) => {
@@ -14,6 +17,35 @@ export const createUrl = async (req: Request, res: Response) => {
    try {
       // panggil service
       const result = await urlService.createUrl(validation.data);
+      res.status(200).json({
+         msg: 'success',
+         data: result,
+      });
+   } catch (error) {
+      // expected standard error in object
+      if (error instanceof Error) {
+         console.error(error);
+         res.status(500).json({ msg: error.message });
+      } else {
+         // non standard error
+         console.error('Unknown error', error);
+         res.status(500).json({ msg: 'An unknown error occurred' });
+      }
+   }
+};
+
+export const updateUrl = async (req: Request, res: Response) => {
+   const data = req.body;
+   const { id } = req.params;
+   const validation = UpdateUrlSchema.safeParse(data);
+
+   if (!validation.success) {
+      return res.status(400).json({ errors: validation.error.format() });
+   }
+
+   try {
+      // service
+      const result = await urlService.updateUrl(validation.data, id);
       res.status(200).json({
          msg: 'success',
          data: result,

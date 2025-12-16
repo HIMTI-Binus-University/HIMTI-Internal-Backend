@@ -13,7 +13,20 @@ export const CreateUrlSchema = z.object({
       .optional(),
 });
 
-export type CreateUrlRequest = z.infer<typeof CreateUrlSchema>;
+export const UpdateUrlSchema = z.object({
+   originalUrl: z.string().url({ message: 'Invalid URL format' }).optional(),
+   shortCode: z
+      .string()
+      .min(3, { message: 'Short code must be at least 3 characters' })
+      .optional(),
+   expiresAt: z.coerce
+      .date()
+      .min(new Date(), {
+         message: 'Expiration date cannot be in the past',
+      })
+      .optional(),
+   status: z.enum(['a', 'd']).optional(),
+});
 
 export const LogClickSchema = z.object({
    urlId: z.string().uuid(),
@@ -29,3 +42,5 @@ export const LogClickSchema = z.object({
 });
 
 export type LogClickParams = z.infer<typeof LogClickSchema>;
+export type CreateUrlRequest = z.infer<typeof CreateUrlSchema>;
+export type UpdateUrlRequest = z.infer<typeof UpdateUrlSchema>;

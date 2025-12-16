@@ -1,6 +1,6 @@
 import express from 'express';
 import type { Router, Response, Request } from 'express';
-import { createUrl } from './urlController.js';
+import { createUrl, updateUrl } from './urlController.js';
 
 const router: Router = express.Router();
 
@@ -9,5 +9,6 @@ router.get('/urltest', (_req: Request, res: Response) => {
 });
 
 router.post('/create-url', createUrl);
+router.put('/update-url/:id', updateUrl);
 
 export default router;
