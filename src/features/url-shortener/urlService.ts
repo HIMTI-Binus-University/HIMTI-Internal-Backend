@@ -1,6 +1,10 @@
 import { PrismaClient } from '@/generated/prisma/client.js';
 import type { UrlModel, UrlDetailsModel } from '@/generated/prisma/models.js';
-import { CreateUrlRequest, LogClickParams } from './urlTypes.js';
+import {
+   CreateUrlRequest,
+   LogClickParams,
+   UpdateUrlRequest,
+} from './urlTypes.js';
 
 const prisma = new PrismaClient();
 
@@ -13,6 +17,26 @@ class UrlService {
                shortCode: payload.shortCode,
                createdBy: 'User', // ini nanti diisi pake middleware dari auth, for now gini dlu aja
                expiresAt: payload.expiresAt,
+            },
+         });
+      } catch (error) {
+         console.error(error);
+         throw new Error('Failed to create new url');
+      }
+   }
+
+   async updateUrl(payload: UpdateUrlRequest, id: string): Promise<UrlModel> {
+      try {
+         return await prisma.url.update({
+            where: {
+               urlId: id,
+            },
+            data: {
+               originalUrl: payload.originalUrl,
+               shortCode: payload.shortCode,
+               createdBy: 'User',
+               expiresAt: payload.expiresAt,
+               status: payload.status,
             },
          });
       } catch (error) {
