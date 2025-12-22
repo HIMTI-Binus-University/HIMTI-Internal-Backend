@@ -1,3 +1,14 @@
+enum EventVisibility {
+   PUBLIC
+   PRIVATE
+}
+
+enum IsOnsite {
+   ONLINE
+   OFFLINE
+   HYBRID
+}
+
 generator client {
    provider = "prisma-client"
    output   = "../src/generated/prisma"
@@ -64,34 +75,49 @@ model UrlDetails {
 }
 
 model Events {
-   eventId            String    @id @default(uuid()) @db.Uuid
-   eventThumb         String    @db.VarChar(255)
-   eventDesc          String    @db.Text
-   emailParticipantId String    @db.Uuid
-   status             String    @default("a") @db.Char(1)
-   createdAt          DateTime  @default(now()) @db.Timestamp(0)
-   createdBy          String    @db.VarChar(100)
-   updatedAt          DateTime? @updatedAt()
-   updatedBy          String?   @db.VarChar(100)
+   eventId           String          @id @default(uuid()) @db.Uuid
+   eventName         String          @db.VarChar(255)
+   eventKicker       String          @db.VarChar(255)
+   eventDesc         String          @db.Text
+   eventDate         DateTime
+   eventLocation     String          @db.VarChar(255)
+   eventPriceOnline  Int
+   eventPriceOffline Int
+   isOnsite          IsOnsite
+   eventVisibility   EventVisibility
+   status            String          @default("a") @db.Char(1)
+   createdAt         DateTime        @default(now()) @db.Timestamp(0)
+   createdBy         String          @db.VarChar(100)
+   updatedAt         DateTime?       @updatedAt()
+   updatedBy         String?         @db.VarChar(100)
 
-   participants Participants[]
+   eventsHasParticipants EventsHasParticipants[]
+}
+
+model EventsHasParticipants {
+   eventId       String       @db.Uuid
+   participantId String       @db.Uuid
+   events        Events       @relation(fields: [eventId], references: [eventId])
+   participants  Participants @relation(fields: [participantId], references: [participantId])
+
+   @@id([eventId, participantId])
 }
 
 model Participants {
-   emailParticipantId String    @id @default(uuid()) @db.Uuid
-   eventId            String    @db.Uuid
-   username           String    @db.VarChar(255)
-   phone              String    @db.VarChar(255)
-   binusian           String    @db.VarChar(255)
-   region             String    @db.VarChar(255)
-   jurusan            String    @db.VarChar(100)
-   email              String    @unique @db.VarChar(100)
-   nim                Int
-   status             String    @default("a") @db.Char(1)
-   createdAt          DateTime  @default(now()) @db.Timestamp(0)
-   createdBy          String    @db.VarChar(100)
-   updatedAt          DateTime? @updatedAt()
-   updatedBy          String?   @db.VarChar(100)
+   participantId String    @id @default(uuid()) @db.Uuid
+   eventId       String    @db.Uuid
+   username      String    @db.VarChar(255)
+   phone         String    @db.VarChar(255)
+   binusian      String    @db.VarChar(255)
+   region        String    @db.VarChar(255)
+   jurusan       String    @db.VarChar(100)
+   email         String    @unique @db.VarChar(100)
+   nim           Int
+   status        String    @default("a") @db.Char(1)
+   createdAt     DateTime  @default(now()) @db.Timestamp(0)
+   createdBy     String    @db.VarChar(100)
+   updatedAt     DateTime? @updatedAt()
+   updatedBy     String?   @db.VarChar(100)
 
-   events Events @relation(fields: [eventId], references: [eventId])
+   participantsHasEvents EventsHasParticipants[]
 }

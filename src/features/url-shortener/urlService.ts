@@ -1,7 +1,9 @@
-import { PrismaClient } from '@/generated/prisma/client.js';
+import { PrismaClient, Prisma } from '@/generated/prisma/client.js';
 import type { UrlModel, UrlDetailsModel } from '@/generated/prisma/models.js';
 import {
    CreateUrlRequest,
+   GetUrlResponse,
+   GetUrlSchema,
    LogClickParams,
    UpdateUrlRequest,
 } from './urlTypes.js';
@@ -51,6 +53,56 @@ class UrlService {
             shortCode: shortCode,
          },
       });
+   }
+
+   async getUrls(params: GetUrlSchema): Promise<GetUrlResponse> {
+      const { page, limit, search, sort } = params;
+
+      const where: Prisma.UrlWhereInput = {};
+      if (search) {
+         where.OR = [
+            { originalUrl: { contains: search, mode: 'insensitive' } },
+            { shortCode: { contains: search, mode: 'insensitive' } },
+            { createdBy: { contains: search, mode: 'insensitive' } },
+         ];
+      }
+
+      let orderBy: Prisma.UrlOrderByWithRelationInput = {};
+      if (sort) {
+         const [field, direction] = sort.split(':');
+         if (direction === 'asc' || direction === 'desc') {
+            orderBy = { [field]: direction };
+         }
+      } else {
+         orderBy = { createdAt: 'desc' };
+      }
+
+      const skip = (page - 1) * limit;
+
+      try {
+         const [url, total] = await prisma.$transaction([
+            prisma.url.findMany({
+               where,
+               orderBy,
+               skip,
+               take: limit,
+            }),
+            prisma.url.count({ where }),
+         ]);
+
+         return {
+            data: url,
+            meta: {
+               page,
+               limit,
+               totalRecords: total,
+               totalPages: Math.ceil(total / limit),
+            },
+         };
+      } catch (error) {
+         console.error('Error fetching url:', error);
+         throw new Error('Failed to fetch url');
+      }
    }
 
    async logClick(payload: LogClickParams): Promise<UrlDetailsModel> {

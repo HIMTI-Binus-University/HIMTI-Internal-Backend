@@ -41,6 +41,34 @@ export const LogClickSchema = z.object({
    timezone: z.string().nullish(),
 });
 
+export const GetUrlSchema = z.object({
+   page: z.coerce.number().min(1).default(1),
+   limit: z.coerce.number().min(1).max(100).default(10),
+   search: z.string().optional(),
+   sort: z.string().default('createdAt:desc'),
+   status: z.enum(['a', 'd']),
+});
+
+export type GetUrlSchema = z.infer<typeof GetUrlSchema>;
 export type LogClickParams = z.infer<typeof LogClickSchema>;
 export type CreateUrlRequest = z.infer<typeof CreateUrlSchema>;
 export type UpdateUrlRequest = z.infer<typeof UpdateUrlSchema>;
+
+export interface GetUrlResponse {
+   data: {
+      urlId: string;
+      originalUrl: string;
+      shortCode: string;
+      status: string;
+      createdAt: Date;
+      _count?: {
+         urlDetails: number;
+      };
+   }[];
+   meta: {
+      page: number;
+      limit: number;
+      totalRecords: number;
+      totalPages: number;
+   };
+}

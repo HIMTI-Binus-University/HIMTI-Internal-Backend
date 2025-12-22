@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import {
    CreateUrlSchema,
+   GetUrlSchema,
    UpdateUrlSchema,
 } from '@/features/url-shortener/urlTypes.js';
 import { urlService } from './urlService.js';
+import { z } from 'zod';
 
 export const createUrl = async (req: Request, res: Response) => {
    const data = req.body;
@@ -104,5 +106,23 @@ export const clickUrl = async (req: Request, res: Response) => {
          console.error('Unknown error', error);
          res.status(500).json({ msg: 'An unknown error occurred' });
       }
+   }
+};
+
+export const getUrls = async (req: Request, res: Response) => {
+   try {
+      const query = GetUrlSchema.parse(req.query);
+      const result = await urlService.getUrls(query);
+      res.status(200).json({
+         msg: 'success',
+         ...result,
+      });
+   } catch (error) {
+      if (error instanceof z.ZodError) {
+         return res.status(400).json({ errors: error.issues });
+      }
+      res.status(500).json({
+         msg: error instanceof Error ? error.message : 'Server error',
+      });
    }
 };
