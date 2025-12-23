@@ -12,39 +12,29 @@ const prisma = new PrismaClient();
 
 class UrlService {
    async createUrl(payload: CreateUrlRequest): Promise<UrlModel> {
-      try {
-         return await prisma.url.create({
-            data: {
-               originalUrl: payload.originalUrl,
-               shortCode: payload.shortCode,
-               createdBy: 'User', // ini nanti diisi pake middleware dari auth, for now gini dlu aja
-               expiresAt: payload.expiresAt,
-            },
-         });
-      } catch (error) {
-         console.error(error);
-         throw new Error('Failed to create new url');
-      }
+      return await prisma.url.create({
+         data: {
+            originalUrl: payload.originalUrl,
+            shortCode: payload.shortCode,
+            createdBy: 'User', // ini nanti diisi pake middleware dari auth, for now gini dlu aja
+            expiresAt: payload.expiresAt,
+         },
+      });
    }
 
    async updateUrl(payload: UpdateUrlRequest, id: string): Promise<UrlModel> {
-      try {
-         return await prisma.url.update({
-            where: {
-               urlId: id,
-            },
-            data: {
-               originalUrl: payload.originalUrl,
-               shortCode: payload.shortCode,
-               createdBy: 'User',
-               expiresAt: payload.expiresAt,
-               status: payload.status,
-            },
-         });
-      } catch (error) {
-         console.error(error);
-         throw new Error('Failed to create new url');
-      }
+      return await prisma.url.update({
+         where: {
+            urlId: id,
+         },
+         data: {
+            originalUrl: payload.originalUrl,
+            shortCode: payload.shortCode,
+            createdBy: 'User',
+            expiresAt: payload.expiresAt,
+            status: payload.status,
+         },
+      });
    }
 
    async getUrlByCode(shortCode: string) {

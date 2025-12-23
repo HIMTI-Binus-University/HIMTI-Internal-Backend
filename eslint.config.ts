@@ -19,8 +19,8 @@ export default [
 
    // Just incase we need any types. but lets try not to use it for best practice.
    {
-      // rules: {
-      //    '@typescript-eslint/no-explicit-any': 'off',
-      // },
+      rules: {
+         '@typescript-eslint/no-explicit-any': 'off',
+      },
    },
 ];

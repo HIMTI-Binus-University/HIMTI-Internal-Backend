@@ -5,64 +5,35 @@ import {
    UpdateUrlSchema,
 } from '@/features/url-shortener/urlTypes.js';
 import { urlService } from './urlService.js';
-import { z } from 'zod';
 
 export const createUrl = async (req: Request, res: Response) => {
    const data = req.body;
    const validation = CreateUrlSchema.safeParse(data);
-
    // types and request validation
    if (!validation.success) {
       return res.status(400).json({ errros: validation.error.format() });
    }
-
-   try {
-      // panggil service
-      const result = await urlService.createUrl(validation.data);
-      res.status(200).json({
-         msg: 'success',
-         data: result,
-      });
-   } catch (error) {
-      // expected standard error in object
-      if (error instanceof Error) {
-         console.error(error);
-         res.status(500).json({ msg: error.message });
-      } else {
-         // non standard error
-         console.error('Unknown error', error);
-         res.status(500).json({ msg: 'An unknown error occurred' });
-      }
-   }
+   // panggil service
+   const result = await urlService.createUrl(validation.data);
+   res.status(200).json({
+      msg: 'success',
+      data: result,
+   });
 };
 
 export const updateUrl = async (req: Request, res: Response) => {
    const data = req.body;
    const { id } = req.params;
    const validation = UpdateUrlSchema.safeParse(data);
-
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
    }
-
-   try {
-      // service
-      const result = await urlService.updateUrl(validation.data, id);
-      res.status(200).json({
-         msg: 'success',
-         data: result,
-      });
-   } catch (error) {
-      // expected standard error in object
-      if (error instanceof Error) {
-         console.error(error);
-         res.status(500).json({ msg: error.message });
-      } else {
-         // non standard error
-         console.error('Unknown error', error);
-         res.status(500).json({ msg: 'An unknown error occurred' });
-      }
-   }
+   // service
+   const result = await urlService.updateUrl(validation.data, id);
+   res.status(200).json({
+      msg: 'success',
+      data: result,
+   });
 };
 
 export const clickUrl = async (req: Request, res: Response) => {
@@ -72,57 +43,33 @@ export const clickUrl = async (req: Request, res: Response) => {
       (req.headers['x-forwarded-for'] as string) || req.ip || 'Unknown';
    const { shortCode } = req.params;
 
-   try {
-      // panggil service
-      const urlData = await urlService.getUrlByCode(shortCode);
-
-      // validations
-      if (!urlData) {
-         return res.status(404).json({ msg: 'Link not found' });
-      }
-      if (urlData.status !== 'a') {
-         return res.status(404).json({ msg: 'Link is no longer active' });
-      }
-      if (urlData.expiresAt && new Date() > new Date(urlData.expiresAt)) {
-         return res.status(410).json({ msg: 'Link has expired' });
-      }
-
-      // save the logs without await
-      void urlService.logClick({
-         urlId: urlData.urlId,
-         ip: userIp,
-         userAgent: userAgent,
-      });
-
-      // redirect
-      return res.redirect(302, urlData.originalUrl);
-   } catch (error) {
-      // expected standard error in object
-      if (error instanceof Error) {
-         console.error(error);
-         res.status(500).json({ msg: error.message });
-      } else {
-         // non standard error
-         console.error('Unknown error', error);
-         res.status(500).json({ msg: 'An unknown error occurred' });
-      }
+   // panggil service
+   const urlData = await urlService.getUrlByCode(shortCode);
+   // validations
+   if (!urlData) {
+      return res.status(404).json({ msg: 'Link not found' });
    }
+   if (urlData.status !== 'a') {
+      return res.status(404).json({ msg: 'Link is no longer active' });
+   }
+   if (urlData.expiresAt && new Date() > new Date(urlData.expiresAt)) {
+      return res.status(410).json({ msg: 'Link has expired' });
+   }
+   // save the logs without await
+   void urlService.logClick({
+      urlId: urlData.urlId,
+      ip: userIp,
+      userAgent: userAgent,
+   });
+   // redirect
+   return res.redirect(302, urlData.originalUrl);
 };
 
 export const getUrls = async (req: Request, res: Response) => {
-   try {
-      const query = GetUrlSchema.parse(req.query);
-      const result = await urlService.getUrls(query);
-      res.status(200).json({
-         msg: 'success',
-         ...result,
-      });
-   } catch (error) {
-      if (error instanceof z.ZodError) {
-         return res.status(400).json({ errors: error.issues });
-      }
-      res.status(500).json({
-         msg: error instanceof Error ? error.message : 'Server error',
-      });
-   }
+   const query = GetUrlSchema.parse(req.query);
+   const result = await urlService.getUrls(query);
+   res.status(200).json({
+      msg: 'success',
+      ...result,
+   });
 };
