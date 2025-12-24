@@ -57,7 +57,7 @@ export const clickUrl = async (req: Request, res: Response) => {
    }
    // save the logs without await
    void urlService.logClick({
-      urlId: urlData.urlId,
+      urlId: urlData.id,
       ip: userIp,
       userAgent: userAgent,
    });

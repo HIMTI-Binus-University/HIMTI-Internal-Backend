@@ -1,0 +1,39 @@
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { PrismaClient } from '@/generated/prisma/client.js';
+
+const prisma = new PrismaClient();
+
+export const auth = betterAuth({
+   database: prismaAdapter(prisma, {
+      provider: 'postgresql',
+   }),
+
+   socialProviders: {
+      google: {
+         clientId: process.env.GOOGLE_CLIENT_ID!,
+         clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      },
+   },
+
+   trustedOrigins: [
+      'http://localhost:3000', // URL Frontend kamu
+   ],
+
+   user: {
+      additionalFields: {
+         roleId: {
+            type: 'string',
+            required: false,
+         },
+         status: {
+            type: 'string',
+            required: false,
+            defaultValue: 'a',
+         },
+      },
+   },
+
+   // Validation ntar dlu
+   hooks: {},
+});

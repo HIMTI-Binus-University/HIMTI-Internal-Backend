@@ -56,7 +56,7 @@ export type UpdateUrlRequest = z.infer<typeof UpdateUrlSchema>;
 
 export interface GetUrlResponse {
    data: {
-      urlId: string;
+      id: string;
       originalUrl: string;
       shortCode: string;
       status: string;
