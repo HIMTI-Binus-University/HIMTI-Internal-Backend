@@ -19,7 +19,7 @@ datasource db {
    url      = env("DATABASE_URL")
 }
 
-model Users {
+model User {
    userId    String    @id @default(uuid()) @db.Uuid
    email     String    @unique @db.VarChar(100)
    roleId    String?   @db.Uuid
@@ -29,10 +29,12 @@ model Users {
    updatedAt DateTime? @updatedAt()
    updatedBy String?   @db.VarChar(100)
 
-   roles Roles? @relation(fields: [roleId], references: [roleId])
+   role Role? @relation(fields: [roleId], references: [roleId])
+
+   @@map("users")
 }
 
-model Roles {
+model Role {
    roleId    String    @id @default(uuid()) @db.Uuid
    roleName  String    @db.VarChar(255)
    status    String    @db.Char(1)
@@ -41,7 +43,9 @@ model Roles {
    updatedAt DateTime? @updatedAt()
    updatedBy String?   @db.VarChar(100)
 
-   users Users[]
+   user User[]
+
+   @@map("roles")
 }
 
 model Url {
@@ -55,10 +59,12 @@ model Url {
    updatedAt   DateTime? @updatedAt()
    updatedBy   String?   @db.VarChar(100)
 
-   urlDetails UrlDetails[]
+   urlDetail UrlDetail[]
+
+   @@map("urls")
 }
 
-model UrlDetails {
+model UrlDetail {
    urlDetailsId String  @id @default(uuid()) @db.Uuid
    urlId        String  @db.Uuid
    ip           String? @db.VarChar(255)
@@ -71,10 +77,12 @@ model UrlDetails {
    isp          String? @db.VarChar(255)
    timezone     String? @db.VarChar(255)
 
-   urlShortener Url @relation(fields: [urlId], references: [urlId])
+   url Url @relation(fields: [urlId], references: [urlId])
+
+   @@map("url_details")
 }
 
-model Events {
+model Event {
    eventId           String          @id @default(uuid()) @db.Uuid
    eventName         String          @db.VarChar(255)
    eventKicker       String          @db.VarChar(255)
@@ -91,19 +99,22 @@ model Events {
    updatedAt         DateTime?       @updatedAt()
    updatedBy         String?         @db.VarChar(100)
 
-   eventsHasParticipants EventsHasParticipants[]
+   eventHasParticipant EventHasParticipant[]
+
+   @@map("events")
 }
 
-model EventsHasParticipants {
-   eventId       String       @db.Uuid
-   participantId String       @db.Uuid
-   events        Events       @relation(fields: [eventId], references: [eventId])
-   participants  Participants @relation(fields: [participantId], references: [participantId])
+model EventHasParticipant {
+   eventId       String      @db.Uuid
+   participantId String      @db.Uuid
+   event         Event       @relation(fields: [eventId], references: [eventId])
+   participant   Participant @relation(fields: [participantId], references: [participantId])
 
    @@id([eventId, participantId])
+   @@map("event_has_participants")
 }
 
-model Participants {
+model Participant {
    participantId String    @id @default(uuid()) @db.Uuid
    eventId       String    @db.Uuid
    username      String    @db.VarChar(255)
@@ -119,5 +130,7 @@ model Participants {
    updatedAt     DateTime? @updatedAt()
    updatedBy     String?   @db.VarChar(100)
 
-   participantsHasEvents EventsHasParticipants[]
+   participantHasEvent EventHasParticipant[]
+
+   @@map("participants")
 }

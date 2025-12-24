@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from '@/generated/prisma/client.js';
-import type { UrlModel, UrlDetailsModel } from '@/generated/prisma/models.js';
+import type { UrlModel, UrlDetailModel } from '@/generated/prisma/models.js';
 import {
    CreateUrlRequest,
    GetUrlResponse,
@@ -90,8 +90,8 @@ class UrlService {
       };
    }
 
-   async logClick(payload: LogClickParams): Promise<UrlDetailsModel> {
-      return await prisma.urlDetails.create({
+   async logClick(payload: LogClickParams): Promise<UrlDetailModel> {
+      return await prisma.urlDetail.create({
          data: {
             urlId: payload.urlId,
             ip: payload.ip,
