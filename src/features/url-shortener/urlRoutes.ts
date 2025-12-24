@@ -11,7 +11,7 @@ router.get('/urltest', (_req: Request, res: Response) => {
 
 router.post('/create-url', requireAuth, createUrl);
 router.put('/update-url/:id', requireAuth, updateUrl);
-router.get('/get-list', getUrls);
+router.get('/get-list', requireAuth, getUrls);
 router.get('/get-list/:shortCode', getUrlById);
 
 export default router;

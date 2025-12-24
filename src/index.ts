@@ -18,7 +18,7 @@ app.use(
       credentials: true,
    }),
 );
-// app.all('/api/auth', toNodeHandler(auth));
+app.use(express.static('public'));
 app.all(/\/api\/auth\/*/, toNodeHandler(auth));
 app.use('/api', routes);
 app.get('/:shortCode', clickUrl);
