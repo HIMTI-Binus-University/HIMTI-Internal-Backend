@@ -69,30 +69,25 @@ class UrlService {
 
       const skip = (page - 1) * limit;
 
-      try {
-         const [url, total] = await prisma.$transaction([
-            prisma.url.findMany({
-               where,
-               orderBy,
-               skip,
-               take: limit,
-            }),
-            prisma.url.count({ where }),
-         ]);
+      const [url, total] = await prisma.$transaction([
+         prisma.url.findMany({
+            where,
+            orderBy,
+            skip,
+            take: limit,
+         }),
+         prisma.url.count({ where }),
+      ]);
 
-         return {
-            data: url,
-            meta: {
-               page,
-               limit,
-               totalRecords: total,
-               totalPages: Math.ceil(total / limit),
-            },
-         };
-      } catch (error) {
-         console.error('Error fetching url:', error);
-         throw new Error('Failed to fetch url');
-      }
+      return {
+         data: url,
+         meta: {
+            page,
+            limit,
+            totalRecords: total,
+            totalPages: Math.ceil(total / limit),
+         },
+      };
    }
 
    async logClick(payload: LogClickParams): Promise<UrlDetailsModel> {

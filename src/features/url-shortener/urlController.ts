@@ -11,7 +11,7 @@ export const createUrl = async (req: Request, res: Response) => {
    const validation = CreateUrlSchema.safeParse(data);
    // types and request validation
    if (!validation.success) {
-      return res.status(400).json({ errros: validation.error.format() });
+      return res.status(400).json({ errors: validation.error.format() });
    }
    // panggil service
    const result = await urlService.createUrl(validation.data);
@@ -63,6 +63,15 @@ export const clickUrl = async (req: Request, res: Response) => {
    });
    // redirect
    return res.redirect(302, urlData.originalUrl);
+};
+
+export const getUrlById = async (req: Request, res: Response) => {
+   const { shortCode } = req.params;
+   const result = await urlService.getUrlByCode(shortCode);
+   res.status(200).json({
+      msg: 'success',
+      data: result,
+   });
 };
 
 export const getUrls = async (req: Request, res: Response) => {
