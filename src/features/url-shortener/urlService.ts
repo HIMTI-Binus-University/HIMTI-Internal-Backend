@@ -25,7 +25,7 @@ class UrlService {
    async updateUrl(payload: UpdateUrlRequest, id: string): Promise<UrlModel> {
       return await prisma.url.update({
          where: {
-            urlId: id,
+            id: id,
          },
          data: {
             originalUrl: payload.originalUrl,

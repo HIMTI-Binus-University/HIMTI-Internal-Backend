@@ -20,24 +20,29 @@ datasource db {
 }
 
 model User {
-   userId    String    @id @default(uuid()) @db.Uuid
-   email     String    @unique @db.VarChar(100)
-   roleId    String?   @db.Uuid
-   status    String    @default("a") @db.Char(1)
-   createdAt DateTime  @default(now()) @db.Timestamp(0)
-   createdBy String    @db.VarChar(100)
-   updatedAt DateTime? @updatedAt()
-   updatedBy String?   @db.VarChar(100)
+   id            String    @id
+   name          String    @db.VarChar(255)
+   email         String    @unique @db.VarChar(100)
+   emailVerified Boolean   @default(false)
+   image         String?
+   roleId        String?   @db.Uuid
+   status        String    @default("a") @db.Char(1)
+   createdAt     DateTime  @default(now()) @db.Timestamp(0)
+   createdBy     String?   @db.VarChar(100)
+   updatedAt     DateTime? @updatedAt()
+   updatedBy     String?   @db.VarChar(100)
 
-   role Role? @relation(fields: [roleId], references: [roleId])
+   role     Role?     @relation(fields: [roleId], references: [id])
+   sessions Session[]
+   accounts Account[]
 
    @@map("users")
 }
 
 model Role {
-   roleId    String    @id @default(uuid()) @db.Uuid
+   id        String    @id @default(uuid()) @db.Uuid
    roleName  String    @db.VarChar(255)
-   status    String    @db.Char(1)
+   status    String    @default("a") @db.Char(1)
    createdAt DateTime  @default(now()) @db.Timestamp(0)
    createdBy String    @db.VarChar(100)
    updatedAt DateTime? @updatedAt()
@@ -48,8 +53,53 @@ model Role {
    @@map("roles")
 }
 
+model Session {
+   id        String   @id
+   expiresAt DateTime
+   token     String   @unique
+   ipAddress String?
+   userAgent String?
+   userId    String
+   createdAt DateTime
+   updatedAt DateTime
+
+   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+   @@map("sessions")
+}
+
+model Account {
+   id                   String    @id
+   accountId            String
+   providerId           String
+   userId               String
+   accessToken          String?   @db.Text
+   refreshToken         String?   @db.Text
+   idToken              String?   @db.Text
+   scope                String?   @db.Text
+   password             String?   @db.Text
+   accessTokenExpiresAt DateTime?
+   createdAt            DateTime
+   updatedAt            DateTime
+
+   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+   @@map("accounts")
+}
+
+model Verification {
+   id         String    @id
+   identifier String
+   value      String
+   expiresAt  DateTime
+   createdAt  DateTime?
+   updatedAt  DateTime?
+
+   @@map("verifications")
+}
+
 model Url {
-   urlId       String    @id @default(uuid()) @db.Uuid
+   id          String    @id @default(uuid()) @db.Uuid
    shortCode   String    @unique @db.VarChar(21)
    originalUrl String    @db.Text
    expiresAt   DateTime?
@@ -65,25 +115,25 @@ model Url {
 }
 
 model UrlDetail {
-   urlDetailsId String  @id @default(uuid()) @db.Uuid
-   urlId        String  @db.Uuid
-   ip           String? @db.VarChar(255)
-   userAgent    String? @db.VarChar(255)
-   country      String? @db.VarChar(255)
-   region       String? @db.VarChar(255)
-   city         String? @db.VarChar(255)
-   latitude     Float?
-   longitude    Float?
-   isp          String? @db.VarChar(255)
-   timezone     String? @db.VarChar(255)
+   id        String  @id @default(uuid()) @db.Uuid
+   urlId     String  @db.Uuid
+   ip        String? @db.VarChar(255)
+   userAgent String? @db.VarChar(255)
+   country   String? @db.VarChar(255)
+   region    String? @db.VarChar(255)
+   city      String? @db.VarChar(255)
+   latitude  Float?
+   longitude Float?
+   isp       String? @db.VarChar(255)
+   timezone  String? @db.VarChar(255)
 
-   url Url @relation(fields: [urlId], references: [urlId])
+   url Url @relation(fields: [urlId], references: [id])
 
    @@map("url_details")
 }
 
 model Event {
-   eventId           String          @id @default(uuid()) @db.Uuid
+   id                String          @id @default(uuid()) @db.Uuid
    eventName         String          @db.VarChar(255)
    eventKicker       String          @db.VarChar(255)
    eventDesc         String          @db.Text
@@ -107,28 +157,28 @@ model Event {
 model EventHasParticipant {
    eventId       String      @db.Uuid
    participantId String      @db.Uuid
-   event         Event       @relation(fields: [eventId], references: [eventId])
-   participant   Participant @relation(fields: [participantId], references: [participantId])
+   event         Event       @relation(fields: [eventId], references: [id])
+   participant   Participant @relation(fields: [participantId], references: [id])
 
    @@id([eventId, participantId])
    @@map("event_has_participants")
 }
 
 model Participant {
-   participantId String    @id @default(uuid()) @db.Uuid
-   eventId       String    @db.Uuid
-   username      String    @db.VarChar(255)
-   phone         String    @db.VarChar(255)
-   binusian      String    @db.VarChar(255)
-   region        String    @db.VarChar(255)
-   jurusan       String    @db.VarChar(100)
-   email         String    @unique @db.VarChar(100)
-   nim           Int
-   status        String    @default("a") @db.Char(1)
-   createdAt     DateTime  @default(now()) @db.Timestamp(0)
-   createdBy     String    @db.VarChar(100)
-   updatedAt     DateTime? @updatedAt()
-   updatedBy     String?   @db.VarChar(100)
+   id        String    @id @default(uuid()) @db.Uuid
+   eventId   String    @db.Uuid
+   username  String    @db.VarChar(255)
+   phone     String    @db.VarChar(255)
+   binusian  String    @db.VarChar(255)
+   region    String    @db.VarChar(255)
+   jurusan   String    @db.VarChar(100)
+   email     String    @unique @db.VarChar(100)
+   nim       Int
+   status    String    @default("a") @db.Char(1)
+   createdAt DateTime  @default(now()) @db.Timestamp(0)
+   createdBy String    @db.VarChar(100)
+   updatedAt DateTime? @updatedAt()
+   updatedBy String?   @db.VarChar(100)
 
    participantHasEvent EventHasParticipant[]
 
