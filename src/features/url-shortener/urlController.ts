@@ -8,13 +8,14 @@ import { urlService } from './urlService.js';
 
 export const createUrl = async (req: Request, res: Response) => {
    const data = req.body;
+   const userData = res.locals.user;
    const validation = CreateUrlSchema.safeParse(data);
    // types and request validation
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
    }
    // panggil service
-   const result = await urlService.createUrl(validation.data);
+   const result = await urlService.createUrl(validation.data, userData);
    res.status(200).json({
       msg: 'success',
       data: result,
@@ -24,12 +25,13 @@ export const createUrl = async (req: Request, res: Response) => {
 export const updateUrl = async (req: Request, res: Response) => {
    const data = req.body;
    const { id } = req.params;
+   const userData = res.locals.user;
    const validation = UpdateUrlSchema.safeParse(data);
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
    }
    // service
-   const result = await urlService.updateUrl(validation.data, id);
+   const result = await urlService.updateUrl(validation.data, id, userData);
    res.status(200).json({
       msg: 'success',
       data: result,

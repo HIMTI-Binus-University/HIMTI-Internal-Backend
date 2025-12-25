@@ -1,77 +1,86 @@
-/*
-  Warnings:
-
-  - You are about to drop the `Events` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Participants` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Roles` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Url` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `UrlDetails` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Users` table. If the table is not empty, all the data it contains will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "EventVisibility" AS ENUM ('PUBLIC', 'PRIVATE');
 
 -- CreateEnum
 CREATE TYPE "IsOnsite" AS ENUM ('ONLINE', 'OFFLINE', 'HYBRID');
 
--- DropForeignKey
-ALTER TABLE "Participants" DROP CONSTRAINT "Participants_eventId_fkey";
-
--- DropForeignKey
-ALTER TABLE "UrlDetails" DROP CONSTRAINT "UrlDetails_urlId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Users" DROP CONSTRAINT "Users_roleId_fkey";
-
--- DropTable
-DROP TABLE "Events";
-
--- DropTable
-DROP TABLE "Participants";
-
--- DropTable
-DROP TABLE "Roles";
-
--- DropTable
-DROP TABLE "Url";
-
--- DropTable
-DROP TABLE "UrlDetails";
-
--- DropTable
-DROP TABLE "Users";
-
 -- CreateTable
 CREATE TABLE "users" (
-    "userId" UUID NOT NULL,
+    "id" TEXT NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
     "email" VARCHAR(100) NOT NULL,
-    "roleId" UUID,
+    "emailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "image" TEXT,
+    "roleId" TEXT,
+    "status" CHAR(1) NOT NULL DEFAULT 'a',
+    "createdAt" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdBy" VARCHAR(100),
+    "updatedAt" TIMESTAMP(3),
+    "updatedBy" VARCHAR(100),
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "roles" (
+    "id" TEXT NOT NULL,
+    "roleName" VARCHAR(255) NOT NULL,
     "status" CHAR(1) NOT NULL DEFAULT 'a',
     "createdAt" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdBy" VARCHAR(100) NOT NULL,
     "updatedAt" TIMESTAMP(3),
     "updatedBy" VARCHAR(100),
 
-    CONSTRAINT "users_pkey" PRIMARY KEY ("userId")
+    CONSTRAINT "roles_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "roles" (
-    "roleId" UUID NOT NULL,
-    "roleName" VARCHAR(255) NOT NULL,
-    "status" CHAR(1) NOT NULL,
-    "createdAt" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdBy" VARCHAR(100) NOT NULL,
-    "updatedAt" TIMESTAMP(3),
-    "updatedBy" VARCHAR(100),
+CREATE TABLE "sessions" (
+    "id" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "token" TEXT NOT NULL,
+    "ipAddress" TEXT,
+    "userAgent" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "roles_pkey" PRIMARY KEY ("roleId")
+    CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "accounts" (
+    "id" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
+    "providerId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "accessToken" TEXT,
+    "refreshToken" TEXT,
+    "idToken" TEXT,
+    "scope" TEXT,
+    "password" TEXT,
+    "accessTokenExpiresAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "verifications" (
+    "id" TEXT NOT NULL,
+    "identifier" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3),
+    "updatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "verifications_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "urls" (
-    "urlId" UUID NOT NULL,
+    "id" UUID NOT NULL,
     "shortCode" VARCHAR(21) NOT NULL,
     "originalUrl" TEXT NOT NULL,
     "expiresAt" TIMESTAMP(3),
@@ -81,12 +90,12 @@ CREATE TABLE "urls" (
     "updatedAt" TIMESTAMP(3),
     "updatedBy" VARCHAR(100),
 
-    CONSTRAINT "urls_pkey" PRIMARY KEY ("urlId")
+    CONSTRAINT "urls_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "url_details" (
-    "urlDetailsId" UUID NOT NULL,
+    "id" UUID NOT NULL,
     "urlId" UUID NOT NULL,
     "ip" VARCHAR(255),
     "userAgent" VARCHAR(255),
@@ -98,12 +107,12 @@ CREATE TABLE "url_details" (
     "isp" VARCHAR(255),
     "timezone" VARCHAR(255),
 
-    CONSTRAINT "url_details_pkey" PRIMARY KEY ("urlDetailsId")
+    CONSTRAINT "url_details_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "events" (
-    "eventId" UUID NOT NULL,
+    "id" UUID NOT NULL,
     "eventName" VARCHAR(255) NOT NULL,
     "eventKicker" VARCHAR(255) NOT NULL,
     "eventDesc" TEXT NOT NULL,
@@ -119,7 +128,7 @@ CREATE TABLE "events" (
     "updatedAt" TIMESTAMP(3),
     "updatedBy" VARCHAR(100),
 
-    CONSTRAINT "events_pkey" PRIMARY KEY ("eventId")
+    CONSTRAINT "events_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -132,7 +141,7 @@ CREATE TABLE "event_has_participants" (
 
 -- CreateTable
 CREATE TABLE "participants" (
-    "participantId" UUID NOT NULL,
+    "id" UUID NOT NULL,
     "eventId" UUID NOT NULL,
     "username" VARCHAR(255) NOT NULL,
     "phone" VARCHAR(255) NOT NULL,
@@ -147,11 +156,14 @@ CREATE TABLE "participants" (
     "updatedAt" TIMESTAMP(3),
     "updatedBy" VARCHAR(100),
 
-    CONSTRAINT "participants_pkey" PRIMARY KEY ("participantId")
+    CONSTRAINT "participants_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "sessions_token_key" ON "sessions"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "urls_shortCode_key" ON "urls"("shortCode");
@@ -160,13 +172,19 @@ CREATE UNIQUE INDEX "urls_shortCode_key" ON "urls"("shortCode");
 CREATE UNIQUE INDEX "participants_email_key" ON "participants"("email");
 
 -- AddForeignKey
-ALTER TABLE "users" ADD CONSTRAINT "users_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "roles"("roleId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "users" ADD CONSTRAINT "users_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "roles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "url_details" ADD CONSTRAINT "url_details_urlId_fkey" FOREIGN KEY ("urlId") REFERENCES "urls"("urlId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "event_has_participants" ADD CONSTRAINT "event_has_participants_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "events"("eventId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "event_has_participants" ADD CONSTRAINT "event_has_participants_participantId_fkey" FOREIGN KEY ("participantId") REFERENCES "participants"("participantId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "url_details" ADD CONSTRAINT "url_details_urlId_fkey" FOREIGN KEY ("urlId") REFERENCES "urls"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "event_has_participants" ADD CONSTRAINT "event_has_participants_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "event_has_participants" ADD CONSTRAINT "event_has_participants_participantId_fkey" FOREIGN KEY ("participantId") REFERENCES "participants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

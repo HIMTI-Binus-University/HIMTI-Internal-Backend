@@ -20,19 +20,19 @@ datasource db {
 }
 
 model User {
-   id            String    @id
+   id            String    @id @default(nanoid())
    name          String    @db.VarChar(255)
    email         String    @unique @db.VarChar(100)
    emailVerified Boolean   @default(false)
    image         String?
-   roleId        String?   @db.Uuid
+   roleId        String?
    status        String    @default("a") @db.Char(1)
    createdAt     DateTime  @default(now()) @db.Timestamp(0)
    createdBy     String?   @db.VarChar(100)
    updatedAt     DateTime? @updatedAt()
    updatedBy     String?   @db.VarChar(100)
 
-   role     Role?     @relation(fields: [roleId], references: [id])
+   role     Role?     @relation(fields: [roleId], references: [id], onDelete: Cascade)
    sessions Session[]
    accounts Account[]
 
@@ -40,7 +40,7 @@ model User {
 }
 
 model Role {
-   id        String    @id @default(uuid()) @db.Uuid
+   id        String    @id @default(nanoid())
    roleName  String    @db.VarChar(255)
    status    String    @default("a") @db.Char(1)
    createdAt DateTime  @default(now()) @db.Timestamp(0)
@@ -54,7 +54,7 @@ model Role {
 }
 
 model Session {
-   id        String   @id
+   id        String   @id @default(nanoid())
    expiresAt DateTime
    token     String   @unique
    ipAddress String?
@@ -69,7 +69,7 @@ model Session {
 }
 
 model Account {
-   id                   String    @id
+   id                   String    @id @default(nanoid())
    accountId            String
    providerId           String
    userId               String
@@ -88,7 +88,7 @@ model Account {
 }
 
 model Verification {
-   id         String    @id
+   id         String    @id @default(nanoid())
    identifier String
    value      String
    expiresAt  DateTime
@@ -99,7 +99,7 @@ model Verification {
 }
 
 model Url {
-   id          String    @id @default(uuid()) @db.Uuid
+   id          String    @id @default(nanoid())
    shortCode   String    @unique @db.VarChar(21)
    originalUrl String    @db.Text
    expiresAt   DateTime?
@@ -115,8 +115,8 @@ model Url {
 }
 
 model UrlDetail {
-   id        String  @id @default(uuid()) @db.Uuid
-   urlId     String  @db.Uuid
+   id        String  @id @default(nanoid())
+   urlId     String
    ip        String? @db.VarChar(255)
    userAgent String? @db.VarChar(255)
    country   String? @db.VarChar(255)
@@ -133,7 +133,7 @@ model UrlDetail {
 }
 
 model Event {
-   id                String          @id @default(uuid()) @db.Uuid
+   id                String          @id @default(nanoid())
    eventName         String          @db.VarChar(255)
    eventKicker       String          @db.VarChar(255)
    eventDesc         String          @db.Text
@@ -155,8 +155,8 @@ model Event {
 }
 
 model EventHasParticipant {
-   eventId       String      @db.Uuid
-   participantId String      @db.Uuid
+   eventId       String
+   participantId String
    event         Event       @relation(fields: [eventId], references: [id])
    participant   Participant @relation(fields: [participantId], references: [id])
 
@@ -165,8 +165,8 @@ model EventHasParticipant {
 }
 
 model Participant {
-   id        String    @id @default(uuid()) @db.Uuid
-   eventId   String    @db.Uuid
+   id        String    @id @default(nanoid())
+   eventId   String
    username  String    @db.VarChar(255)
    phone     String    @db.VarChar(255)
    binusian  String    @db.VarChar(255)

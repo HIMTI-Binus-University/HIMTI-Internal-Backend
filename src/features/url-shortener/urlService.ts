@@ -7,22 +7,30 @@ import {
    LogClickParams,
    UpdateUrlRequest,
 } from './urlTypes.js';
+import { auth } from '@/utils/auth.js';
 
 const prisma = new PrismaClient();
 
 class UrlService {
-   async createUrl(payload: CreateUrlRequest): Promise<UrlModel> {
+   async createUrl(
+      payload: CreateUrlRequest,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<UrlModel> {
       return await prisma.url.create({
          data: {
             originalUrl: payload.originalUrl,
             shortCode: payload.shortCode,
-            createdBy: 'User', // ini nanti diisi pake middleware dari auth, for now gini dlu aja
+            createdBy: user.name,
             expiresAt: payload.expiresAt,
          },
       });
    }
 
-   async updateUrl(payload: UpdateUrlRequest, id: string): Promise<UrlModel> {
+   async updateUrl(
+      payload: UpdateUrlRequest,
+      id: string,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<UrlModel> {
       return await prisma.url.update({
          where: {
             id: id,
@@ -30,7 +38,7 @@ class UrlService {
          data: {
             originalUrl: payload.originalUrl,
             shortCode: payload.shortCode,
-            createdBy: 'User',
+            updatedBy: user.name,
             expiresAt: payload.expiresAt,
             status: payload.status,
          },
