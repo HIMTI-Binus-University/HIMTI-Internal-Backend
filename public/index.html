@@ -38,10 +38,8 @@
       <pre id="result">Belum ada aktivitas...</pre>
 
       <script type="module">
-         // Kita import langsung dari CDN yang support ES Modules
          import { createAuthClient } from 'https://esm.sh/better-auth/client';
 
-         // Inisialisasi Client
          const authClient = createAuthClient({
             baseURL: 'http://localhost:8000',
          });
@@ -69,13 +67,48 @@
          document.getElementById('testProtectedBtn').onclick = async () => {
             resultBox.innerText = 'Fetching...';
             try {
-               // Pastikan endpoint ini benar ada di routes kamu
+               // const res = await fetch(
+               //    'http://localhost:8000/api/url/get-list?status=a',
+               //    {
+               //       method: 'GET',
+               //    },
+               // );
+
                const res = await fetch(
-                  'http://localhost:8000/api/url/get-list?status=a',
+                  'http://localhost:8000/api/url/create-url/',
                   {
-                     method: 'GET',
+                     method: 'POST',
+                     credentials: 'include',
+
+                     headers: {
+                        'Content-Type': 'application/json',
+                     },
+
+                     body: JSON.stringify({
+                        originalUrl: 'https://youtube.com/',
+                        shortCode: 'yutubb',
+                        expiresAt: '2026-05-26T22:00:00Z',
+                     }),
                   },
                );
+
+               // const res = await fetch(
+               //    'http://localhost:8000/api/url/update-url/a0f441a3-91cb-4151-9813-1a9ff7082142',
+               //    {
+               //       method: 'PUT',
+               //       credentials: 'include',
+               //
+               //       headers: {
+               //          'Content-Type': 'application/json',
+               //       },
+               //
+               //       body: JSON.stringify({
+               //          originalUrl: 'https://youtube.com/',
+               //          shortCode: 'yutubU',
+               //          expiresAt: '2026-05-26T22:00:00Z',
+               //       }),
+               //    },
+               // );
 
                const text = await res.text();
                try {
