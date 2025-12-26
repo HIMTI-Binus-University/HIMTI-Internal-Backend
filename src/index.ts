@@ -19,7 +19,7 @@ app.use(
    }),
 );
 app.use(express.static('public'));
-app.all(/\/api\/auth\/*/, toNodeHandler(auth));
+app.all('/api/auth/*splat', toNodeHandler(auth));
 app.use('/api', routes);
 app.get('/:shortCode', clickUrl);
 app.use(globalErrorHandler);

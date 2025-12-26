@@ -67,30 +67,30 @@
          document.getElementById('testProtectedBtn').onclick = async () => {
             resultBox.innerText = 'Fetching...';
             try {
-               // const res = await fetch(
-               //    'http://localhost:8000/api/url/get-list?status=a',
-               //    {
-               //       method: 'GET',
-               //    },
-               // );
-
                const res = await fetch(
-                  'http://localhost:8000/api/url/create-url/',
+                  'http://localhost:8000/api/url/get-list?status=a',
                   {
-                     method: 'POST',
-                     credentials: 'include',
-
-                     headers: {
-                        'Content-Type': 'application/json',
-                     },
-
-                     body: JSON.stringify({
-                        originalUrl: 'https://youtube.com/',
-                        shortCode: 'yutubb',
-                        expiresAt: '2026-05-26T22:00:00Z',
-                     }),
+                     method: 'GET',
                   },
                );
+
+               // const res = await fetch(
+               //    'http://localhost:8000/api/url/create-url/',
+               //    {
+               //       method: 'POST',
+               //       credentials: 'include',
+               //
+               //       headers: {
+               //          'Content-Type': 'application/json',
+               //       },
+               //
+               //       body: JSON.stringify({
+               //          originalUrl: 'https://youtube.com/',
+               //          shortCode: 'yutubb',
+               //          expiresAt: '2026-05-26T22:00:00Z',
+               //       }),
+               //    },
+               // );
 
                // const res = await fetch(
                //    'http://localhost:8000/api/url/update-url/a0f441a3-91cb-4151-9813-1a9ff7082142',
