@@ -15,7 +15,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: himti-db
-      POSTGRES_PASSWORD: x?y0?ZGa5J4M
+      POSTGRES_PASSWORD: x3y02ZGa5J4M
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - pgdata_${IMAGE_TAG}:/var/lib/postgresql/data
