@@ -8,13 +8,14 @@ import { urlService } from './urlService.js';
 
 export const createUrl = async (req: Request, res: Response) => {
    const data = req.body;
+   const userData = res.locals.user;
    const validation = CreateUrlSchema.safeParse(data);
    // types and request validation
    if (!validation.success) {
-      return res.status(400).json({ errros: validation.error.format() });
+      return res.status(400).json({ errors: validation.error.format() });
    }
    // panggil service
-   const result = await urlService.createUrl(validation.data);
+   const result = await urlService.createUrl(validation.data, userData);
    res.status(200).json({
       msg: 'success',
       data: result,
@@ -24,12 +25,13 @@ export const createUrl = async (req: Request, res: Response) => {
 export const updateUrl = async (req: Request, res: Response) => {
    const data = req.body;
    const { id } = req.params;
+   const userData = res.locals.user;
    const validation = UpdateUrlSchema.safeParse(data);
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
    }
    // service
-   const result = await urlService.updateUrl(validation.data, id);
+   const result = await urlService.updateUrl(validation.data, id, userData);
    res.status(200).json({
       msg: 'success',
       data: result,
@@ -57,12 +59,24 @@ export const clickUrl = async (req: Request, res: Response) => {
    }
    // save the logs without await
    void urlService.logClick({
-      urlId: urlData.urlId,
+      urlId: urlData.id,
       ip: userIp,
       userAgent: userAgent,
    });
    // redirect
    return res.redirect(302, urlData.originalUrl);
+};
+
+export const getUrlById = async (req: Request, res: Response) => {
+   const { shortCode } = req.params;
+   const result = await urlService.getUrlByCode(shortCode);
+   if (!result) {
+      return res.status(404).json({ msg: 'Url not found' });
+   }
+   res.status(200).json({
+      msg: 'success',
+      data: result,
+   });
 };
 
 export const getUrls = async (req: Request, res: Response) => {

@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from '@/generated/prisma/client.js';
-import type { UrlModel, UrlDetailsModel } from '@/generated/prisma/models.js';
+import type { UrlModel, UrlDetailModel } from '@/generated/prisma/models.js';
 import {
    CreateUrlRequest,
    GetUrlResponse,
@@ -7,30 +7,38 @@ import {
    LogClickParams,
    UpdateUrlRequest,
 } from './urlTypes.js';
+import { auth } from '@/utils/auth.js';
 
 const prisma = new PrismaClient();
 
 class UrlService {
-   async createUrl(payload: CreateUrlRequest): Promise<UrlModel> {
+   async createUrl(
+      payload: CreateUrlRequest,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<UrlModel> {
       return await prisma.url.create({
          data: {
             originalUrl: payload.originalUrl,
             shortCode: payload.shortCode,
-            createdBy: 'User', // ini nanti diisi pake middleware dari auth, for now gini dlu aja
+            createdBy: user.name,
             expiresAt: payload.expiresAt,
          },
       });
    }
 
-   async updateUrl(payload: UpdateUrlRequest, id: string): Promise<UrlModel> {
+   async updateUrl(
+      payload: UpdateUrlRequest,
+      id: string,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<UrlModel> {
       return await prisma.url.update({
          where: {
-            urlId: id,
+            id: id,
          },
          data: {
             originalUrl: payload.originalUrl,
             shortCode: payload.shortCode,
-            createdBy: 'User',
+            updatedBy: user.name,
             expiresAt: payload.expiresAt,
             status: payload.status,
          },
@@ -69,34 +77,29 @@ class UrlService {
 
       const skip = (page - 1) * limit;
 
-      try {
-         const [url, total] = await prisma.$transaction([
-            prisma.url.findMany({
-               where,
-               orderBy,
-               skip,
-               take: limit,
-            }),
-            prisma.url.count({ where }),
-         ]);
+      const [url, total] = await prisma.$transaction([
+         prisma.url.findMany({
+            where,
+            orderBy,
+            skip,
+            take: limit,
+         }),
+         prisma.url.count({ where }),
+      ]);
 
-         return {
-            data: url,
-            meta: {
-               page,
-               limit,
-               totalRecords: total,
-               totalPages: Math.ceil(total / limit),
-            },
-         };
-      } catch (error) {
-         console.error('Error fetching url:', error);
-         throw new Error('Failed to fetch url');
-      }
+      return {
+         data: url,
+         meta: {
+            page,
+            limit,
+            totalRecords: total,
+            totalPages: Math.ceil(total / limit),
+         },
+      };
    }
 
-   async logClick(payload: LogClickParams): Promise<UrlDetailsModel> {
-      return await prisma.urlDetails.create({
+   async logClick(payload: LogClickParams): Promise<UrlDetailModel> {
+      return await prisma.urlDetail.create({
          data: {
             urlId: payload.urlId,
             ip: payload.ip,

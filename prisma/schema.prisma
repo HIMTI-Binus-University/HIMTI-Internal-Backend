@@ -19,33 +19,120 @@ datasource db {
    url      = env("DATABASE_URL")
 }
 
-model Users {
-   userId    String    @id @default(uuid()) @db.Uuid
-   email     String    @unique @db.VarChar(100)
-   roleId    String?   @db.Uuid
+model User {
+   id            String    @id @default(nanoid())
+   name          String    @db.VarChar(255)
+   email         String    @unique @db.VarChar(100)
+   emailVerified Boolean   @default(false)
+   image         String?
+   status        String    @default("p") @db.Char(1)
+   createdAt     DateTime  @default(now()) @db.Timestamp(0)
+   createdBy     String?   @db.VarChar(100)
+   updatedAt     DateTime? @updatedAt()
+   updatedBy     String?   @db.VarChar(100)
+
+   sessions     Session[]
+   accounts     Account[]
+   userHasRoles UserHasRole[]
+
+   @@map("users")
+}
+
+model UserHasRole {
+   userId     String
+   roleId     String
+   assignedAt DateTime @default(now()) @db.Timestamp(0)
+
+   user User @relation(fields: [userId], references: [id])
+   role Role @relation(fields: [roleId], references: [id])
+
+   @@id([userId, roleId])
+   @@map("user_has_roles")
+}
+
+model Role {
+   id        String    @id @default(nanoid())
+   roleName  String    @db.VarChar(255)
    status    String    @default("a") @db.Char(1)
    createdAt DateTime  @default(now()) @db.Timestamp(0)
    createdBy String    @db.VarChar(100)
    updatedAt DateTime? @updatedAt()
    updatedBy String?   @db.VarChar(100)
 
-   roles Roles? @relation(fields: [roleId], references: [roleId])
+   roleHasUsers       UserHasRole[]
+   roleHasPermissions RoleHasPermission[]
+
+   @@map("roles")
 }
 
-model Roles {
-   roleId    String    @id @default(uuid()) @db.Uuid
-   roleName  String    @db.VarChar(255)
-   status    String    @db.Char(1)
-   createdAt DateTime  @default(now()) @db.Timestamp(0)
-   createdBy String    @db.VarChar(100)
-   updatedAt DateTime? @updatedAt()
-   updatedBy String?   @db.VarChar(100)
+model RoleHasPermission {
+   roleId       String
+   permissionId String
+   assignedAt   DateTime @default(now()) @db.Timestamp(0)
 
-   users Users[]
+   role       Role       @relation(fields: [roleId], references: [id])
+   permission Permission @relation(fields: [permissionId], references: [id])
+
+   @@id([roleId, permissionId])
+   @@map("role_has_permission")
+}
+
+model Permission {
+   id                 String              @id @default(nanoid())
+   name               String              @unique @db.VarChar(255)
+   createdAt          DateTime            @default(now()) @db.Timestamp(0)
+   createdBy          String              @db.VarChar(100)
+   updatedAt          DateTime?           @updatedAt()
+   permissionHasRoles RoleHasPermission[]
+}
+
+model Session {
+   id        String    @id @default(nanoid())
+   expiresAt DateTime
+   token     String    @unique
+   ipAddress String?
+   userAgent String?
+   userId    String
+   createdAt DateTime  @default(now()) @db.Timestamp(0)
+   updatedAt DateTime? @updatedAt()
+
+   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+   @@map("sessions")
+}
+
+model Account {
+   id                   String    @id @default(nanoid())
+   accountId            String
+   providerId           String
+   userId               String
+   accessToken          String?   @db.Text
+   refreshToken         String?   @db.Text
+   idToken              String?   @db.Text
+   scope                String?   @db.Text
+   password             String?   @db.Text
+   accessTokenExpiresAt DateTime?
+   createdAt            DateTime  @default(now()) @db.Timestamp(0)
+   updatedAt            DateTime? @updatedAt()
+
+   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+   @@map("accounts")
+}
+
+model Verification {
+   id         String    @id @default(nanoid())
+   identifier String
+   value      String
+   expiresAt  DateTime
+   createdAt  DateTime  @default(now()) @db.Timestamp(0)
+   updatedAt  DateTime? @updatedAt()
+
+   @@map("verifications")
 }
 
 model Url {
-   urlId       String    @id @default(uuid()) @db.Uuid
+   id          String    @id @default(nanoid())
    shortCode   String    @unique @db.VarChar(21)
    originalUrl String    @db.Text
    expiresAt   DateTime?
@@ -55,27 +142,32 @@ model Url {
    updatedAt   DateTime? @updatedAt()
    updatedBy   String?   @db.VarChar(100)
 
-   urlDetails UrlDetails[]
+   urlDetails UrlDetail[]
+
+   @@map("urls")
 }
 
-model UrlDetails {
-   urlDetailsId String  @id @default(uuid()) @db.Uuid
-   urlId        String  @db.Uuid
-   ip           String? @db.VarChar(255)
-   userAgent    String? @db.VarChar(255)
-   country      String? @db.VarChar(255)
-   region       String? @db.VarChar(255)
-   city         String? @db.VarChar(255)
-   latitude     Float?
-   longitude    Float?
-   isp          String? @db.VarChar(255)
-   timezone     String? @db.VarChar(255)
+model UrlDetail {
+   id        String   @id @default(nanoid())
+   urlId     String
+   ip        String?  @db.VarChar(255)
+   userAgent String?  @db.VarChar(255)
+   country   String?  @db.VarChar(255)
+   region    String?  @db.VarChar(255)
+   city      String?  @db.VarChar(255)
+   latitude  Float?
+   longitude Float?
+   isp       String?  @db.VarChar(255)
+   timezone  String?  @db.VarChar(255)
+   clickedAt DateTime @default(now()) @db.Timestamp(0)
 
-   urlShortener Url @relation(fields: [urlId], references: [urlId])
+   url Url @relation(fields: [urlId], references: [id])
+
+   @@map("url_details")
 }
 
-model Events {
-   eventId           String          @id @default(uuid()) @db.Uuid
+model Event {
+   id                String          @id @default(nanoid())
    eventName         String          @db.VarChar(255)
    eventKicker       String          @db.VarChar(255)
    eventDesc         String          @db.Text
@@ -91,33 +183,38 @@ model Events {
    updatedAt         DateTime?       @updatedAt()
    updatedBy         String?         @db.VarChar(100)
 
-   eventsHasParticipants EventsHasParticipants[]
+   eventHasParticipants EventHasParticipant[]
+
+   @@map("events")
 }
 
-model EventsHasParticipants {
-   eventId       String       @db.Uuid
-   participantId String       @db.Uuid
-   events        Events       @relation(fields: [eventId], references: [eventId])
-   participants  Participants @relation(fields: [participantId], references: [participantId])
+model EventHasParticipant {
+   eventId       String
+   participantId String
+   event         Event       @relation(fields: [eventId], references: [id])
+   participant   Participant @relation(fields: [participantId], references: [id])
 
    @@id([eventId, participantId])
+   @@map("event_has_participants")
 }
 
-model Participants {
-   participantId String    @id @default(uuid()) @db.Uuid
-   eventId       String    @db.Uuid
-   username      String    @db.VarChar(255)
-   phone         String    @db.VarChar(255)
-   binusian      String    @db.VarChar(255)
-   region        String    @db.VarChar(255)
-   jurusan       String    @db.VarChar(100)
-   email         String    @unique @db.VarChar(100)
-   nim           Int
-   status        String    @default("a") @db.Char(1)
-   createdAt     DateTime  @default(now()) @db.Timestamp(0)
-   createdBy     String    @db.VarChar(100)
-   updatedAt     DateTime? @updatedAt()
-   updatedBy     String?   @db.VarChar(100)
+model Participant {
+   id        String    @id @default(nanoid())
+   eventId   String
+   username  String    @db.VarChar(255)
+   phone     String    @db.VarChar(255)
+   binusian  String    @db.VarChar(255)
+   region    String    @db.VarChar(255)
+   jurusan   String    @db.VarChar(100)
+   email     String    @unique @db.VarChar(100)
+   nim       Int
+   status    String    @default("a") @db.Char(1)
+   createdAt DateTime  @default(now()) @db.Timestamp(0)
+   createdBy String    @db.VarChar(100)
+   updatedAt DateTime? @updatedAt()
+   updatedBy String?   @db.VarChar(100)
 
-   participantsHasEvents EventsHasParticipants[]
+   participantHasEvents EventHasParticipant[]
+
+   @@map("participants")
 }
