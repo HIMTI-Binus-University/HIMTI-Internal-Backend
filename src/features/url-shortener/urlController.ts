@@ -68,8 +68,8 @@ export const clickUrl = async (req: Request, res: Response) => {
 };
 
 export const getUrlById = async (req: Request, res: Response) => {
-   const { shortCode } = req.params;
-   const result = await urlService.getUrlByCode(shortCode);
+   const { id } = req.params;
+   const result = await urlService.getUrlById(id);
    if (!result) {
       return res.status(404).json({ msg: 'Url not found' });
    }

@@ -17,6 +17,6 @@ router.post(
 );
 router.put('/update-url/:id', updateUrl);
 router.get('/get-list', getUrls);
-router.get('/get-list/:shortCode', getUrlById);
+router.get('/get-list/:id', getUrlById);
 
 export default router;

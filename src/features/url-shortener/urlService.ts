@@ -54,6 +54,14 @@ class UrlService {
       });
    }
 
+   async getUrlById(id: string) {
+      return await prisma.url.findUnique({
+         where: {
+            id: id,
+         },
+      });
+   }
+
    async getUrls(params: GetUrlSchema): Promise<GetUrlResponse> {
       const { page, limit, search, sort } = params;
 
