@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/DaffaFayyaz/himti-internal-backend:${IMAGE_TAG}
+    image: ghcr.io/himti-binus-university/himti-internal-backend:${IMAGE_TAG}
     container_name: himti_backend_${IMAGE_TAG} # Biar nama container gak bentrok
     restart: always
     ports:
