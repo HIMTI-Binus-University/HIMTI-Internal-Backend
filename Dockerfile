@@ -1,0 +1,43 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install OpenSSL (Wajib buat Prisma di Alpine Linux)
+RUN apk -U add --no-cache openssl
+
+# Copy file dependency dulu (biar cache optimal)
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install semua dependencies (termasuk devDependencies)
+RUN npm ci
+
+# Generate Prisma Client (Wajib biar DB jalan)
+RUN npx prisma generate
+
+# Copy seluruh source code
+COPY . .
+
+# Build TypeScript ke JavaScript (biasanya ke folder dist)
+RUN npm run build
+
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# Install OpenSSL lagi (buat runtime Prisma)
+RUN apk -U add --no-cache openssl
+
+# Set environment ke production
+ENV NODE_ENV=production
+
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+
+# Expose port (Internal container)
+EXPOSE 8000
+
+# Jalankan aplikasi
+CMD ["npm", "start"]

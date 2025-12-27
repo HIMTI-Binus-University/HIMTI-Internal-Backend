@@ -81,6 +81,10 @@ jobs:
             # Pull image terbaru & Restart
             docker compose pull app
             docker compose up -d
-            
+
+            # Migration
+            echo "Running Production Migration..."
+            docker compose exec -T app npx prisma migrate deploy
+
             # Bersihkan image lama
             docker image prune -f

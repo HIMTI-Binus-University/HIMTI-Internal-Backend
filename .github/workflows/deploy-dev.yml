@@ -80,7 +80,8 @@ jobs:
             docker compose pull app
             docker compose up -d
             
-            # Opsional: Reset DB Dev setiap deploy (biar fresh)
-            # docker compose exec -T app npx prisma db push --force-reset
+            # Migration
+            echo "Running Dev Migration..."
+            docker compose exec -T app npx prisma migrate deploy
             
             docker image prune -f-d
