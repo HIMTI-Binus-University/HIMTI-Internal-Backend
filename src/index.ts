@@ -8,7 +8,7 @@ import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
 
 const app = express();
-const port = process.env.port || 8000;
+const port = process.env.PORT || 8000;
 
 // app.use(limiter);
 app.use(express.json());
