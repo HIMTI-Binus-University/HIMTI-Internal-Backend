@@ -1,0 +1,23 @@
+services:
+  app:
+    # Ganti username GHCR kamu
+    image: ghcr.io/USERNAME_GITHUB/himti-internal-backend:latest
+    restart: always
+    ports:
+      - "${APP_PORT}:8000"
+    env_file: .env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: himti-db
+      POSTGRES_PASSWORD: x?y0?ZGa5J4M
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
