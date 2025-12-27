@@ -6,6 +6,11 @@ import { clickUrl } from './features/url-shortener/urlController.js';
 import { globalErrorHandler } from './utils/errorMiddleware.js';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -18,7 +23,7 @@ app.use(
       credentials: true,
    }),
 );
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, '../public')));
 app.all('/api/auth/*splat', toNodeHandler(auth));
 app.use('/api', routes);
 app.get('/:shortCode', clickUrl);
