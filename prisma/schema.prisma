@@ -31,9 +31,10 @@ model User {
    updatedAt     DateTime? @updatedAt()
    updatedBy     String?   @db.VarChar(100)
 
-   sessions     Session[]
-   accounts     Account[]
-   userHasRoles UserHasRole[]
+   sessions             Session[]
+   accounts             Account[]
+   userHasRoles         UserHasRole[]
+   eventHasParticipants EventHasParticipant[]
 
    @@map("users")
 }
@@ -189,32 +190,32 @@ model Event {
 }
 
 model EventHasParticipant {
-   eventId       String
-   participantId String
-   event         Event       @relation(fields: [eventId], references: [id])
-   participant   Participant @relation(fields: [participantId], references: [id])
+   eventId String
+   userId  String
+   event   Event  @relation(fields: [eventId], references: [id])
+   user    User   @relation(fields: [userId], references: [id])
 
-   @@id([eventId, participantId])
+   @@id([eventId, userId])
    @@map("event_has_participants")
 }
 
-model Participant {
-   id        String    @id @default(nanoid())
-   eventId   String
-   username  String    @db.VarChar(255)
-   phone     String    @db.VarChar(255)
-   binusian  String    @db.VarChar(255)
-   region    String    @db.VarChar(255)
-   jurusan   String    @db.VarChar(100)
-   email     String    @unique @db.VarChar(100)
-   nim       Int
-   status    String    @default("a") @db.Char(1)
-   createdAt DateTime  @default(now()) @db.Timestamp(0)
-   createdBy String    @db.VarChar(100)
-   updatedAt DateTime? @updatedAt()
-   updatedBy String?   @db.VarChar(100)
-
-   participantHasEvents EventHasParticipant[]
-
-   @@map("participants")
-}
+// model Participant {
+//    id        String    @id @default(nanoid())
+//    eventId   String
+//    username  String    @db.VarChar(255)
+//    phone     String    @db.VarChar(255)
+//    binusian  String    @db.VarChar(255)
+//    region    String    @db.VarChar(255)
+//    jurusan   String    @db.VarChar(100)
+//    email     String    @unique @db.VarChar(100)
+//    nim       Int
+//    status    String    @default("a") @db.Char(1)
+//    createdAt DateTime  @default(now()) @db.Timestamp(0)
+//    createdBy String    @db.VarChar(100)
+//    updatedAt DateTime? @updatedAt()
+//    updatedBy String?   @db.VarChar(100)
+//
+//    participantHasEvents EventHasParticipant[]
+//
+//    @@map("participants")
+// }
