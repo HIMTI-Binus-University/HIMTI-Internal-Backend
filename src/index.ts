@@ -22,6 +22,7 @@ app.use(
       origin: [
          'http://72.62.122.54:8001', // IP VPS (Akses html testing via IP)
          'http://72.62.122.54.nip.io:8001', // Domain nip.io (Akses Frontend via Domain)
+         'http://localhost:3000',
       ],
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
