@@ -1,7 +1,7 @@
 services:
   app:
-    # Ganti username GHCR kamu
-    image: ghcr.io/USERNAME_GITHUB/himti-internal-backend:latest
+    image: ghcr.io/DaffaFayyaz/himti-internal-backend:${IMAGE_TAG}
+    container_name: himti_backend_${IMAGE_TAG} # Biar nama container gak bentrok
     restart: always
     ports:
       - "${APP_PORT}:8000"
@@ -11,13 +11,15 @@ services:
 
   db:
     image: postgres:15-alpine
+    container_name: himti_db_${IMAGE_TAG} # Biar nama container gak bentrok
     restart: always
     environment:
       POSTGRES_USER: himti-db
       POSTGRES_PASSWORD: x?y0?ZGa5J4M
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata_${IMAGE_TAG}:/var/lib/postgresql/data
 
 volumes:
-  pgdata:
+  pgdata_latest:
+  pgdata_dev:
