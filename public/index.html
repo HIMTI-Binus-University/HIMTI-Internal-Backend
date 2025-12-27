@@ -40,8 +40,11 @@
       <script type="module">
          import { createAuthClient } from 'https://esm.sh/better-auth/client';
 
+         // const API_BASE_URL = 'http://localhost:8000';
+         const API_BASE_URL = 'http://72.62.122.54.nip.io:8001';
+
          const authClient = createAuthClient({
-            baseURL: 'http://localhost:8000',
+            baseURL: API_BASE_URL,
          });
 
          const resultBox = document.getElementById('result');
@@ -52,7 +55,7 @@
          document.getElementById('loginBtn').onclick = async () => {
             await authClient.signIn.social({
                provider: 'google',
-               callbackURL: 'http://localhost:8000', // Redirect balik ke sini
+               callbackURL: API_BASE_URL,
             });
          };
 
@@ -68,47 +71,48 @@
             resultBox.innerText = 'Fetching...';
             try {
                const res = await fetch(
-                  'http://localhost:8000/api/url/get-list?status=a',
+                  `${API_BASE_URL}/api/url/get-list?status=a`,
                   {
                      method: 'GET',
                   },
                );
 
-               // const res = await fetch(
-               //    'http://localhost:8000/api/url/create-url/',
-               //    {
-               //       method: 'POST',
-               //       credentials: 'include',
-               //
-               //       headers: {
-               //          'Content-Type': 'application/json',
-               //       },
-               //
-               //       body: JSON.stringify({
-               //          originalUrl: 'https://x.com/',
-               //          shortCode: 'twitter',
-               //          expiresAt: '2026-05-26T22:00:00Z',
-               //       }),
-               //    },
-               // );
+               /* // ✅ CONTOH POST (Create URL) - Tinggal Uncomment
+               const res = await fetch(
+                  `${API_BASE_URL}/api/url/create-url/`,
+                  {
+                     method: 'POST',
+                     credentials: 'include', // Wajib biar cookie session kebawa
+                     headers: {
+                        'Content-Type': 'application/json',
+                     },
+                     body: JSON.stringify({
+                        originalUrl: 'https://binus.ac.id/',
+                        shortCode: 'binus',
+                        expiresAt: '2026-05-26T22:00:00Z',
+                     }),
+                  },
+               );
+               */
 
-               // const res = await fetch(
-               //    'http://localhost:8000/api/url/update-url/a0f441a3-91cb-4151-9813-1a9ff7082142',
-               //    {
-               //       method: 'PUT',
-               //       credentials: 'include',
-               //
-               //       headers: {
-               //          'Content-Type': 'application/json',
-               //       },
-               //
-               //       body: JSON.stringify({
-               //          originalUrl: 'https://youtube.com/',
-               //          shortCode: 'yutubU',
-               //          expiresAt: '2026-05-26T22:00:00Z',
-               //       }),
-               //    },
-               // );
+               /*
+               // ✅ CONTOH PUT (Update URL) - Tinggal Uncomment & Ganti ID
+               const res = await fetch(
+                  `${API_BASE_URL}/api/url/update-url/MASUKAN-ID-DISINI`,
+                  {
+                     method: 'PUT',
+                     credentials: 'include',
+                     headers: {
+                        'Content-Type': 'application/json',
+                     },
+                     body: JSON.stringify({
+                        originalUrl: 'https://youtube.com/',
+                        shortCode: 'yutubU',
+                        expiresAt: '2026-05-26T22:00:00Z',
+                     }),
+                  },
+               );
+               */
 
                const text = await res.text();
                try {
