@@ -21,6 +21,9 @@ COPY . .
 # Build TypeScript ke JavaScript (biasanya ke folder dist)
 RUN npm run build
 
+# Apus dev dependencies
+RUN npm prune --omit=dev
+
 FROM node:20-alpine AS runner
 
 WORKDIR /app
@@ -30,6 +33,8 @@ RUN apk -U add --no-cache openssl
 
 # Set environment ke production
 ENV NODE_ENV=production
+
+USER node
 
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules

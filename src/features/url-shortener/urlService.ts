@@ -1,5 +1,5 @@
-import { PrismaClient, Prisma } from '@/generated/prisma/client.js';
-import type { UrlModel, UrlDetailModel } from '@/generated/prisma/models.js';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { Url as UrlModel, UrlDetail as UrlDetailModel } from '@prisma/client';
 import {
    CreateUrlRequest,
    GetUrlResponse,
