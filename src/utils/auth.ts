@@ -26,6 +26,7 @@ export const auth = betterAuth({
 
    trustedOrigins: [
       'http://localhost:3000', // URL Frontend kamu
+      'http://localhost:8000',
    ],
 
    user: {
