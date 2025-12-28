@@ -25,7 +25,7 @@ export const auth = betterAuth({
    },
 
    trustedOrigins: [
-      'http://localhost:3000',
+      'http://localhost:5173',
       'http://localhost:8000',
       'http://72.62.122.54.nip.io:8001',
    ],
