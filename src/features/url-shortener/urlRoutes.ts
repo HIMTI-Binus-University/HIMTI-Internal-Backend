@@ -1,7 +1,6 @@
 import express from 'express';
 import type { Router, Response, Request } from 'express';
 import { createUrl, getUrlById, getUrls, updateUrl } from './urlController.js';
-import { requireAuth } from '@/middleware/authMiddleware.js';
 
 const router: Router = express.Router();
 
