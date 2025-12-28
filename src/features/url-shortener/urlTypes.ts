@@ -25,12 +25,6 @@ export const UpdateUrlSchema = z.object({
       .string()
       .min(3, { message: 'Short code must be at least 3 characters' })
       .optional(),
-   expiresAt: z.coerce
-      .date()
-      .min(new Date(), {
-         message: 'Expiration date cannot be in the past',
-      })
-      .optional(),
    expresAt: z.preprocess(
       (someArgs) => {
          if (someArgs === null) return undefined;
