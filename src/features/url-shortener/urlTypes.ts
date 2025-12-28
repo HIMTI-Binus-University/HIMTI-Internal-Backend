@@ -5,12 +5,18 @@ export const CreateUrlSchema = z.object({
    shortCode: z
       .string()
       .min(3, { message: 'Short code must be at least 3 characters' }),
-   expiresAt: z.coerce
-      .date()
-      .min(new Date(), {
-         message: 'Expiration date cannot be in the past',
-      })
-      .optional(),
+   expresAt: z.preprocess(
+      (someArgs) => {
+         if (someArgs === null) return undefined;
+         return someArgs;
+      },
+      z.coerce
+         .date()
+         .min(new Date(), {
+            message: 'Expiration date cannot be in the past',
+         })
+         .optional(),
+   ),
 });
 
 export const UpdateUrlSchema = z.object({
@@ -25,6 +31,18 @@ export const UpdateUrlSchema = z.object({
          message: 'Expiration date cannot be in the past',
       })
       .optional(),
+   expresAt: z.preprocess(
+      (someArgs) => {
+         if (someArgs === null) return undefined;
+         return someArgs;
+      },
+      z.coerce
+         .date()
+         .min(new Date(), {
+            message: 'Expiration date cannot be in the past',
+         })
+         .optional(),
+   ),
    status: z.enum(['a', 'd']).optional(),
 });
 

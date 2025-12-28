@@ -22,7 +22,7 @@ class UrlService {
             shortCode: payload.shortCode,
             // createdBy: user.name,
             createdBy: 'Admin',
-            expiresAt: payload.expiresAt ?? null,
+            expiresAt: payload.expiresAt ? new Date(payload.expiresAt) : null,
          },
       });
    }
@@ -41,7 +41,7 @@ class UrlService {
             shortCode: payload.shortCode,
             // updatedBy: user.name,
             updatedBy: 'Admin',
-            expiresAt: payload.expiresAt ?? null,
+            expiresAt: payload.expiresAt ? new Date(payload.expiresAt) : null,
             status: payload.status,
          },
       });
