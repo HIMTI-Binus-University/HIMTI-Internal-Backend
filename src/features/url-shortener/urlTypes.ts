@@ -5,7 +5,7 @@ export const CreateUrlSchema = z.object({
    shortCode: z
       .string()
       .min(3, { message: 'Short code must be at least 3 characters' }),
-   expresAt: z.preprocess(
+   expiresAt: z.preprocess(
       (someArgs) => {
          if (someArgs === null) return undefined;
          return someArgs;
@@ -25,7 +25,7 @@ export const UpdateUrlSchema = z.object({
       .string()
       .min(3, { message: 'Short code must be at least 3 characters' })
       .optional(),
-   expresAt: z.preprocess(
+   expiresAt: z.preprocess(
       (someArgs) => {
          if (someArgs === null) return undefined;
          return someArgs;

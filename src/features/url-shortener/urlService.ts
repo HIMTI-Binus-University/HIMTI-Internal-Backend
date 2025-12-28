@@ -22,7 +22,7 @@ class UrlService {
             shortCode: payload.shortCode,
             // createdBy: user.name,
             createdBy: 'Admin',
-            expiresAt: payload.expresAt ?? null,
+            expiresAt: payload.expiresAt ?? null,
          },
       });
    }
