@@ -25,6 +25,7 @@ app.use(
          'http://localhost:3000',
          'http://localhost:8000',
          'http://72.62.122.54:3000',
+         'http://72.62.122.54.nip.io:3000',
       ],
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
