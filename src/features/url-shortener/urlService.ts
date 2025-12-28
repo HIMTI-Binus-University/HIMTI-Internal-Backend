@@ -39,7 +39,8 @@ class UrlService {
          data: {
             originalUrl: payload.originalUrl,
             shortCode: payload.shortCode,
-            updatedBy: user.name,
+            // updatedBy: user.name,
+            updatedBy: 'Admin',
             expiresAt: payload.expiresAt,
             status: payload.status,
          },
