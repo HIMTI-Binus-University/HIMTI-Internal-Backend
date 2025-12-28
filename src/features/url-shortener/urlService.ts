@@ -64,7 +64,7 @@ class UrlService {
    }
 
    async getUrls(params: GetUrlSchema): Promise<GetUrlResponse> {
-      const { page, limit, search, sort } = params;
+      const { page, limit, search, sort, status } = params;
 
       const where: Prisma.UrlWhereInput = {};
       if (search) {
@@ -89,7 +89,9 @@ class UrlService {
 
       const [url, total] = await prisma.$transaction([
          prisma.url.findMany({
-            where,
+            where: {
+               status,
+            },
             orderBy,
             skip,
             take: limit,
