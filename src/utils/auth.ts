@@ -9,6 +9,16 @@ export const auth = betterAuth({
       provider: 'postgresql',
    }),
 
+   cookies: {
+      sessionToken: {
+         options: {
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
+         },
+      },
+   },
+
    socialProviders: {
       google: {
          clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -27,6 +37,7 @@ export const auth = betterAuth({
    trustedOrigins: [
       'http://localhost:3000', // URL Frontend kamu
       'http://localhost:8000',
+      'http://72.62.122.54.nip.io:8001',
    ],
 
    user: {
