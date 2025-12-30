@@ -55,7 +55,7 @@
          document.getElementById('loginBtn').onclick = async () => {
             await authClient.signIn.social({
                provider: 'google',
-               callbackURL: API_BASE_URL,
+               callbackURL: 'http://localhost:8000',
             });
          };
 
@@ -77,23 +77,18 @@
                   },
                );
 
-               /* // ✅ CONTOH POST (Create URL) - Tinggal Uncomment
-               const res = await fetch(
-                  `${API_BASE_URL}/api/url/create-url/`,
-                  {
-                     method: 'POST',
-                     credentials: 'include', // Wajib biar cookie session kebawa
-                     headers: {
-                        'Content-Type': 'application/json',
-                     },
-                     body: JSON.stringify({
-                        originalUrl: 'https://binus.ac.id/',
-                        shortCode: 'binus',
-                        expiresAt: '2026-05-26T22:00:00Z',
-                     }),
-                  },
-               );
-               */
+               // const res = await fetch(`${API_BASE_URL}/api/url/create-url/`, {
+               //    method: 'POST',
+               //    credentials: 'include', // Wajib biar cookie session kebawa
+               //    headers: {
+               //       'Content-Type': 'application/json',
+               //    },
+               //    body: JSON.stringify({
+               //       originalUrl: 'https://binus.ac.id/',
+               //       shortCode: 'binus',
+               //       expiresAt: '2026-05-26T22:00:00Z',
+               //    }),
+               // });
 
                /*
                // ✅ CONTOH PUT (Update URL) - Tinggal Uncomment & Ganti ID

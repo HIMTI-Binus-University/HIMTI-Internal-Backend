@@ -61,6 +61,19 @@ export const GetUrlSchema = z.object({
    status: z.enum(['a', 'd']),
 });
 
+export const GeoDataSchema = z.object({
+   status: z.string().optional(),
+   city: z.string().nullish(),
+   country: z.string().nullish(),
+   region: z.string().nullish(),
+   regionName: z.string().nullish(),
+   lat: z.number().nullish(),
+   lon: z.number().nullish(),
+   isp: z.string().nullish(),
+   timezone: z.string().nullish(),
+});
+
+export type GeoDataSchema = z.infer<typeof GeoDataSchema>;
 export type GetUrlSchema = z.infer<typeof GetUrlSchema>;
 export type LogClickParams = z.infer<typeof LogClickSchema>;
 export type CreateUrlRequest = z.infer<typeof CreateUrlSchema>;

@@ -5,6 +5,7 @@ import {
    UpdateUrlSchema,
 } from '@/features/url-shortener/urlTypes.js';
 import { urlService } from './urlService.js';
+import { handleAnalyticsLogging } from '@/utils/analyticsLogging.js';
 
 export const createUrl = async (req: Request, res: Response) => {
    const data = req.body;
@@ -39,12 +40,7 @@ export const updateUrl = async (req: Request, res: Response) => {
 };
 
 export const clickUrl = async (req: Request, res: Response) => {
-   const userAgent: string = req.headers['user-agent'] || 'Unknown';
-   // cek kalo di vps, local atau unknown
-   const userIp: string =
-      (req.headers['x-forwarded-for'] as string) || req.ip || 'Unknown';
    const { shortCode } = req.params;
-
    // panggil service
    const urlData = await urlService.getUrlByCode(shortCode);
    // validations
@@ -57,14 +53,14 @@ export const clickUrl = async (req: Request, res: Response) => {
    if (urlData.expiresAt && new Date() > new Date(urlData.expiresAt)) {
       return res.status(410).json({ msg: 'Link has expired' });
    }
-   // save the logs without await
-   void urlService.logClick({
-      urlId: urlData.id,
-      ip: userIp,
-      userAgent: userAgent,
-   });
-   // redirect
-   return res.redirect(302, urlData.originalUrl);
+   res.redirect(302, urlData.originalUrl);
+
+   const userAgent: string = req.headers['user-agent'] || 'Unknown';
+   // cek kalo di vps, local atau unknown
+   const userIp: string =
+      (req.headers['x-forwarded-for'] as string) || req.ip || 'Unknown';
+
+   void handleAnalyticsLogging(urlData, userIp, userAgent);
 };
 
 export const getUrlById = async (req: Request, res: Response) => {
