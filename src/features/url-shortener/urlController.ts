@@ -1,11 +1,7 @@
 import { Request, Response } from 'express';
-import {
-   CreateUrlSchema,
-   GetUrlSchema,
-   UpdateUrlSchema,
-} from '@/features/url-shortener/urlTypes.js';
 import { urlService } from './urlService.js';
 import { handleAnalyticsLogging } from '@/utils/analyticsLogging.js';
+import { CreateUrlSchema, GetUrlSchema, UpdateUrlSchema } from './urlSchema.js';
 
 export const createUrl = async (req: Request, res: Response) => {
    const data = req.body;
