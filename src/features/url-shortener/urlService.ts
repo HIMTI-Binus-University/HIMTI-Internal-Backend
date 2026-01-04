@@ -1,5 +1,5 @@
 import { Url } from '@prisma/client';
-import {
+import type {
    CreateUrlRequest,
    GetUrlResponse,
    GetUrlSchema,

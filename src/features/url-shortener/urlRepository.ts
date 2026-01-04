@@ -21,9 +21,9 @@ class UrlRepository {
       });
    }
 
-   async findByCode(id: string): Promise<Url | null> {
+   async findByCode(shortCode: string): Promise<Url | null> {
       return await prisma.url.findUnique({
-         where: { id },
+         where: { shortCode },
       });
    }
 
