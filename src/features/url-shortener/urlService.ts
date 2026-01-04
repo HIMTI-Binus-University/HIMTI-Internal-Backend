@@ -1,5 +1,4 @@
-import { PrismaClient, Prisma } from '@prisma/client';
-import { Url as UrlModel, UrlDetail as UrlDetailModel } from '@prisma/client';
+import { Url } from '@prisma/client';
 import {
    CreateUrlRequest,
    GetUrlResponse,
@@ -8,122 +7,74 @@ import {
    UpdateUrlRequest,
 } from './urlTypes.js';
 import { auth } from '@/utils/auth.js';
-
-const prisma = new PrismaClient();
+import { urlRepository } from './urlRepository.js';
 
 class UrlService {
    async createUrl(
       payload: CreateUrlRequest,
       user: typeof auth.$Infer.Session.user,
-   ): Promise<UrlModel> {
-      return await prisma.url.create({
-         data: {
-            originalUrl: payload.originalUrl,
-            shortCode: payload.shortCode,
-            // createdBy: user.name,
-            createdBy: 'Admin',
-            expiresAt: payload.expiresAt ?? null,
-         },
-      });
+   ): Promise<Url> {
+      const urlData = {
+         originalUrl: payload.originalUrl,
+         shortCode: payload.shortCode,
+         createdBy: user?.name || 'Admin',
+         expiresAt: payload.expiresAt ?? null,
+      };
+      return await urlRepository.create(urlData);
    }
 
    async updateUrl(
       payload: UpdateUrlRequest,
       id: string,
       user: typeof auth.$Infer.Session.user,
-   ): Promise<UrlModel> {
-      return await prisma.url.update({
-         where: {
-            id: id,
-         },
-         data: {
-            originalUrl: payload.originalUrl,
-            shortCode: payload.shortCode,
-            // updatedBy: user.name,
-            updatedBy: 'Admin',
-            expiresAt: payload.expiresAt ?? null,
-            status: payload.status,
-         },
-      });
+   ): Promise<Url> {
+      const updateData = {
+         originalUrl: payload.originalUrl,
+         shortCode: payload.shortCode,
+         updatedBy: user?.name || 'Admin',
+         expiresAt: payload.expiresAt ?? null,
+         status: payload.status,
+      };
+      return await urlRepository.update(id, updateData);
    }
 
    async getUrlByCode(shortCode: string) {
-      return await prisma.url.findUnique({
-         where: {
-            shortCode: shortCode,
-         },
-      });
+      return await urlRepository.findByCode(shortCode);
    }
 
    async getUrlById(id: string) {
-      return await prisma.url.findUnique({
-         where: {
-            id: id,
-         },
-      });
+      return await urlRepository.findById(id);
    }
 
    async getUrls(params: GetUrlSchema): Promise<GetUrlResponse> {
-      const { page, limit, search, sort, status } = params;
-
-      const where: Prisma.UrlWhereInput = {};
-      if (search) {
-         where.OR = [
-            { originalUrl: { contains: search, mode: 'insensitive' } },
-            { shortCode: { contains: search, mode: 'insensitive' } },
-            { createdBy: { contains: search, mode: 'insensitive' } },
-         ];
-      }
-
-      let orderBy: Prisma.UrlOrderByWithRelationInput = {};
-      if (sort) {
-         const [field, direction] = sort.split(':');
-         if (direction === 'asc' || direction === 'desc') {
-            orderBy = { [field]: direction };
-         }
-      } else {
-         orderBy = { createdAt: 'desc' };
-      }
-
-      const skip = (page - 1) * limit;
-
-      const [url, total] = await prisma.$transaction([
-         prisma.url.findMany({
-            where: {
-               status,
-            },
-            orderBy,
-            skip,
-            take: limit,
-         }),
-         prisma.url.count({ where }),
-      ]);
-
+      const { data, total } = await urlRepository.findAll(params);
       return {
-         data: url,
+         data,
          meta: {
-            page,
-            limit,
+            page: params.page,
+            limit: params.limit,
             totalRecords: total,
-            totalPages: Math.ceil(total / limit),
+            totalPages: Math.ceil(total / params.limit),
          },
       };
    }
 
-   async logClick(payload: LogClickParams): Promise<UrlDetailModel> {
-      return await prisma.urlDetail.create({
-         data: {
-            urlId: payload.urlId,
-            ip: payload.ip,
-            userAgent: payload.userAgent,
-            city: payload.city,
-            country: payload.country,
-            region: payload.region,
-            latitude: payload.latitude,
-            longitude: payload.longitude,
-            isp: payload.isp,
-            timezone: payload.timezone,
+   async logClick(payload: LogClickParams) {
+      return await urlRepository.createLog({
+         url: {
+            connect: {
+               id: payload.urlId,
+            },
          },
+         ip: payload.ip,
+         userAgent: payload.userAgent,
+         city: payload.city,
+         country: payload.country,
+         region: payload.region,
+         latitude: payload.latitude,
+         longitude: payload.longitude,
+         isp: payload.isp,
+         timezone: payload.timezone,
       });
    }
 }
