@@ -7,6 +7,7 @@ export const createUrl = async (req: Request, res: Response) => {
    const data = req.body;
    const userData = res.locals.user;
    const validation = CreateUrlSchema.safeParse(data);
+   console.log('tes');
    // types and request validation
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
