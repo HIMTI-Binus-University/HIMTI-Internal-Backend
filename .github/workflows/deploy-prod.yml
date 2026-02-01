@@ -26,6 +26,8 @@ jobs:
         run: npm ci # Lebih cepat & aman daripada npm install untuk CI
 
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: "postgresql://dummy:password@localhost:5432/mydb?schema=public"
         run: npx prisma generate
 
       # Cek apakah kode bisa di-build (Compile TypeScript). 
