@@ -60,7 +60,8 @@ jobs:
             cd ${{ secrets.PROJECT_PATH }}
             
             # Tarik update
-            git pull origin dev
+            git fetch origin dev
+            git reset --hard origin/dev
             
             source /home/himtibin/nodevenv/HIMTI_API/24/bin/activate && cd /home/himtibin/HIMTI_API
             

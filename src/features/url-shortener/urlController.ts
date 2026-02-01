@@ -29,7 +29,11 @@ export const updateUrl = async (req: Request, res: Response) => {
       return res.status(400).json({ errors: validation.error.format() });
    }
    // service
-   const result = await urlService.updateUrl(validation.data, id, userData);
+   const result = await urlService.updateUrl(
+      validation.data,
+      id as string,
+      userData,
+   );
    res.status(200).json({
       msg: 'success',
       data: result,
@@ -39,7 +43,7 @@ export const updateUrl = async (req: Request, res: Response) => {
 export const clickUrl = async (req: Request, res: Response) => {
    const { shortCode } = req.params;
    // panggil service
-   const urlData = await urlService.getUrlByCode(shortCode);
+   const urlData = await urlService.getUrlByCode(shortCode as string);
    // validations
    if (!urlData) {
       return res.status(404).json({ msg: 'Link not found' });
@@ -62,7 +66,7 @@ export const clickUrl = async (req: Request, res: Response) => {
 
 export const getUrlById = async (req: Request, res: Response) => {
    const { id } = req.params;
-   const result = await urlService.getUrlById(id);
+   const result = await urlService.getUrlById(id as string);
    if (!result) {
       return res.status(404).json({ msg: 'Url not found' });
    }
