@@ -1,90 +1,71 @@
-name: Deploy Production
+name: CI/CD Pipeline
 
 on:
-  push:
-    branches: [ "main" ]
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  workflow_dispatch:
 
 jobs:
-  build-and-push:
+  # --- TAHAP 1: CONTINUOUS INTEGRATION (CI) ---
+  # Tahap ini jalan di server GitHub (Gratis).
+  # Tujuannya memastikan kode bersih dari error sebelum menyentuh server cPanel.
+  test-and-build:
+    name: Test & Build Check
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '22' # Sesuaikan versi Node kamu
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest
+      - name: Install Dependencies
+        run: npm ci # Lebih cepat & aman daripada npm install untuk CI
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      - name: Generate Prisma Client
+        run: npx prisma generate
 
+      # Cek apakah kode bisa di-build (Compile TypeScript). 
+      # Kalau ada error syntax, dia bakal FAIL di sini.
+      - name: Build Check
+        run: npm run build
+
+      # (OPSIONAL) Kalau kamu punya Unit Testing (Jest/Mocha)
+      # Uncomment baris di bawah ini:
+      # - name: Run Tests
+      #   run: npm test
+
+  # --- TAHAP 2: CONTINUOUS DEPLOYMENT (CD) ---
+  # Tahap ini login ke cPanel dan update aplikasi.
+  # HANYA JALAN kalau tahap 'test-and-build' di atas SUKSES.
   deploy:
-    needs: build-and-push
+    name: Deploy to cPanel
+    needs: test-and-build # <--- INI KUNCINYA (Dependency)
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # 1. Copy file docker-compose.yml terbaru ke VPS
-      - name: Copy docker-compose to VPS
-        uses: appleboy/scp-action@v0.1.7
+      - name: SSH to cPanel and Deploy
+        uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: "docker-compose.yml"
-          target: "~/prod-himti-internal-backend"
-
-      # 2. Login SSH & Restart Container
-      - name: Execute remote ssh commands
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          key: ${{ secrets.SSH_KEY_CPANEL }}
+          port: 22
           script: |
-            cd ~/prod-himti-internal-backend
+            # Masuk folder
+            cd ${{ secrets.PROJECT_PATH }}
             
-            # Login ke GHCR
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Tarik update
+            git pull origin dev
             
-            # Set Variable Khusus PROD
-            export APP_PORT=8000
-            export DB_NAME=himti_prod_db
-            export IMAGE_TAG=latest
+            source /home/himtibin/nodevenv/HIMTI_API/24/bin/activate && cd /home/himtibin/HIMTI_API
             
-            # Pull image terbaru & Restart
-            docker compose pull app
-            docker compose up -d
-
-            # Migration
-            echo "Running Production Migration..."
-            docker compose exec -T app npx prisma migrate deploy
-
-            # Bersihkan image lama
-            docker image prune -f
+            # Install & Build Ulang di Server
+            npm install --production=false
+            npx prisma generate
+            npx prisma migrate deploy # Auto migrate DB (Hati-hati di production!)
+            npm run build
+            
+            # Restart App
+            mkdir -p tmp
+            touch tmp/restart.txt
+            echo "🚀 DEPLOYMENT SUCCESS!""
