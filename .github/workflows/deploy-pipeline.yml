@@ -1,0 +1,114 @@
+name: CI/CD Pipeline Development Branch
+
+on:
+  push:
+    branches: [ "dev", "main" ] 
+
+jobs:
+  # --- CONTINUOUS INTEGRATION (CI) ---
+  test-and-build:
+    name: Test & Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' 
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        env:
+          DATABASE_URL: "postgresql://dummy:password@localhost:5432/mydb?schema=public"
+        run: npx prisma generate
+
+      - name: Build Check
+        run: npm run build
+
+  # --- CONTINUOUS DEPLOYMENT (CD) Dev ---
+  deploy-dev:
+      name: Deploy to DEV Server
+      needs: test-and-build
+      if: github.ref == 'refs/heads/dev' 
+      runs-on: ubuntu-latest
+      steps:
+        - name: SSH to cPanel Dev
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ secrets.CPANEL_HOST }}
+            username: ${{ secrets.CPANEL_USERNAME }}
+            key: ${{ secrets.SSH_KEY_CPANEL }}
+            port: 22
+            script: |
+              # --- KONFIGURASI DEV ---
+              TARGET_DIR="/home/himtibin/HIMTI_API_DEV"
+              BRANCH="dev"
+              
+              echo "🚀 Starting Deployment to DEVELOPMENT..."
+              
+              # 1. Update Code
+              cd $TARGET_DIR
+              git fetch origin $BRANCH
+              git reset --hard origin/$BRANCH
+              
+              source /home/himtibin/nodevenv/HIMTI_API_DEV/24/bin/activate && cd $TARGET_DIR
+              
+              # 3. Install & Build
+              npm install --production=false
+              npx prisma generate
+              npx prisma migrate deploy
+              npm run build
+              
+              # 4. Restart Dev App
+              mkdir -p tmp
+              touch tmp/restart.txt
+              echo "DEV Deployment Success!"
+
+  # --- CONTINUOUS DEPLOYMENT (CD) Prod ---
+  deploy-prod:
+      name: Deploy to PROD Server
+      needs: test-and-build
+      if: github.ref == 'refs/heads/main' 
+      runs-on: ubuntu-latest
+      steps:
+        - name: SSH to cPanel Prod
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ secrets.CPANEL_HOST }}
+            username: ${{ secrets.CPANEL_USERNAME }}
+            key: ${{ secrets.SSH_KEY_CPANEL }}
+            port: 22
+            script: |
+              # --- KONFIGURASI PROD ---
+              TARGET_DIR="/home/himtibin/HIMTI_API"  # <--- Folder PROD (Asli)
+              BRANCH="main"
+              
+              echo "🚀 Starting Deployment to PRODUCTION..."
+              
+              # 1. Update Code
+              cd $TARGET_DIR
+              git fetch origin $BRANCH
+              git reset --hard origin/$BRANCH
+              
+              # 2. Masuk Environment PROD (Perhatikan path nodevenv-nya folder asli)
+              # Pastikan versi '24' atau '20' sesuai app kamu di cPanel
+              source /home/himtibin/nodevenv/HIMTI_API/24/bin/activate && cd $TARGET_DIR
+              
+              # 3. Install & Build
+              npm install --production=false
+              npx prisma generate
+              
+              # PERINGATAN: Migrate di Prod berisiko.
+              # Pastikan backup DB dulu kalau mau update schema besar-besaran.
+              npx prisma migrate deploy
+              
+              npm run build
+              
+              # 4. Restart Prod App
+              mkdir -p tmp
+              touch tmp/restart.txt
+              echo "PROD Deployment Success!"
