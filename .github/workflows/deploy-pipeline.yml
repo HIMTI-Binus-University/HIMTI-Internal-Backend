@@ -1,151 +1,256 @@
-name: CI/CD Pipeline Development Branch
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [ "dev", "main" ] 
 
 jobs:
-  # --- CONTINUOUS INTEGRATION (CI) ---
+  # ============================================
+  # CI: TEST & BUILD DI GITHUB
+  # ============================================
   test-and-build:
-    name: Test & Build Check
+    name: Test & Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
+      
       - name: Setup Node.js
-        uses: actions/setup-node@v4 
+        uses: actions/setup-node@v4
         with:
-          node-version: '22' 
-
+          node-version: '24'
+      
       - name: Install Dependencies
-        run: npm ci 
-
+        run: npm ci
+      
       - name: Generate Prisma Client
         env:
           DATABASE_URL: "postgresql://dummy:password@localhost:5432/mydb?schema=public"
         run: npx prisma generate
-
-      - name: Build Check
+      
+      - name: Build Application
         run: npm run build
+      
+      # === UPLOAD HANYA BUILD OUTPUT (BUKAN node_modules!) ===
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.ref_name }}-${{ github.sha }}
+          path: dist/
+          retention-days: 1
 
-  # --- CONTINUOUS DEPLOYMENT (CD) Dev ---
+  # ============================================
+  # CD DEV: DEPLOY
+  # ============================================
   deploy-dev:
-      name: Deploy to DEV Server
-      needs: test-and-build
-      if: github.ref == 'refs/heads/dev' 
-      runs-on: ubuntu-latest
-      timeout-minutes: 10
-      concurrency:
-        group: deploy-dev
-        cancel-in-progress: true
-      steps:
-        - name: SSH to cPanel Dev
-          uses: appleboy/ssh-action@master
-          with:
-            host: ${{ secrets.CPANEL_HOST }}
-            username: ${{ secrets.CPANEL_USERNAME }}
-            key: ${{ secrets.SSH_KEY_CPANEL }}
-            port: 22
-            command_timeout: 8m
-            script: |
-              set -e
-              # --- KONFIGURASI DEV ---
-              TARGET_DIR="/home/himtibin/HIMTI_API_DEV"
-              BRANCH="dev"
-              
-              echo "🚀 Starting Deployment to DEVELOPMENT..."
+    name: Deploy to DEV
+    needs: test-and-build
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: false
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dev-${{ github.sha }}
+          path: ./build-artifacts
+      
+      - name: Deploy to DEV Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          key: ${{ secrets.SSH_KEY_CPANEL }}
+          port: 22
+          source: "./build-artifacts/*"
+          target: "/home/himtibin/HIMTI_API_DEV_BUILD/"
+          strip_components: 1
+      
+      - name: Restart DEV App
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          key: ${{ secrets.SSH_KEY_CPANEL }}
+          port: 22
+          command_timeout: 7m
+          script: |
+            set -e
+            
+            TARGET_DIR="/home/himtibin/HIMTI_API_DEV"
+            BUILD_DIR="/home/himtibin/HIMTI_API_DEV_BUILD"
+            
+            echo "🚀 Deploying to DEV..."
+            
+            # === STOP APP FIRST ===
+            echo "⏸️  Stopping app..."
+            pkill -f "lsnode.*HIMTI_API_DEV" || true
+            sleep 3
+            
+            # === UPDATE CODE ===
+            echo "📥 Updating code..."
+            cd $TARGET_DIR
+            git fetch origin dev
+            git reset --hard origin/dev
+            
+            # === ACTIVATE VIRTUAL ENV ===
+            source /home/himtibin/nodevenv/HIMTI_API_DEV/24/bin/activate
+            
+            # === INSTALL PRODUCTION DEPENDENCIES ONLY ===
+            echo "📦 Installing production dependencies..."
+            timeout 90 npm ci --production --prefer-offline || {
+              echo "❌ npm install failed"
+              exit 1
+            }
+            
+            # === COPY PRE-BUILT DIST ===
+            echo "📋 Copying pre-built files..."
+            rm -rf dist
+            cp -r $BUILD_DIR dist/
+            
+            # === REGENERATE PRISMA CLIENT (IMPORTANT!) ===
+            echo "🔄 Generating Prisma Client for server..."
+            timeout 45 npx prisma generate || {
+              echo "❌ Prisma generate failed"
+              exit 1
+            }
+            
+            # === RUN MIGRATIONS ===
+            echo "🗄️  Running migrations..."
+            timeout 60 npx prisma migrate deploy || {
+              echo "⚠️ Migration failed"
+              npx prisma migrate status
+              exit 1
+            }
+            
+            # === RESTART APP ===
+            echo "🔄 Restarting app..."
+            mkdir -p tmp
+            touch tmp/restart.txt
+            
+            # === VERIFY ===
+            echo "✅ Waiting for app to start..."
+            sleep 5
+            if ps aux | grep -q "lsnode.*HIMTI_API_DEV"; then
+              echo "✅ DEV Deployed Successfully!"
+              echo "📊 Process count:"
+              ps aux | grep himtibin | wc -l
+            else
+              echo "⚠️ App not running - check logs"
+              echo "Logs: tail -f /home/himtibin/logs/HIMTI_API_DEV.log"
+              exit 1
+            fi
+            
+            # === CLEANUP BUILD ARTIFACTS ===
+            rm -rf $BUILD_DIR
 
-              echo "Cleaning up old processes..."
-              pkill -f "npm.*HIMTI_API_DEV" || true
-              pkill -f "npx.*HIMTI_API_DEV" || true
-              sleep 2
-              
-              # 1. Update Code
-              cd $TARGET_DIR
-              git fetch origin $BRANCH
-              git reset --hard origin/$BRANCH
-              
-              source /home/himtibin/nodevenv/HIMTI_API_DEV/24/bin/activate && cd $TARGET_DIR
-              
-              # 3. Install & Build
-              echo "Installing dependencies..."
-              timeout 120 npm install --production=false || {
-                echo "❌ npm install timeout/failed"
-                exit 1
-              }
-              
-              # === PRISMA GENERATE WITH TIMEOUT ===
-              echo "Generating Prisma Client..."
-              timeout 60 npx prisma generate || {
-                echo "❌ Prisma generate timeout/failed"
-                exit 1
-              }
-              
-              # === PRISMA MIGRATE WITH TIMEOUT & LOCK HANDLING ===
-              echo "Running migrations..."
-              timeout 120 npx prisma migrate deploy || {
-                echo "⚠️ Migration timeout - checking status..."
-                npx prisma migrate status
-                exit 1
-              }
-              
-              # === BUILD WITH TIMEOUT ===
-              echo "Building application..."
-              timeout 180 npm run build || {
-                echo "❌ Build timeout/failed"
-                exit 1
-              }
-              
-              # 4. Restart Dev App
-              mkdir -p tmp
-              touch tmp/restart.txt
-              echo "DEV Deployment Success!"
-
-  # --- CONTINUOUS DEPLOYMENT (CD) Prod ---
+  # ============================================
+  # CD PROD: DEPLOY
+  # ============================================
   deploy-prod:
-      name: Deploy to PROD Server
-      needs: test-and-build
-      if: github.ref == 'refs/heads/main' 
-      runs-on: ubuntu-latest
-      concurrency:
-        group: deploy-prod
-        cancel-in-progress: true
-      steps:
-        - name: SSH to cPanel Prod
-          uses: appleboy/ssh-action@master
-          with:
-            host: ${{ secrets.CPANEL_HOST }}
-            username: ${{ secrets.CPANEL_USERNAME }}
-            key: ${{ secrets.SSH_KEY_CPANEL }}
-            port: 22
-            script: |
-              # --- KONFIGURASI PROD ---
-              TARGET_DIR="/home/himtibin/HIMTI_API"  # <--- Folder PROD (Asli)
-              BRANCH="main"
-              
-              echo "🚀 Starting Deployment to PRODUCTION..."
-              
-              # 1. Update Code
-              cd $TARGET_DIR
-              git fetch origin $BRANCH
-              git reset --hard origin/$BRANCH
-              
-              # 2. Masuk Environment PROD (Perhatikan path nodevenv-nya folder asli)
-              # Pastikan versi '24' atau '20' sesuai app kamu di cPanel
-              source /home/himtibin/nodevenv/HIMTI_API/24/bin/activate && cd $TARGET_DIR
-              
-              # 3. Install & Build
-              npm install --production=false
-              npx prisma generate
-              
-              # PERINGATAN: Migrate di Prod berisiko.
-              # Pastikan backup DB dulu kalau mau update schema besar-besaran.
-              npx prisma migrate deploy
-              
-              npm run build
-              
-              # 4. Restart Prod App
-              mkdir -p tmp
-              touch tmp/restart.txt
-              echo "PROD Deployment Success!"
+    name: Deploy to PROD
+    needs: test-and-build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-main-${{ github.sha }}
+          path: ./build-artifacts
+      
+      - name: Deploy to PROD Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          key: ${{ secrets.SSH_KEY_CPANEL }}
+          port: 22
+          source: "./build-artifacts/*"
+          target: "/home/himtibin/HIMTI_API_BUILD/"
+          strip_components: 1
+      
+      - name: Restart PROD App
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          key: ${{ secrets.SSH_KEY_CPANEL }}
+          port: 22
+          command_timeout: 7m
+          script: |
+            set -e
+            
+            TARGET_DIR="/home/himtibin/HIMTI_API"
+            BUILD_DIR="/home/himtibin/HIMTI_API_BUILD"
+            
+            echo "🚀 Deploying to PRODUCTION..."
+            
+            # === STOP APP FIRST ===
+            echo "⏸️  Stopping app..."
+            pkill -f "lsnode.*HIMTI_API[^_]" || true
+            sleep 3
+            
+            # === UPDATE CODE ===
+            echo "📥 Updating code..."
+            cd $TARGET_DIR
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # === ACTIVATE VIRTUAL ENV ===
+            source /home/himtibin/nodevenv/HIMTI_API/24/bin/activate
+            
+            # === INSTALL PRODUCTION DEPENDENCIES ONLY ===
+            echo "📦 Installing production dependencies..."
+            timeout 90 npm ci --production --prefer-offline || {
+              echo "❌ npm install failed"
+              exit 1
+            }
+            
+            # === COPY PRE-BUILT DIST ===
+            echo "📋 Copying pre-built files..."
+            rm -rf dist
+            cp -r $BUILD_DIR dist/
+            
+            # === REGENERATE PRISMA CLIENT ===
+            echo "🔄 Generating Prisma Client for server..."
+            timeout 45 npx prisma generate || {
+              echo "❌ Prisma generate failed"
+              exit 1
+            }
+            
+            # === RUN MIGRATIONS ===
+            echo "🗄️  Running migrations..."
+            timeout 60 npx prisma migrate deploy || {
+              echo "⚠️ Migration failed"
+              npx prisma migrate status
+              exit 1
+            }
+            
+            # === RESTART APP ===
+            echo "🔄 Restarting app..."
+            mkdir -p tmp
+            touch tmp/restart.txt
+            
+            # === VERIFY ===
+            echo "✅ Waiting for app to start..."
+            sleep 5
+            if ps aux | grep -q "lsnode.*HIMTI_API[^_]"; then
+              echo "✅ PROD Deployed Successfully!"
+              echo "📊 Process count:"
+              ps aux | grep himtibin | wc -l
+            else
+              echo "⚠️ App not running - check logs"
+              echo "Logs: tail -f /home/himtibin/logs/HIMTI_API.log"
+              exit 1
+            fi
+            
+            # === CLEANUP ===
+            rm -rf $BUILD_DIR
