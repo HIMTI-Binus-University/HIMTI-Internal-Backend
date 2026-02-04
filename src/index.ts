@@ -20,12 +20,12 @@ app.use(express.json());
 app.use(
    cors({
       origin: [
-         'http://72.62.122.54:8001', // IP VPS (Akses html testing via IP)
-         'http://72.62.122.54.nip.io:8001', // Domain nip.io (Akses Frontend via Domain)
          'http://localhost:3000',
          'http://localhost:8000',
-         'http://72.62.122.54:3000',
-         'http://72.62.122.54.nip.io:3000',
+         'https://link.himtibinus.or.id',
+         'https://dev-link.himtibinus.or.id',
+         'https://api.himtibinus.or.id',
+         'https://dev-api.himtibinus.or.id',
       ],
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,

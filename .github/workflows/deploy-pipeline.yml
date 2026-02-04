@@ -6,7 +6,7 @@ on:
 
 jobs:
   # ============================================
-  # CI: TEST & BUILD DI GITHUB
+  # CI: TEST & BUILD DI GITHUB (DO NOT BUILD ON SERVER)
   # ============================================
   test-and-build:
     name: Test & Build
@@ -40,7 +40,7 @@ jobs:
           retention-days: 1
 
   # ============================================
-  # CD DEV: DEPLOY
+  # CD DEV: DEPLOY (ONLY TO DEV BRANCH)
   # ============================================
   deploy-dev:
     name: Deploy to DEV
@@ -140,7 +140,7 @@ jobs:
             rm -rf $BUILD_DIR
 
   # ============================================
-  # CD PROD: DEPLOY
+  # CD PROD: DEPLOY (ONLY TO PROD BRANCH)
   # ============================================
   deploy-prod:
     name: Deploy to PROD
