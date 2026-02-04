@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { PrismaClient } from '@/generated/prisma/client.js';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -20,12 +20,20 @@ export const auth = betterAuth({
       },
    },
 
+   advanced: {
+      useSecureCookies: false,
+   },
+
    session: {
       updateAge: 60 * 60 * 24,
    },
 
    trustedOrigins: [
-      'http://localhost:3000', // URL Frontend kamu
+      'http://localhost:3000',
+      'http://localhost:8000',
+      'http://72.62.122.54.nip.io:8001',
+      'http://72.62.122.54.nip.io:3000',
+      'http://72.62.122.54:3000',
    ],
 
    user: {
@@ -37,7 +45,7 @@ export const auth = betterAuth({
          status: {
             type: 'string',
             required: false,
-            defaultValue: 'p',
+            defaultValue: 'a',
          },
       },
    },

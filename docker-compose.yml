@@ -1,21 +1,24 @@
 services:
   app:
-    image: ghcr.io/DaffaFayyaz/himti-internal-backend:${IMAGE_TAG}
+    image: ghcr.io/himti-binus-university/himti-internal-backend:${IMAGE_TAG}
     container_name: himti_backend_${IMAGE_TAG} # Biar nama container gak bentrok
     restart: always
     ports:
       - "${APP_PORT}:8000"
+
     env_file: .env
     depends_on:
       - db
 
   db:
     image: postgres:15-alpine
+    ports: 
+      - "127.0.0.1:5432:5432"
     container_name: himti_db_${IMAGE_TAG} # Biar nama container gak bentrok
     restart: always
     environment:
       POSTGRES_USER: himti-db
-      POSTGRES_PASSWORD: x?y0?ZGa5J4M
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - pgdata_${IMAGE_TAG}:/var/lib/postgresql/data

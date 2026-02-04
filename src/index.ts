@@ -6,19 +6,32 @@ import { clickUrl } from './features/url-shortener/urlController.js';
 import { globalErrorHandler } from './utils/errorMiddleware.js';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = process.env.port || 8000;
+const port = process.env.PORT || 8000;
 
 // app.use(limiter);
 app.use(express.json());
 app.use(
    cors({
-      origin: 'http://localhost:3000',
+      origin: [
+         'http://localhost:3000',
+         'http://localhost:8000',
+         'https://link.himtibinus.or.id',
+         'https://dev-link.himtibinus.or.id',
+         'https://api.himtibinus.or.id',
+         'https://dev-api.himtibinus.or.id',
+      ],
+      allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
    }),
 );
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, '../public')));
 app.all('/api/auth/*splat', toNodeHandler(auth));
 app.use('/api', routes);
 app.get('/:shortCode', clickUrl);
