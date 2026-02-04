@@ -187,7 +187,7 @@ jobs:
             
             # === STOP APP FIRST ===
             echo "⏸️  Stopping app..."
-            pkill -f "lsnode.*HIMTI_API" || true
+            pgrep -f "lsnode.*HIMTI_API[^_]" | grep -v $$ | xargs -r kill || true
             sleep 3
             
             # === UPDATE CODE ===
@@ -234,7 +234,7 @@ jobs:
             # === VERIFY ===
             echo "✅ Waiting for app to start..."
             sleep 5
-            if ps aux | grep -q "lsnode.*HIMTI_API[^_]"; then
+            if ps aux | grep -v grep | grep -q "lsnode.*HIMTI_API[^_]"; then
               echo "✅ PROD Deployed Successfully!"
               echo "📊 Process count:"
               ps aux | grep himtibin | wc -l
