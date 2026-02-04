@@ -187,7 +187,7 @@ jobs:
             
             # === STOP APP FIRST ===
             echo "⏸️  Stopping app..."
-            pkill -f "lsnode.*HIMTI_API[^_]" || true
+            pkill -f "lsnode.*HIMTI_API" || true
             sleep 3
             
             # === UPDATE CODE ===
