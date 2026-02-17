@@ -142,12 +142,12 @@ model StudyProgram {
 
 model User {
    // Identity
-   id            String     @id @default(nanoid())
-   name          String     @db.VarChar(255)
-   email         String     @unique @db.VarChar(100)
-   emailVerified Boolean    @default(false)
+   id            String  @id @default(nanoid())
+   name          String  @db.VarChar(255)
+   email         String  @unique @db.VarChar(100)
+   emailVerified Boolean @default(false)
    image         String?
-   status        UserStatus @default(ACTIVE)
+   status        String  @default("a") @db.Char(1)
 
    // Academic
    nim            String? @db.VarChar(50)

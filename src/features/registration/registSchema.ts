@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const CompleteProfileSchema = z.object({
    nim: z.string(),
-   unversityId: z.string(),
+   universityId: z.string(),
    studyProgramId: z.string(),
    graduateBatch: z.string(),
    phoneNumber: z.string(),

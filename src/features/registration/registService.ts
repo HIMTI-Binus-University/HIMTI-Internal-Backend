@@ -11,12 +11,22 @@ class RegistService {
    ): Promise<User> {
       const profileData = {
          nim: payload.nim,
-         universityId: payload.unversityId,
-         studyProgamId: payload.studyProgramId,
          graduateBatch: payload.graduateBatch,
          phoneNumber: payload.phoneNumber,
          lineId: payload.lineId,
          updatedBy: user.name,
+
+         university: {
+            connect: {
+               id: payload.universityId,
+            },
+         },
+
+         studyProgram: {
+            connect: {
+               id: payload.studyProgramId,
+            },
+         },
       };
       return await registRepository.update(id, profileData);
    }
