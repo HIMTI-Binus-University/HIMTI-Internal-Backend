@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import routes from '@/routes/routes.js';
 import { clickUrl } from './features/url-shortener/urlController.js';
-import { globalErrorHandler } from './utils/errorMiddleware.js';
+import { globalErrorHandler } from './middleware/errorMiddleware.js';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
 import path from 'path';
