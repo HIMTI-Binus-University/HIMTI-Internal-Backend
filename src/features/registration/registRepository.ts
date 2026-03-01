@@ -53,6 +53,12 @@ class RegistRepository {
          where: { id },
       });
    }
+
+   async findUserById(id: string) {
+      return await prisma.user.findUnique({
+         where: { id },
+      });
+   }
 }
 
 export const registRepository = new RegistRepository();

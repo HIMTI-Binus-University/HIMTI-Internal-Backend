@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { User, Prisma } from '@prisma/client';
 import { CompleteProfileRequest } from './registTypes.js';
 import { registRepository } from './registRepository.js';
 import { auth } from '@/utils/auth.js';
@@ -11,6 +11,7 @@ class RegistService {
       id: string,
       user: typeof auth.$Infer.Session.user,
    ): Promise<User> {
+      const currentUser = await registRepository.findUserById(id);
       const university = await registRepository.findUnivById(
          payload.universityId,
       );
@@ -29,6 +30,7 @@ class RegistService {
          .includes('computer science');
 
       let validOutlookEmail = null;
+      let isEmailChanged = false;
 
       if (isBinus && isCompSci) {
          if (
@@ -38,9 +40,10 @@ class RegistService {
             throw new Error('You must use your Binusian Outlook Email');
          }
          validOutlookEmail = payload.outlookEmail;
+         isEmailChanged = validOutlookEmail !== currentUser?.outlookEmail;
       }
 
-      const profileData = {
+      const profileData: Prisma.UserUpdateInput = {
          nim: payload.nim,
          graduateBatch: payload.graduateBatch,
          phoneNumber: payload.phoneNumber,
@@ -60,9 +63,19 @@ class RegistService {
             },
          },
       };
+
+      if (isEmailChanged) {
+         profileData.outlookEmailVerified = false;
+      }
+
       const updatedUser = await registRepository.update(id, profileData);
 
-      if (isBinus && isCompSci && validOutlookEmail) {
+      if (
+         isBinus &&
+         isCompSci &&
+         validOutlookEmail &&
+         !updatedUser.outlookEmailVerified
+      ) {
          const token = crypto.randomBytes(32).toString('hex');
          await registRepository.verifyOutlook(updatedUser.id, token);
 

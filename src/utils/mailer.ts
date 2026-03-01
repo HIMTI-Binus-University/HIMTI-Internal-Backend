@@ -8,8 +8,8 @@ export const sendOutlookVerificationEmail = async (
 ) => {
    try {
       const { data, error } = await resend.emails.send({
-         from: 'HIMTI Registration <onboarding@resend.dev>', // Nanti ganti pakai no-reply@himtibinus.or.id
-         to: ['daffafyyaz@gmail.com'],
+         from: 'HIMTI Registration <registration@himtibinus.or.id>',
+         to: [to],
          subject: 'Verifikasi Email Outlook BINUS',
          html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">

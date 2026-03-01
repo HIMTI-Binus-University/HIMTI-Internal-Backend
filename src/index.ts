@@ -27,6 +27,7 @@ app.use(
          'https://dev-link.himtibinus.or.id',
          'https://api.himtibinus.or.id',
          'https://dev-api.himtibinus.or.id',
+         'https://dev-admin.himtibinus.or.id',
       ],
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
