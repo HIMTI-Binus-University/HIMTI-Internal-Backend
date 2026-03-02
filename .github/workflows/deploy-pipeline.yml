@@ -76,6 +76,9 @@ jobs:
           command_timeout: 7m
           script: |
             set -e
+
+            export UV_THREADPOOL_SIZE=4
+            export PRISMA_CLI_QUERY_ENGINE_TYPE=library
             
             TARGET_DIR="/home/himtibin/HIMTI_API_DEV"
             BUILD_DIR="/home/himtibin/HIMTI_API_DEV_BUILD"
@@ -125,6 +128,10 @@ jobs:
             echo "🔄 Restarting app..."
             mkdir -p tmp
             touch tmp/restart.txt
+            
+            echo "Cleaning zombie processes for DEV.."
+            sleep 2
+            pgrep -f "lsnode.*HIMTI_API_DEV" | grep -v $$ | xargs -r kill || true
             
             # === VERIFY ===
             echo "✅ Waiting for app to start..."
@@ -179,6 +186,9 @@ jobs:
           command_timeout: 7m
           script: |
             set -e
+
+            export UV_THREADPOOL_SIZE=4
+            export PRISMA_CLI_QUERY_ENGINE_TYPE=library
             
             TARGET_DIR="/home/himtibin/HIMTI_API"
             BUILD_DIR="/home/himtibin/HIMTI_API_BUILD"
@@ -230,6 +240,11 @@ jobs:
             echo "🔄 Restarting app..."
             mkdir -p tmp
             touch tmp/restart.txt
+
+            # === CLEANING UP PROCESS (ZOMBIE NPROC) ===
+            echo "Cleaning zombie processes for PROD.."
+            sleep 2
+            pgrep -f "lsnode.*HIMTI_API(/|$)" | grep -v $$ | xargs -r kill || true
             
             # === VERIFY ===
             echo "✅ Waiting for app to start..."
