@@ -51,6 +51,15 @@ enum SubeventType {
    OTHER
 }
 
+enum CommitteeRole {
+   CHAIRPERSON
+   VICE_CHAIRPERSON
+   SECRETARY
+   TREASURER
+   COORDINATOR
+   STAFF
+}
+
 enum SubeventVisibility {
    PUBLIC
    INTERNAL
@@ -190,6 +199,7 @@ model User {
    approvedParticipants  EventHasParticipant[]  @relation("ParticipantApprover")
    verifiedPayments      EventHasParticipant[]  @relation("PaymentVerifier")
    registrationResponses RegistrationResponse[]
+   eventComittees        EventComittee[]
 
    @@map("users")
 }
@@ -316,6 +326,7 @@ model Event {
    subevents            Subevent[]
    eventHasParticipants EventHasParticipant[]
    registrationForms    RegistrationForm[]
+   eventComittees       EventComittee[]
 
    @@map("events")
 }
@@ -388,6 +399,19 @@ model EventHasParticipant {
 
    @@unique([eventId, userId, eventModeId]) // Prevent duplicate registration for same subevent
    @@map("event_has_participants")
+}
+
+model EventComittee {
+   eventId    String
+   userId     String
+   role       CommitteeRole @default(STAFF)
+   assignedAt DateTime      @default(now()) @db.Timestamp(0)
+
+   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+   @@id([eventId, userId])
+   @@map("event_committees")
 }
 
 // ==========================================
