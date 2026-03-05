@@ -6,7 +6,7 @@ async function main() {
    console.log('🌱 Memulai proses database seeding...');
 
    // ==========================================
-   // 1. SEED UNIVERSITY
+   // SEED UNIVERSITY
    // ==========================================
    console.log('⏳ Seeding University...');
    await prisma.university.upsert({
