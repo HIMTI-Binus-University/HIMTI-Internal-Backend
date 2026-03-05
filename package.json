@@ -16,9 +16,6 @@
   "author": "",
   "license": "ISC",
   "type": "module",
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  },
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "better-auth": "^1.4.9",
