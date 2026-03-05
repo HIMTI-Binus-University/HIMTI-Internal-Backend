@@ -19,7 +19,7 @@ async function main() {
    });
 
    // ==========================================
-   // 2. SEED STUDY PROGRAMS
+   // SEED STUDY PROGRAMS
    // ==========================================
    console.log('⏳ Seeding Study Programs...');
    const studyPrograms = [
