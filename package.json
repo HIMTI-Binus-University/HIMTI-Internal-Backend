@@ -16,6 +16,9 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "better-auth": "^1.4.9",
@@ -41,6 +44,7 @@
     "globals": "^16.5.0",
     "prettier": "^3.6.2",
     "prisma-dbml-generator": "^0.12.0",
+    "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",

@@ -123,6 +123,10 @@ jobs:
             # === RUN MIGRATIONS ===
             echo "🗄️  Running migrations..."
             timeout 60 npx prisma migrate deploy
+
+            # === RUN SEEDER ===
+            echo "🌱 Running database seeder..."
+            timeout 60 npx prisma db seed
             
             # === RESTART APP ===
             echo "🔄 Restarting app..."
@@ -235,6 +239,10 @@ jobs:
               npx prisma migrate status
               exit 1
             }
+
+            # === RUN SEEDER ===
+            echo "🌱 Running database seeder..."
+            timeout 60 npx prisma db seed
             
             # === RESTART APP ===
             echo "🔄 Restarting app..."

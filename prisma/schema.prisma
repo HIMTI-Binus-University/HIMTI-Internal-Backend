@@ -121,7 +121,7 @@ enum RegistrationFormStatus {
 
 model University {
    id        String           @id @default(nanoid())
-   name      String           @db.VarChar(255)
+   name      String           @unique @db.VarChar(255)
    shortName String?          @db.VarChar(50)
    status    UniversityStatus @default(ACTIVE)
    createdAt DateTime         @default(now()) @db.Timestamp(0)
@@ -134,7 +134,7 @@ model University {
 
 model StudyProgram {
    id        String             @id @default(nanoid())
-   name      String             @db.VarChar(255)
+   name      String             @unique @db.VarChar(255)
    shortName String?            @db.VarChar(50)
    status    StudyProgramStatus @default(ACTIVE)
    createdAt DateTime           @default(now()) @db.Timestamp(0)
@@ -255,7 +255,7 @@ model Verification {
 
 model Role {
    id        String     @id @default(nanoid())
-   roleName  String     @db.VarChar(255)
+   roleName  String     @unique @db.VarChar(255)
    status    RoleStatus @default(ACTIVE)
    createdAt DateTime   @default(now()) @db.Timestamp(0)
    createdBy String?    @db.VarChar(100)

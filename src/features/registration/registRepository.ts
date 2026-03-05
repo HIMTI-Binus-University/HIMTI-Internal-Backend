@@ -1,5 +1,4 @@
 import { PrismaClient, Prisma, User } from '@prisma/client';
-import { Param } from '@prisma/client/runtime/library';
 
 const prisma = new PrismaClient();
 
