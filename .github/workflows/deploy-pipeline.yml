@@ -61,7 +61,7 @@ jobs:
           host: ${{ secrets.CPANEL_HOST }}
           username: ${{ secrets.CPANEL_USERNAME }}
           key: ${{ secrets.SSH_KEY_CPANEL }}
-          port: 21
+          port: 22
           source: "./build-artifacts/*"
           target: "/home/himtibin/HIMTI_API_DEV_BUILD/"
           strip_components: 1
