@@ -19,7 +19,7 @@ async function main() {
    });
 
    // ==========================================
-   // 2. SEED STUDY PROGRAMS
+   // SEED STUDY PROGRAMS
    // ==========================================
    console.log('⏳ Seeding Study Programs...');
    const studyPrograms = [
@@ -39,7 +39,7 @@ async function main() {
    }
 
    // ==========================================
-   // 3. SEED PERMISSIONS
+   // SEED PERMISSIONS
    // ==========================================
    console.log('⏳ Seeding Permissions...');
    const manageUrlsPerm = await prisma.permission.upsert({
