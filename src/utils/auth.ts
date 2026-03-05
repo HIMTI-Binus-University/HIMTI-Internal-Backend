@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaClient } from '@prisma/client';
+import { customSession } from 'better-auth/plugins';
 
 const prisma = new PrismaClient();
 
@@ -31,9 +32,28 @@ export const auth = betterAuth({
       'https://admin.himtibinus.or.id',
    ],
 
+   plugins: [
+      customSession(async ({ user, session }) => {
+         const userRoles = await prisma.userHasRole.findMany({
+            where: { userId: user.id },
+            include: { role: true },
+         });
+
+         const roles = userRoles.map((r) => r.role.roleName);
+
+         return {
+            user: {
+               ...user,
+               roles, // string[] — e.g. ["admin", "member"]
+            },
+            session,
+         };
+      }),
+   ],
+
    user: {
       additionalFields: {
-         roleId: {
+         role: {
             type: 'string',
             required: false,
          },
@@ -44,7 +64,4 @@ export const auth = betterAuth({
          },
       },
    },
-
-   // Validation ntar dlu
-   hooks: {},
 });

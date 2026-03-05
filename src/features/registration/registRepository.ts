@@ -57,6 +57,26 @@ class RegistRepository {
    async findUserById(id: string) {
       return await prisma.user.findUnique({
          where: { id },
+         include: {
+            userHasRoles: {
+               include: {
+                  role: {
+                     select: {
+                        roleName: true,
+                        roleHasPermissions: {
+                           include: {
+                              permission: {
+                                 select: {
+                                    name: true,
+                                 },
+                              },
+                           },
+                        },
+                     },
+                  },
+               },
+            },
+         },
       });
    }
 }

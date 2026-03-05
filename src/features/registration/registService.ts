@@ -91,6 +91,33 @@ class RegistService {
 
       return updatedUser;
    }
+
+   async getUserById(id: string) {
+      const user = await registRepository.findUserById(id);
+      if (!user) return null;
+
+      const roles = user.userHasRoles.map((ur) => ur.role.roleName);
+
+      // Ambil semua 'name' dari permission trus buang duplikatnya
+      const permissions = [
+         ...new Set(
+            user.userHasRoles.flatMap((ur) =>
+               ur.role.roleHasPermissions.map((rp) => rp.permission.name),
+            ),
+         ),
+      ];
+
+      // 5. Destructuring untuk membuang properti 'userHasRoles' yang kotor,
+      //    dan mengambil sisa data user (id, name, email, dll) ke dalam 'userData'
+      const { userHasRoles, ...userData } = user;
+
+      // 6. Return data bersih yang sudah digabungkan
+      return {
+         ...userData,
+         roles,
+         permissions,
+      };
+   }
 }
 
 export const registService = new RegistService();

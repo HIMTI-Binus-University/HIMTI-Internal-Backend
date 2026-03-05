@@ -8,7 +8,7 @@ import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-// import limiter from './config/rateLimiter.js';
+import limiter from './config/rateLimiter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 8000;
 
-// app.use(limiter);
+app.use(limiter);
 app.use(express.json());
 app.use(
    cors({

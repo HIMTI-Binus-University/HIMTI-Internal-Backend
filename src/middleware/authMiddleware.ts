@@ -15,18 +15,6 @@ export const requireAuth = async (
       return res.status(401).json({ msg: 'Unauthorized' });
    }
 
-   if (session.user.status == 'd') {
-      return res.status(403).json({ msg: 'Account is not active' });
-   }
-
-   if (session.user.status == 'p') {
-      return res.status(403).json({
-         success: false,
-         message:
-            'Akun Anda belum diverifikasi oleh Admin HIMTI. Silakan hubungi divisi Web Development.',
-      });
-   }
-
    res.locals.user = session.user;
    res.locals.session = session.session;
 

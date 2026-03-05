@@ -51,6 +51,15 @@ enum SubeventType {
    OTHER
 }
 
+enum CommitteeRole {
+   CHAIRPERSON
+   VICE_CHAIRPERSON
+   SECRETARY
+   TREASURER
+   COORDINATOR
+   STAFF
+}
+
 enum SubeventVisibility {
    PUBLIC
    INTERNAL
@@ -112,7 +121,7 @@ enum RegistrationFormStatus {
 
 model University {
    id        String           @id @default(nanoid())
-   name      String           @db.VarChar(255)
+   name      String           @unique @db.VarChar(255)
    shortName String?          @db.VarChar(50)
    status    UniversityStatus @default(ACTIVE)
    createdAt DateTime         @default(now()) @db.Timestamp(0)
@@ -125,7 +134,7 @@ model University {
 
 model StudyProgram {
    id        String             @id @default(nanoid())
-   name      String             @db.VarChar(255)
+   name      String             @unique @db.VarChar(255)
    shortName String?            @db.VarChar(50)
    status    StudyProgramStatus @default(ACTIVE)
    createdAt DateTime           @default(now()) @db.Timestamp(0)
@@ -190,6 +199,7 @@ model User {
    approvedParticipants  EventHasParticipant[]  @relation("ParticipantApprover")
    verifiedPayments      EventHasParticipant[]  @relation("PaymentVerifier")
    registrationResponses RegistrationResponse[]
+   eventComittees        EventComittee[]
 
    @@map("users")
 }
@@ -245,7 +255,7 @@ model Verification {
 
 model Role {
    id        String     @id @default(nanoid())
-   roleName  String     @db.VarChar(255)
+   roleName  String     @unique @db.VarChar(255)
    status    RoleStatus @default(ACTIVE)
    createdAt DateTime   @default(now()) @db.Timestamp(0)
    createdBy String?    @db.VarChar(100)
@@ -316,6 +326,7 @@ model Event {
    subevents            Subevent[]
    eventHasParticipants EventHasParticipant[]
    registrationForms    RegistrationForm[]
+   eventComittees       EventComittee[]
 
    @@map("events")
 }
@@ -388,6 +399,19 @@ model EventHasParticipant {
 
    @@unique([eventId, userId, eventModeId]) // Prevent duplicate registration for same subevent
    @@map("event_has_participants")
+}
+
+model EventComittee {
+   eventId    String
+   userId     String
+   role       CommitteeRole @default(STAFF)
+   assignedAt DateTime      @default(now()) @db.Timestamp(0)
+
+   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+   @@id([eventId, userId])
+   @@map("event_committees")
 }
 
 // ==========================================

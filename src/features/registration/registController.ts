@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { CompleteProfileSchema } from './registSchema.js';
+import { CompleteProfileSchema, GetUserSchema } from './registSchema.js';
 import { registService } from './registService.js';
 import { registRepository } from './registRepository.js';
 
@@ -49,5 +49,23 @@ export const verifyOutlookEmail = async (req: Request, res: Response) => {
 
    res.status(200).json({
       msg: 'Your Outlook Email has been verified',
+   });
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+   const id = res.locals.user.id;
+   const data = await registService.getUserById(id);
+
+   if (!data) {
+      res.status(404).json({
+         msg: 'User not found',
+      });
+   }
+
+   const validatedData = GetUserSchema.parse(data);
+
+   res.status(200).json({
+      msg: 'success',
+      ...validatedData,
    });
 };
