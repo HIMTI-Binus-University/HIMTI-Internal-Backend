@@ -325,7 +325,6 @@ model Event {
 
    subevents            Subevent[]
    eventHasParticipants EventHasParticipant[]
-   registrationForms    RegistrationForm[]
    eventComittees       EventComittee[]
 
    @@map("events")
@@ -342,6 +341,14 @@ model Subevent {
    locationName       String?      @db.VarChar(255)
    locationUrl        String?      @db.Text
    price              Int          @default(0)
+
+   // Payment fields
+   paid                 Boolean @default(false)
+   paymentAccountBank   String  @db.VarChar(100)
+   paymentAccountNumber Int?
+   paymentAccountName   String? @db.VarChar(100)
+   priceModifier        Int?
+   paymentDesc          String  @db.VarChar(255)
 
    // Registration Rules
    maxParticipants        Int?
@@ -362,7 +369,8 @@ model Subevent {
    creator User  @relation("SubeventCreator", fields: [createdBy], references: [id])
    updater User? @relation("SubeventUpdater", fields: [updatedBy], references: [id])
 
-   participants EventHasParticipant[]
+   participants      EventHasParticipant[]
+   registrationForms RegistrationForm[]
 
    @@map("subevents")
 }
@@ -397,7 +405,7 @@ model EventHasParticipant {
 
    registrationResponses RegistrationResponse[]
 
-   @@unique([eventId, userId, eventModeId]) // Prevent duplicate registration for same subevent
+   @@unique([eventId, userId, eventModeId])
    @@map("event_has_participants")
 }
 
@@ -419,18 +427,18 @@ model EventComittee {
 // ==========================================
 
 model RegistrationForm {
-   id      String                 @id @default(nanoid())
-   eventId String
-   status  RegistrationFormStatus @default(DRAFT)
+   id         String                 @id @default(nanoid())
+   subEventId String
+   status     RegistrationFormStatus @default(DRAFT)
 
    createdAt DateTime  @default(now()) @db.Timestamp(0)
    createdBy String    @db.VarChar(100)
    updatedAt DateTime? @updatedAt
    updatedBy String?   @db.VarChar(100)
 
-   event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-   creator User  @relation("FormCreator", fields: [createdBy], references: [id])
-   updater User? @relation("FormUpdater", fields: [updatedBy], references: [id])
+   subEvent Subevent @relation(fields: [subEventId], references: [id], onDelete: Cascade)
+   creator  User     @relation("FormCreator", fields: [createdBy], references: [id])
+   updater  User?    @relation("FormUpdater", fields: [updatedBy], references: [id])
 
    questions             FormQuestion[]
    registrationResponses RegistrationResponse[]
