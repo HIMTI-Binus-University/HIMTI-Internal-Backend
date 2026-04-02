@@ -63,7 +63,7 @@ enum CommitteeRole {
 enum SubeventVisibility {
    PUBLIC
    INTERNAL
-   INVITE_ONLY
+   INVITE_ONLY // ?
 }
 
 enum SubeventStatus {

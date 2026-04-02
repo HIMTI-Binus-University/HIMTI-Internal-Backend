@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const CompleteProfileSchema = z.object({
+   // TODO: input username
    nim: z.string().optional(),
    universityId: z.string(),
    outlookEmail: z.string().optional().or(z.literal('')),
