@@ -4,7 +4,10 @@ export const CreateUrlSchema = z.object({
    originalUrl: z.string().url({ message: 'Invalid URL format' }),
    shortCode: z
       .string()
-      .min(3, { message: 'Short code must be at least 3 characters' }),
+      .min(3, { message: 'Short code must be at least 3 characters' })
+      .regex(/^[a-zA-Z0-9]+$/, {
+         message: 'Short code cannot contain special characters or spaces',
+      }),
    expiresAt: z.preprocess(
       (someArgs) => {
          if (someArgs === null) return undefined;
@@ -24,6 +27,9 @@ export const UpdateUrlSchema = z.object({
    shortCode: z
       .string()
       .min(3, { message: 'Short code must be at least 3 characters' })
+      .regex(/^[a-zA-Z0-9]+$/, {
+         message: 'Short code cannot contain special characters or spaces',
+      })
       .optional(),
    expiresAt: z.preprocess(
       (someArgs) => {

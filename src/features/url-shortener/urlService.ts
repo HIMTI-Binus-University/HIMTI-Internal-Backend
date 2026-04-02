@@ -1,4 +1,4 @@
-import { Url } from '@prisma/client';
+import { Url, Prisma } from '@prisma/client';
 import type {
    CreateUrlRequest,
    GetUrlResponse,
@@ -14,7 +14,7 @@ class UrlService {
       payload: CreateUrlRequest,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Url> {
-      const urlData = {
+      const urlData: Prisma.UrlCreateInput = {
          originalUrl: payload.originalUrl,
          shortCode: payload.shortCode,
          createdBy: user?.name || 'Admin',
@@ -28,7 +28,7 @@ class UrlService {
       id: string,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Url> {
-      const updateData = {
+      const updateData: Prisma.UrlUpdateInput = {
          originalUrl: payload.originalUrl,
          shortCode: payload.shortCode,
          updatedBy: user?.name || 'Admin',
