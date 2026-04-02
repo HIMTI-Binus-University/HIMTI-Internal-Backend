@@ -53,14 +53,15 @@ export const clickUrl = async (req: Request, res: Response) => {
    if (urlData.expiresAt && new Date() > new Date(urlData.expiresAt)) {
       return res.status(410).json({ msg: 'Link has expired' });
    }
-   res.redirect(302, urlData.originalUrl);
-
    const userAgent: string = req.headers['user-agent'] || 'Unknown';
    // cek kalo di vps, local atau unknown
    const userIp: string =
       (req.headers['x-forwarded-for'] as string) || req.ip || 'Unknown';
 
    void handleAnalyticsLogging(urlData, userIp, userAgent);
+   return res.status(200).json({
+      originalUrl: urlData.originalUrl,
+   });
 };
 
 export const getUrlById = async (req: Request, res: Response) => {
