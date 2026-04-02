@@ -1,6 +1,12 @@
 import express from 'express';
 import type { Router, Response, Request } from 'express';
-import { createUrl, getUrlById, getUrls, updateUrl } from './urlController.js';
+import {
+   clickUrl,
+   createUrl,
+   getUrlById,
+   getUrls,
+   updateUrl,
+} from './urlController.js';
 // import { requireAuth } from '@/middleware/authMiddleware.js';
 
 const router: Router = express.Router();
@@ -15,6 +21,7 @@ router.post(
    // requirePermission('create.url'),
    createUrl,
 );
+router.get('/:shortCode', clickUrl);
 router.put('/update-url/:id', updateUrl);
 router.get('/get-list', getUrls);
 router.get('/get-list/:id', getUrlById);
