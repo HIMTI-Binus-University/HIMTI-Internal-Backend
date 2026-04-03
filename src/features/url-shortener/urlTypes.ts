@@ -1,5 +1,6 @@
 import {
    CreateUrlSchema,
+   DeleteUrlSchema,
    GeoDataSchema,
    GetUrlSchema,
    LogClickSchema,
@@ -13,6 +14,7 @@ export type GetUrlSchema = z.infer<typeof GetUrlSchema>;
 export type LogClickParams = z.infer<typeof LogClickSchema>;
 export type CreateUrlRequest = z.infer<typeof CreateUrlSchema>;
 export type UpdateUrlRequest = z.infer<typeof UpdateUrlSchema>;
+export type DeleteUrlRequest = z.infer<typeof DeleteUrlSchema>;
 
 export interface GetUrlResponse {
    data: {

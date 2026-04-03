@@ -38,6 +38,20 @@ class UrlService {
       return await urlRepository.update(id, updateData);
    }
 
+   async deleteUrl(
+      payload: UpdateUrlRequest,
+      id: string,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<Url> {
+      const timestamp = Date.now();
+      const updateData: Prisma.UrlUpdateInput = {
+         shortCode: `${payload.shortCode}_del_${timestamp}`,
+         updatedBy: user?.name || 'Admin',
+         status: payload.status,
+      };
+      return await urlRepository.update(id, updateData);
+   }
+
    async getUrlByCode(shortCode: string) {
       return await urlRepository.findByCode(shortCode);
    }
