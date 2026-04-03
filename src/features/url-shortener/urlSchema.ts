@@ -46,6 +46,17 @@ export const UpdateUrlSchema = z.object({
    status: z.enum(['a', 'd']).optional(),
 });
 
+export const DeleteUrlSchema = z.object({
+   shortCode: z
+      .string()
+      .min(3, { message: 'Short code must be at least 3 characters' })
+      .regex(/^[a-zA-Z0-9]+$/, {
+         message: 'Short code cannot contain special characters or spaces',
+      })
+      .optional(),
+   status: z.enum(['a', 'd']).optional(),
+});
+
 export const LogClickSchema = z.object({
    urlId: z.string().uuid(),
    ip: z.string(),
