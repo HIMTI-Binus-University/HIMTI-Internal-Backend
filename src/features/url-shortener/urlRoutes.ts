@@ -21,9 +21,9 @@ router.post(
    // requirePermission('create.url'),
    createUrl,
 );
-router.get('/:shortCode', clickUrl);
 router.put('/update-url/:id', updateUrl);
 router.get('/get-list', getUrls);
 router.get('/get-list/:id', getUrlById);
+router.get('/:shortCode', clickUrl);
 
 export default router;
