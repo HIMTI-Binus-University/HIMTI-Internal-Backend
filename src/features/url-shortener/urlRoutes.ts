@@ -23,7 +23,7 @@ router.post(
    // requirePermission('create.url'),
    createUrl,
 );
-router.get('/link/:shortCode', requireAuth, clickUrl);
+router.get('/link/:shortCode', clickUrl);
 router.put('/update-url/:id', requireAuth, updateUrl);
 router.patch('/delete/:id', requireAuth, deleteUrl);
 router.get('/get-list', requireAuth, getUrls);
