@@ -1,4 +1,4 @@
-import { Url } from '@prisma/client';
+import { Url, Prisma } from '@prisma/client';
 import type {
    CreateUrlRequest,
    GetUrlResponse,
@@ -14,7 +14,7 @@ class UrlService {
       payload: CreateUrlRequest,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Url> {
-      const urlData = {
+      const urlData: Prisma.UrlCreateInput = {
          originalUrl: payload.originalUrl,
          shortCode: payload.shortCode,
          createdBy: user?.name || 'Admin',
@@ -28,11 +28,25 @@ class UrlService {
       id: string,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Url> {
-      const updateData = {
+      const updateData: Prisma.UrlUpdateInput = {
          originalUrl: payload.originalUrl,
          shortCode: payload.shortCode,
          updatedBy: user?.name || 'Admin',
          expiresAt: payload.expiresAt ?? null,
+         status: payload.status,
+      };
+      return await urlRepository.update(id, updateData);
+   }
+
+   async deleteUrl(
+      payload: UpdateUrlRequest,
+      id: string,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<Url> {
+      const timestamp = Date.now();
+      const updateData: Prisma.UrlUpdateInput = {
+         shortCode: `${payload.shortCode}_del_${timestamp}`,
+         updatedBy: user?.name || 'Admin',
          status: payload.status,
       };
       return await urlRepository.update(id, updateData);

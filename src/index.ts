@@ -37,7 +37,6 @@ app.use(
 app.use(express.static(path.join(__dirname, '../public')));
 app.all('/api/auth/*splat', toNodeHandler(auth));
 app.use('/api', routes);
-app.get('/:shortCode', clickUrl);
 app.use(globalErrorHandler);
 
 app.listen(port, () => {

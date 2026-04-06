@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "urls" ALTER COLUMN "shortCode" SET DATA TYPE VARCHAR(100);
