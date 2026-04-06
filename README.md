@@ -1,4 +1,4 @@
-# HIMTI Core Internal Backend
+# HIMTI Core Internal Backend 
 
 This is the internal tools backend API service for **HIMTI**. Built using **Node.js**, **Express**, and **TypeScript**, **PostgreSQL**, featuring **Prisma ORM** for database management and configured with strict linting and formatting rules.
 
