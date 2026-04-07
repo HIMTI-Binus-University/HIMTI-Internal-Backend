@@ -200,6 +200,8 @@ model User {
    verifiedPayments      EventHasParticipant[]  @relation("PaymentVerifier")
    registrationResponses RegistrationResponse[]
    eventComittees        EventComittee[]
+   createdUrls           Url[]                  @relation("UrlCreator")
+   updatedUrls           Url[]                  @relation("UrlUpdater")
 
    @@map("users")
 }
@@ -539,9 +541,13 @@ model Url {
    expiresAt   DateTime?
    status      String    @default("a") @db.Char(1)
    createdAt   DateTime  @default(now()) @db.Timestamp(0)
-   createdBy   String    @db.VarChar(100)
    updatedAt   DateTime? @updatedAt
-   updatedBy   String?   @db.VarChar(100)
+
+   createdBy String  @db.VarChar(100)
+   updatedBy String? @db.VarChar(100)
+
+   creator User  @relation("UrlCreator", fields: [createdBy], references: [id])
+   updater User? @relation("UrlUpdater", fields: [updatedBy], references: [id])
 
    urlDetails UrlDetail[]
 

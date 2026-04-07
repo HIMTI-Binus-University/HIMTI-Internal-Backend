@@ -25,8 +25,6 @@ export const requirePermission = (permissionName: string) => {
          },
       });
 
-      console.log(userWithPermission);
-
       if (!userWithPermission) {
          return res.status(403).json({
             success: false,

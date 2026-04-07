@@ -52,7 +52,7 @@ async function main() {
    // 4. SEED ROLES
    // ==========================================
    console.log('⏳ Seeding Roles and Assigning Permissions...');
-   const roles = ['General Manager', 'Manager', 'DPI Umum', 'DPI'];
+   const roles = ['General Manager', 'Manager', 'DPI Umum', 'DPI', 'Admin'];
 
    for (const roleName of roles) {
       // Buat atau cari Role

@@ -9,7 +9,7 @@ import {
    updateUrl,
 } from './urlController.js';
 import { requireAuth } from '@/middleware/authMiddleware.js';
-// import { requireAuth } from '@/middleware/authMiddleware.js';
+import { requirePermission } from '@/middleware/permissionMiddleware.js';
 
 const router: Router = express.Router();
 
@@ -19,14 +19,29 @@ router.get('/urltest', (_req: Request, res: Response) => {
 
 router.post(
    '/create-url',
-   // requireAuth,
-   // requirePermission('create.url'),
+   requireAuth,
+   requirePermission('manage_urls'),
    createUrl,
 );
 router.get('/link/:shortCode', clickUrl);
-router.put('/update-url/:id', requireAuth, updateUrl);
-router.patch('/delete/:id', requireAuth, deleteUrl);
-router.get('/get-list', requireAuth, getUrls);
-router.get('/get-list/:id', requireAuth, getUrlById);
+router.put(
+   '/update-url/:id',
+   requireAuth,
+   requirePermission('manage_urls'),
+   updateUrl,
+);
+router.patch(
+   '/delete/:id',
+   requireAuth,
+   requirePermission('manage_urls'),
+   deleteUrl,
+);
+router.get('/get-list', requireAuth, requirePermission('manage_urls'), getUrls);
+router.get(
+   '/get-list/:id',
+   requireAuth,
+   requirePermission('manage_urls'),
+   getUrlById,
+);
 
 export default router;
