@@ -102,8 +102,9 @@ export const getUrlById = async (req: Request, res: Response) => {
 };
 
 export const getUrls = async (req: Request, res: Response) => {
+   const userData = res.locals.user;
    const query = GetUrlSchema.parse(req.query);
-   const result = await urlService.getUrls(query);
+   const result = await urlService.getUrls(query, userData);
    res.status(200).json({
       msg: 'success',
       ...result,

@@ -27,18 +27,32 @@ class UrlRepository {
       });
    }
 
-   async findAll(params: GetUrlSchema) {
+   async findAll(params: GetUrlSchema, userId: string) {
       const { page, limit, search, sort, status } = params;
 
       const where: Prisma.UrlWhereInput = {
          status: status,
       };
 
+      const adminRole = await prisma.userHasRole.findFirst({
+         where: {
+            userId: userId,
+            role: {
+               roleName: 'Admin',
+            },
+         },
+      });
+
+      const isAdmin = !!adminRole;
+
+      if (!isAdmin) {
+         where.createdBy = userId;
+      }
+
       if (search) {
          where.OR = [
             { originalUrl: { contains: search, mode: 'insensitive' } },
             { shortCode: { contains: search, mode: 'insensitive' } },
-            { createdBy: { contains: search, mode: 'insensitive' } },
          ];
       }
 

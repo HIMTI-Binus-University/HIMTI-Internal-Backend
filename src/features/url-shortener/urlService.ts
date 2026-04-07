@@ -17,8 +17,12 @@ class UrlService {
       const urlData: Prisma.UrlCreateInput = {
          originalUrl: payload.originalUrl,
          shortCode: payload.shortCode,
-         createdBy: user?.name || 'Admin',
          expiresAt: payload.expiresAt ?? null,
+         creator: {
+            connect: {
+               id: user.id,
+            },
+         },
       };
       return await urlRepository.create(urlData);
    }
@@ -31,9 +35,13 @@ class UrlService {
       const updateData: Prisma.UrlUpdateInput = {
          originalUrl: payload.originalUrl,
          shortCode: payload.shortCode,
-         updatedBy: user?.name || 'Admin',
          expiresAt: payload.expiresAt ?? null,
          status: payload.status,
+         updater: {
+            connect: {
+               id: user.id,
+            },
+         },
       };
       return await urlRepository.update(id, updateData);
    }
@@ -46,8 +54,12 @@ class UrlService {
       const timestamp = Date.now();
       const updateData: Prisma.UrlUpdateInput = {
          shortCode: `${payload.shortCode}_del_${timestamp}`,
-         updatedBy: user?.name || 'Admin',
          status: payload.status,
+         updater: {
+            connect: {
+               id: user.id,
+            },
+         },
       };
       return await urlRepository.update(id, updateData);
    }
@@ -60,8 +72,11 @@ class UrlService {
       return await urlRepository.findById(id);
    }
 
-   async getUrls(params: GetUrlSchema): Promise<GetUrlResponse> {
-      const { data, total } = await urlRepository.findAll(params);
+   async getUrls(
+      params: GetUrlSchema,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<GetUrlResponse> {
+      const { data, total } = await urlRepository.findAll(params, user.id);
       return {
          data,
          meta: {
