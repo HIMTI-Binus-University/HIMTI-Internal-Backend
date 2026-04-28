@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-
 const prisma = new PrismaClient();
 
 async function main() {
@@ -26,56 +25,85 @@ async function main() {
       { name: 'Computer Science Reguler', shortName: 'CS Reguler' },
       { name: 'Computer Science Global', shortName: 'CS Global' },
    ];
-
    for (const sp of studyPrograms) {
       await prisma.studyProgram.upsert({
          where: { name: sp.name },
          update: {},
-         create: {
-            name: sp.name,
-            shortName: sp.shortName,
-         },
+         create: { name: sp.name, shortName: sp.shortName },
       });
    }
+
+   // ==========================================
+   // SEED SYSTEM USER (for createdBy references)
+   // ==========================================
+   console.log('⏳ Seeding System User...');
+   const systemUser = await prisma.user.upsert({
+      where: { email: 'system@himti.internal' },
+      update: {},
+      create: {
+         name: 'System',
+         email: 'system@himti.internal',
+         emailVerified: true,
+         status: 'ACTIVE',
+      },
+   });
 
    // ==========================================
    // SEED PERMISSIONS
    // ==========================================
    console.log('⏳ Seeding Permissions...');
-   const manageUrlsPerm = await prisma.permission.upsert({
-      where: { name: 'manage_urls' },
-      update: {},
-      create: { name: 'manage_urls' },
-   });
+   const permissionNames = [
+      'manage_urls',
+      'manage_permissions',
+      'manage_users',
+      'manage_roles',
+   ];
 
-   // ==========================================
-   // 4. SEED ROLES
-   // ==========================================
-   console.log('⏳ Seeding Roles and Assigning Permissions...');
-   const roles = ['General Manager', 'Manager', 'DPI Umum', 'DPI', 'Admin'];
-
-   for (const roleName of roles) {
-      // Buat atau cari Role
-      const roleRecord = await prisma.role.upsert({
-         where: { roleName: roleName },
-         update: {},
-         create: { roleName: roleName },
-      });
-
-      // Assign permission 'manage_urls' ke Role ini
-      await prisma.roleHasPermission.upsert({
-         where: {
-            roleId_permissionId: {
-               roleId: roleRecord.id,
-               permissionId: manageUrlsPerm.id,
-            },
-         },
+   const permissions: Record<string, { id: string }> = {};
+   for (const name of permissionNames) {
+      const perm = await prisma.permission.upsert({
+         where: { name },
          update: {},
          create: {
-            roleId: roleRecord.id,
-            permissionId: manageUrlsPerm.id,
+            name,
+            creator: { connect: { id: systemUser.id } },
          },
       });
+      permissions[name] = perm;
+   }
+
+   // ==========================================
+   // SEED ROLES & ASSIGN PERMISSIONS
+   // ==========================================
+   console.log('⏳ Seeding Roles and Assigning Permissions...');
+   const roleNames = ['General Manager', 'Manager', 'DPI Umum', 'DPI', 'Admin'];
+
+   for (const roleName of roleNames) {
+      const role = await prisma.role.upsert({
+         where: { roleName },
+         update: {},
+         create: {
+            roleName,
+            creator: { connect: { id: systemUser.id } },
+         },
+      });
+
+      // Assign all permissions to each role
+      for (const perm of Object.values(permissions)) {
+         await prisma.roleHasPermission.upsert({
+            where: {
+               roleId_permissionId: {
+                  roleId: role.id,
+                  permissionId: perm.id,
+               },
+            },
+            update: {},
+            create: {
+               roleId: role.id,
+               permissionId: perm.id,
+            },
+         });
+      }
    }
 
    console.log('✅ Seeding berhasil diselesaikan!');
