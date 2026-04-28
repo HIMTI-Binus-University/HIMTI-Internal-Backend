@@ -16,3 +16,4 @@ export const GetPermissionSchema = z.object({
    sort: z.string().default('createdAt:desc'),
    status: z.enum(['ACTIVE', 'INACTIVE']),
 });
+//
