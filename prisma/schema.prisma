@@ -17,6 +17,11 @@ enum UserStatus {
    SUSPENDED
 }
 
+enum Status {
+   ACTIVE
+   INACTIVE
+}
+
 enum UniversityStatus {
    ACTIVE
    INACTIVE
@@ -151,14 +156,14 @@ model StudyProgram {
 
 model User {
    // Identity
-   id                   String  @id @default(nanoid())
-   name                 String  @db.VarChar(255)
-   email                String  @unique @db.VarChar(100)
-   emailVerified        Boolean @default(false)
-   outlookEmail         String? @unique @db.VarChar(100)
-   outlookEmailVerified Boolean @default(false)
+   id                   String     @id @default(nanoid())
+   name                 String     @db.VarChar(255)
+   email                String     @unique @db.VarChar(100)
+   emailVerified        Boolean    @default(false)
+   outlookEmail         String?    @unique @db.VarChar(100)
+   outlookEmailVerified Boolean    @default(false)
    image                String?
-   status               String  @default("a") @db.Char(1)
+   status               UserStatus @default(ACTIVE)
 
    // Academic
    nim            String? @db.VarChar(50)
@@ -202,6 +207,12 @@ model User {
    eventComittees        EventComittee[]
    createdUrls           Url[]                  @relation("UrlCreator")
    updatedUrls           Url[]                  @relation("UrlUpdater")
+   createdRoles          Role[]                 @relation("RoleCreator")
+   updatedRoles          Role[]                 @relation("RoleUpdater")
+   createdPermissions    Permission[]           @relation("PermissionCreator")
+   updatedPermissions    Permission[]           @relation("PermissionUpdater")
+   updatedUser           User[]                 @relation("UserUpdater")
+   user                  User?                  @relation("UserUpdater", fields: [createdBy], references: [id])
 
    @@map("users")
 }
@@ -260,9 +271,12 @@ model Role {
    roleName  String     @unique @db.VarChar(255)
    status    RoleStatus @default(ACTIVE)
    createdAt DateTime   @default(now()) @db.Timestamp(0)
-   createdBy String?    @db.VarChar(100)
+   createdBy String     @db.VarChar(100)
    updatedAt DateTime?  @updatedAt
    updatedBy String?    @db.VarChar(100)
+
+   creator User  @relation("RoleCreator", fields: [createdBy], references: [id])
+   updater User? @relation("RoleUpdater", fields: [updatedBy], references: [id])
 
    roleHasUsers       UserHasRole[]
    roleHasPermissions RoleHasPermission[]
@@ -273,11 +287,15 @@ model Role {
 model Permission {
    id        String    @id @default(nanoid())
    name      String    @unique @db.VarChar(255)
+   status    Status    @default(ACTIVE)
    createdAt DateTime  @default(now()) @db.Timestamp(0)
-   createdBy String?   @db.VarChar(100)
+   createdBy String    @db.VarChar(100)
+   updatedBy String?   @db.VarChar(100)
    updatedAt DateTime? @updatedAt
 
    permissionHasRoles RoleHasPermission[]
+   creator            User                @relation("PermissionCreator", fields: [createdBy], references: [id])
+   updater            User?               @relation("PermissionUpdater", fields: [updatedBy], references: [id])
 
    @@map("permissions")
 }
@@ -539,7 +557,7 @@ model Url {
    shortCode   String    @unique @db.VarChar(100)
    originalUrl String    @db.Text
    expiresAt   DateTime?
-   status      String    @default("a") @db.Char(1)
+   status      Status    @default(ACTIVE)
    createdAt   DateTime  @default(now()) @db.Timestamp(0)
    updatedAt   DateTime? @updatedAt
 
