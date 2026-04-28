@@ -6,7 +6,7 @@ export const CreatePermissionSchema = z.object({
 
 export const UpdatePermissionSchema = z.object({
    name: z.string().optional(),
-   status: z.string().optional(),
+   status: z.enum(['ACTIVE', 'INACTIVE']),
 });
 
 export const GetPermissionSchema = z.object({

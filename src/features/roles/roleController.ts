@@ -81,3 +81,5 @@ export const removePermissionFromRole = async (req: Request, res: Response) => {
    await roleService.removePermissionFromRole(validation.data);
    res.status(200).json({ msg: 'success' });
 };
+
+//

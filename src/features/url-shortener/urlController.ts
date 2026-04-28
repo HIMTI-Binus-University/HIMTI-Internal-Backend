@@ -72,7 +72,7 @@ export const clickUrl = async (req: Request, res: Response) => {
    if (!urlData) {
       return res.status(404).json({ msg: 'Link not found' });
    }
-   if (urlData.status !== 'a') {
+   if (urlData.status !== 'ACTIVE') {
       return res.status(404).json({ msg: 'Link is no longer active' });
    }
    if (urlData.expiresAt && new Date() > new Date(urlData.expiresAt)) {
