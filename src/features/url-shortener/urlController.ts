@@ -72,7 +72,7 @@ export const clickUrl = async (req: Request, res: Response) => {
    if (!urlData) {
       return res.status(404).json({ msg: 'Link not found' });
    }
-   if (urlData.status !== 'a') {
+   if (urlData.status !== 'ACTIVE') {
       return res.status(404).json({ msg: 'Link is no longer active' });
    }
    if (urlData.expiresAt && new Date() > new Date(urlData.expiresAt)) {
@@ -102,8 +102,9 @@ export const getUrlById = async (req: Request, res: Response) => {
 };
 
 export const getUrls = async (req: Request, res: Response) => {
+   const userData = res.locals.user;
    const query = GetUrlSchema.parse(req.query);
-   const result = await urlService.getUrls(query);
+   const result = await urlService.getUrls(query, userData);
    res.status(200).json({
       msg: 'success',
       ...result,

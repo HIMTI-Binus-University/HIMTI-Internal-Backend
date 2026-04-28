@@ -5,6 +5,9 @@ import blasterRoutes from '@/features/email-blaster/blasterRoutes.js';
 import registRoutes from '@/features/registration/registRoutes.js';
 import eventRoutes from '@/features/events/eventRoutes.js';
 import subEventRoutes from '@/features/sub-events/subEventRoutes.js';
+import permissionRoutes from '@/features/permissions/permissionRoutes.js';
+import userRoutes from '@/features/users/userRoutes.js';
+import roleRoutes from '@/features/roles/roleRoutes.js';
 
 const router: Router = express.Router();
 
@@ -13,5 +16,8 @@ router.use('/email-blast', blasterRoutes);
 router.use('/registration', registRoutes);
 router.use('/event', eventRoutes);
 router.use('/sub-event', subEventRoutes);
+router.use('/', permissionRoutes);
+router.use('/', userRoutes);
+router.use('/', roleRoutes);
 
 export default router;
