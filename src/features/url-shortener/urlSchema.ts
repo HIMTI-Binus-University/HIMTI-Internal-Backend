@@ -43,7 +43,7 @@ export const UpdateUrlSchema = z.object({
          })
          .optional(),
    ),
-   status: z.enum(['a', 'd']).optional(),
+   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
 export const DeleteUrlSchema = z.object({
@@ -54,7 +54,7 @@ export const DeleteUrlSchema = z.object({
          message: 'Short code cannot contain special characters or spaces',
       })
       .optional(),
-   status: z.enum(['a', 'd']).optional(),
+   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
 export const LogClickSchema = z.object({
@@ -75,7 +75,7 @@ export const GetUrlSchema = z.object({
    limit: z.coerce.number().min(1).max(100).default(10),
    search: z.string().optional(),
    sort: z.string().default('createdAt:desc'),
-   status: z.enum(['a', 'd']),
+   status: z.enum(['ACTIVE', 'INACTIVE']),
 });
 
 export const GeoDataSchema = z.object({
