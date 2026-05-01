@@ -105,6 +105,17 @@ class UserRepository {
                         id: true,
                         roleName: true,
                         status: true,
+                        roleHasPermissions: {
+                           select: {
+                              permission: {
+                                 select: {
+                                    id: true,
+                                    name: true,
+                                    status: true,
+                                 },
+                              },
+                           },
+                        },
                      },
                   },
                },

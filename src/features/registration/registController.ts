@@ -12,14 +12,17 @@ export const completeProfile = async (req: Request, res: Response) => {
       return res.status(400).json({ errors: validation.error.format() });
    }
 
-   const result = await registService.completeProfile(
+   const { user, verificationSent } = await registService.completeProfile(
       validation.data,
       userData.id as string,
       userData,
    );
    res.status(200).json({
       msg: 'success',
-      data: result,
+      ...(verificationSent && {
+         notice: `Verification email has been sent to ${user.outlookEmail}`,
+      }),
+      data: user,
    });
 };
 

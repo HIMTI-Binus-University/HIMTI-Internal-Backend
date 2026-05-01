@@ -63,9 +63,28 @@ class UserService {
       if (!user) return null;
 
       const { userHasRoles, ...rest } = user;
+
+      const roles = userHasRoles.map(
+         ({ role: { roleHasPermissions, ...role } }) => role,
+      );
+
+      // Merge all permissions from all roles, remove the duplicates using id
+      const permissionMap = new Map<
+         string,
+         { id: string; name: string; status: string }
+      >();
+      for (const { role } of userHasRoles) {
+         for (const { permission } of role.roleHasPermissions) {
+            if (!permissionMap.has(permission.id)) {
+               permissionMap.set(permission.id, permission);
+            }
+         }
+      }
+
       return {
          ...rest,
-         roles: userHasRoles.map((uhr) => uhr.role),
+         roles,
+         permissions: Array.from(permissionMap.values()),
       };
    }
 }
