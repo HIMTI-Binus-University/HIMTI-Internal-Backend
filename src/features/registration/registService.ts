@@ -10,7 +10,7 @@ class RegistService {
       payload: CompleteProfileRequest,
       id: string,
       user: typeof auth.$Infer.Session.user,
-   ): Promise<User> {
+   ): Promise<{ user: User; verificationSent: boolean }> {
       const currentUser = await registRepository.findUserById(id);
       const university = await registRepository.findUnivById(
          payload.universityId,
@@ -44,6 +44,7 @@ class RegistService {
       }
 
       const profileData: Prisma.UserUpdateInput = {
+         name: payload.nim,
          nim: payload.nim,
          graduateBatch: payload.graduateBatch,
          phoneNumber: payload.phoneNumber,
@@ -70,6 +71,8 @@ class RegistService {
 
       const updatedUser = await registRepository.update(id, profileData);
 
+      let verificationSent = false;
+
       if (
          isBinus &&
          isCompSci &&
@@ -78,18 +81,17 @@ class RegistService {
       ) {
          const token = crypto.randomBytes(32).toString('hex');
          await registRepository.verifyOutlook(updatedUser.id, token);
-
          const verifyLink = `${process.env.FRONTEND_URL}/verify-outlook?token=${token}`;
          console.log(`Link: ${verifyLink}`);
-
          sendOutlookVerificationEmail(validOutlookEmail, verifyLink).catch(
             (err) => {
                console.error('Failed sending Resend email in background:', err);
             },
          );
+         verificationSent = true;
       }
 
-      return updatedUser;
+      return { user: updatedUser, verificationSent };
    }
 
    async getUserById(id: string) {
@@ -98,7 +100,6 @@ class RegistService {
 
       const roles = user.userHasRoles.map((ur) => ur.role.roleName);
 
-      // Ambil semua 'name' dari permission trus buang duplikatnya
       const permissions = [
          ...new Set(
             user.userHasRoles.flatMap((ur) =>
@@ -107,11 +108,8 @@ class RegistService {
          ),
       ];
 
-      // 5. Destructuring untuk membuang properti 'userHasRoles' yang kotor,
-      //    dan mengambil sisa data user (id, name, email, dll) ke dalam 'userData'
       const { userHasRoles, ...userData } = user;
 
-      // 6. Return data bersih yang sudah digabungkan
       return {
          ...userData,
          roles,
