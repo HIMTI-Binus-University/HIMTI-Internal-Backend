@@ -44,7 +44,7 @@ class RegistService {
       }
 
       const profileData: Prisma.UserUpdateInput = {
-         name: payload.nim,
+         name: payload.name,
          nim: payload.nim,
          graduateBatch: payload.graduateBatch,
          phoneNumber: payload.phoneNumber,
