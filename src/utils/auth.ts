@@ -30,6 +30,7 @@ export const auth = betterAuth({
       'http://localhost:8000',
       'https://dev-admin.himtibinus.or.id',
       'https://admin.himtibinus.or.id',
+      'https://api-tester.himtibinus.or.id',
    ],
 
    plugins: [
@@ -60,7 +61,7 @@ export const auth = betterAuth({
          status: {
             type: 'string',
             required: false,
-            defaultValue: 'a',
+            defaultValue: 'ACTIVE',
          },
       },
    },

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const CompleteProfileSchema = z.object({
-   // TODO: input username
+   name: z.string(),
    nim: z.string().optional(),
    universityId: z.string(),
    outlookEmail: z.string().optional().or(z.literal('')),
@@ -9,7 +9,7 @@ export const CompleteProfileSchema = z.object({
    graduateBatch: z.string(),
    phoneNumber: z.string(),
    lineId: z.string(),
-   status: z.enum(['a', 'd']).optional(),
+   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
 export const GetUserSchema = z.object({
