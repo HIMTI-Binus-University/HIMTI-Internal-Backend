@@ -71,6 +71,13 @@ class RegistService {
 
       const updatedUser = await registRepository.update(id, profileData);
 
+      // console.log('Email debug:', {
+      //    isBinus,
+      //    isCompSci,
+      //    validOutlookEmail,
+      //    outlookEmailVerified: updatedUser.outlookEmailVerified,
+      // });
+
       let verificationSent = false;
 
       if (
@@ -82,12 +89,13 @@ class RegistService {
          const token = crypto.randomBytes(32).toString('hex');
          await registRepository.verifyOutlook(updatedUser.id, token);
          const verifyLink = `${process.env.FRONTEND_URL}/verify-outlook?token=${token}`;
-         console.log(`Link: ${verifyLink}`);
-         sendOutlookVerificationEmail(validOutlookEmail, verifyLink).catch(
-            (err) => {
-               console.error('Failed sending Resend email in background:', err);
-            },
-         );
+         // console.log(`Link: ${verifyLink}`);
+         try {
+            await sendOutlookVerificationEmail(validOutlookEmail, verifyLink);
+            console.log('Email sent OK');
+         } catch (err) {
+            console.error('Email failed:', err);
+         }
          verificationSent = true;
       }
 
