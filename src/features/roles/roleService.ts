@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { auth } from '@/utils/auth.js';
 import { roleRepository } from './roleRepository.js';
 import type {
@@ -56,7 +56,7 @@ class RoleService {
       payload: UpdateRoleRequest,
       id: string,
       user: typeof auth.$Infer.Session.user,
-   ) {
+   ): Promise<Role> {
       const data: Prisma.RoleUpdateInput = {
          roleName: payload.roleName,
          status: payload.status,
@@ -67,6 +67,24 @@ class RoleService {
          },
       };
       return await roleRepository.update(id, data);
+   }
+
+   async deleteRole(
+      payload: UpdateRoleRequest,
+      id: string,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<Role> {
+      const timestamp = Date.now();
+      const updateData: Prisma.RoleUpdateInput = {
+         roleName: `${payload.roleName}_del_${timestamp}`,
+         status: payload.status,
+         updater: {
+            connect: {
+               id: user.id,
+            },
+         },
+      };
+      return await roleRepository.update(id, updateData);
    }
 
    async assignRoleToUser(payload: AssignRoleToUserRequest) {

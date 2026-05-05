@@ -35,6 +35,18 @@ class PermissionService {
       return await permissionRepository.update(id, updateData);
    }
 
+   async deletePermission(
+      payload: UpdatePermissionRequest,
+      id: string,
+   ): Promise<Permission> {
+      const timestamp = Date.now();
+      const updateData: Prisma.PermissionUpdateInput = {
+         name: `${payload.name}_del_${timestamp}`,
+         status: payload.status,
+      };
+      return await permissionRepository.update(id, updateData);
+   }
+
    async getPermissions(
       params: GetPermissionSchema,
    ): Promise<GetPermissionResponse> {

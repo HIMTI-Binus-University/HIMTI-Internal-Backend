@@ -9,6 +9,11 @@ export const UpdateRoleSchema = z.object({
    status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
+export const DeleteRoleSchema = z.object({
+   roleName: z.string().max(255).optional(),
+   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});
+
 export const GetRoleSchema = z.object({
    page: z.coerce.number().min(1).default(1),
    limit: z.coerce.number().min(1).max(100).default(10),
