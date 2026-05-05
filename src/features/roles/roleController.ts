@@ -46,6 +46,17 @@ export const updateRole = async (req: Request, res: Response) => {
    res.status(200).json({ msg: 'success', data: result });
 };
 
+export const deleteRole = async (req: Request, res: Response) => {
+   const { id } = req.params;
+   const userData = res.locals.user;
+   const validation = UpdateRoleSchema.safeParse(req.body);
+   if (!validation.success) {
+      return res.status(400).json({ errors: validation.error.format() });
+   }
+   const result = await roleService.deleteRole(validation.data, id, userData);
+   res.status(200).json({ msg: 'success', data: result });
+};
+
 export const assignRoleToUser = async (req: Request, res: Response) => {
    const validation = AssignRoleToUserSchema.safeParse(req.body);
    if (!validation.success) {

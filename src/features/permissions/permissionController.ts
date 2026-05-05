@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import {
    CreatePermissionSchema,
+   DeletePermissionSchema,
    GetPermissionSchema,
    UpdatePermissionSchema,
 } from './permissionSchema.js';
@@ -42,6 +43,23 @@ export const updatePermission = async (req: Request, res: Response) => {
       return res.status(400).json({ errors: validation.error.format() });
    }
    const result = await permissionService.updatePermission(
+      validation.data,
+      id as string,
+   );
+   res.status(200).json({
+      msg: 'success',
+      data: result,
+   });
+};
+
+export const deletePermission = async (req: Request, res: Response) => {
+   const data = req.body;
+   const { id } = req.params;
+   const validation = DeletePermissionSchema.safeParse(data);
+   if (!validation.success) {
+      return res.status(400).json({ errors: validation.error.format() });
+   }
+   const result = await permissionService.deletePermission(
       validation.data,
       id as string,
    );
