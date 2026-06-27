@@ -127,9 +127,9 @@ jobs:
             chmod 700 env
 
             if [ "${{ needs.build-and-push.outputs.target }}" = "production" ]; then
-              echo "${{ secrets.INTERNAL_BACKEND_PROD_ENV_B64 }}" | base64 -d > "${{ needs.build-and-push.outputs.env_file }}"
+              printf '%s' "${{ secrets.INTERNAL_BACKEND_PROD_ENV_B64 }}" | base64 -d > "${{ needs.build-and-push.outputs.env_file }}"
             else
-              echo "${{ secrets.INTERNAL_BACKEND_DEV_ENV_B64 }}" | base64 -d > "${{ needs.build-and-push.outputs.env_file }}"
+              printf '%s' "${{ secrets.INTERNAL_BACKEND_DEV_ENV_B64 }}" | base64 -d > "${{ needs.build-and-push.outputs.env_file }}"
             fi
 
             chmod 600 "${{ needs.build-and-push.outputs.env_file }}"
