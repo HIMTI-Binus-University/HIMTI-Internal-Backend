@@ -131,7 +131,6 @@ jobs:
             else
               printf '%s' "${{ secrets.INTERNAL_BACKEND_DEV_ENV_B64 }}" | base64 -d > "${{ needs.build-and-push.outputs.env_file }}"
             fi
-
             chmod 600 "${{ needs.build-and-push.outputs.env_file }}"
 
             docker compose --profile "${{ needs.build-and-push.outputs.profile }}" pull "${{ needs.build-and-push.outputs.service }}"
