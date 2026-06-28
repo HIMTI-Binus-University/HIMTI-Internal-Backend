@@ -7,3 +7,7 @@ public/index.html
 
 /prisma/dbml/
 dist
+
+AGENTS.md 
+.codex/
+.agents/
