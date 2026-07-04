@@ -9,10 +9,7 @@ export const UpdatePermissionSchema = z.object({
    status: z.enum(['ACTIVE', 'INACTIVE']),
 });
 
-export const DeletePermissionSchema = z.object({
-   name: z.string().optional(),
-   status: z.enum(['ACTIVE', 'INACTIVE']),
-});
+export const DeletePermissionSchema = z.object({});
 
 export const GetPermissionSchema = z.object({
    page: z.coerce.number().min(1).default(1),

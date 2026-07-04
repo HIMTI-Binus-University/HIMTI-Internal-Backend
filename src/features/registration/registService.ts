@@ -116,10 +116,25 @@ class RegistService {
          ),
       ];
 
-      const { userHasRoles, ...userData } = user;
-
       return {
-         ...userData,
+         id: user.id,
+         name: user.name,
+         email: user.email,
+         emailVerified: user.emailVerified,
+         outlookEmail: user.outlookEmail,
+         outlookEmailVerified: user.outlookEmailVerified,
+         image: user.image,
+         status: user.status,
+         nim: user.nim,
+         universityId: user.universityId,
+         studyProgramId: user.studyProgramId,
+         graduateBatch: user.graduateBatch,
+         phoneNumber: user.phoneNumber,
+         lineId: user.lineId,
+         createdAt: user.createdAt,
+         createdBy: user.createdBy,
+         updatedAt: user.updatedAt,
+         updatedBy: user.updatedBy,
          roles,
          permissions,
       };

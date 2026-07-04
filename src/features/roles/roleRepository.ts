@@ -21,6 +21,11 @@ class RoleRepository {
             status: true,
             createdAt: true,
             roleHasPermissions: {
+               where: {
+                  permission: {
+                     status: 'ACTIVE',
+                  },
+               },
                select: {
                   permission: {
                      select: { id: true, name: true, status: true },
@@ -64,6 +69,11 @@ class RoleRepository {
                status: true,
                createdAt: true,
                roleHasPermissions: {
+                  where: {
+                     permission: {
+                        status: 'ACTIVE',
+                     },
+                  },
                   select: {
                      permission: {
                         select: { id: true, name: true, status: true },

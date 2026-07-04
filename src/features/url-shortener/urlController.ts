@@ -45,19 +45,14 @@ export const updateUrl = async (req: Request, res: Response) => {
 };
 
 export const deleteUrl = async (req: Request, res: Response) => {
-   const data = req.body;
    const { id } = req.params;
    const userData = res.locals.user;
-   const validation = DeleteUrlSchema.safeParse(data);
+   const validation = DeleteUrlSchema.safeParse(req.body ?? {});
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
    }
    // service
-   const result = await urlService.deleteUrl(
-      validation.data,
-      id as string,
-      userData,
-   );
+   const result = await urlService.deleteUrl(id as string, userData);
    res.status(200).json({
       msg: 'success',
       data: result,

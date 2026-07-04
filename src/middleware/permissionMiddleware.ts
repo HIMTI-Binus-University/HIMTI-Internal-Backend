@@ -9,13 +9,16 @@ export const requirePermission = (permissionName: string) => {
       const userWithPermission = await prisma.user.findFirst({
          where: {
             id: user.id,
+            status: 'ACTIVE',
             userHasRoles: {
                some: {
                   role: {
+                     status: 'ACTIVE',
                      roleHasPermissions: {
                         some: {
                            permission: {
                               name: permissionName,
+                              status: 'ACTIVE',
                            },
                         },
                      },

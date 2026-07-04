@@ -6,6 +6,7 @@ import {
    GetRoleSchema,
    RemovePermissionFromRoleSchema,
    RemoveRoleFromUserSchema,
+   DeleteRoleSchema,
    UpdateRoleSchema,
 } from './roleSchema.js';
 import { roleService } from './roleService.js';
@@ -49,11 +50,11 @@ export const updateRole = async (req: Request, res: Response) => {
 export const deleteRole = async (req: Request, res: Response) => {
    const { id } = req.params;
    const userData = res.locals.user;
-   const validation = UpdateRoleSchema.safeParse(req.body);
+   const validation = DeleteRoleSchema.safeParse(req.body ?? {});
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
    }
-   const result = await roleService.deleteRole(validation.data, id, userData);
+   const result = await roleService.deleteRole(id, userData);
    res.status(200).json({ msg: 'success', data: result });
 };
 

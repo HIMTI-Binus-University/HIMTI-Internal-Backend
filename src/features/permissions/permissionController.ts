@@ -53,15 +53,15 @@ export const updatePermission = async (req: Request, res: Response) => {
 };
 
 export const deletePermission = async (req: Request, res: Response) => {
-   const data = req.body;
    const { id } = req.params;
-   const validation = DeletePermissionSchema.safeParse(data);
+   const userData = res.locals.user;
+   const validation = DeletePermissionSchema.safeParse(req.body ?? {});
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
    }
    const result = await permissionService.deletePermission(
-      validation.data,
       id as string,
+      userData,
    );
    res.status(200).json({
       msg: 'success',

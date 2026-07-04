@@ -2,6 +2,7 @@ import './config/network.js';
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import docsRoutes from '@/docs/docsRoutes.js';
 import routes from '@/routes/routes.js';
 import { globalErrorHandler } from './middleware/errorMiddleware.js';
 import { toNodeHandler } from 'better-auth/node';
@@ -37,6 +38,7 @@ app.use(
 );
 app.use(express.static(path.join(__dirname, '../public')));
 app.all('/api/auth/*splat', toNodeHandler(auth));
+app.use('/api', docsRoutes);
 app.use('/api', routes);
 app.use(globalErrorHandler);
 

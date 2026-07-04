@@ -8,6 +8,8 @@ import type {
 } from './urlTypes.js';
 import { auth } from '@/utils/auth.js';
 import { urlRepository } from './urlRepository.js';
+import { AppError } from '@/utils/appError.js';
+import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
 
 class UrlService {
    async createUrl(
@@ -47,14 +49,18 @@ class UrlService {
    }
 
    async deleteUrl(
-      payload: UpdateUrlRequest,
       id: string,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Url> {
-      const timestamp = Date.now();
+      const url = await urlRepository.findById(id);
+
+      if (!url) {
+         throw new AppError('Url not found', 404);
+      }
+
       const updateData: Prisma.UrlUpdateInput = {
-         shortCode: `${payload.shortCode}_del_${timestamp}`,
-         status: payload.status,
+         shortCode: buildDeletedUniqueValue(url.shortCode, url.id, 100),
+         status: 'INACTIVE',
          updater: {
             connect: {
                id: user.id,

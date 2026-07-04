@@ -6,6 +6,8 @@ import type {
    UpdatePermissionRequest,
 } from './permissionTypes.js';
 import { auth } from '@/utils/auth.js';
+import { AppError } from '@/utils/appError.js';
+import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
 import { permissionRepository } from './permissionRepository.js';
 
 class PermissionService {
@@ -36,13 +38,23 @@ class PermissionService {
    }
 
    async deletePermission(
-      payload: UpdatePermissionRequest,
       id: string,
+      user: typeof auth.$Infer.Session.user,
    ): Promise<Permission> {
-      const timestamp = Date.now();
+      const permission = await permissionRepository.findById(id);
+
+      if (!permission) {
+         throw new AppError('Permission not found', 404);
+      }
+
       const updateData: Prisma.PermissionUpdateInput = {
-         name: `${payload.name}_del_${timestamp}`,
-         status: payload.status,
+         name: buildDeletedUniqueValue(permission.name, permission.id, 255),
+         status: 'INACTIVE',
+         updater: {
+            connect: {
+               id: user.id,
+            },
+         },
       };
       return await permissionRepository.update(id, updateData);
    }
