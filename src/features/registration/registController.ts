@@ -60,7 +60,7 @@ export const getUserById = async (req: Request, res: Response) => {
    const data = await registService.getUserById(id);
 
    if (!data) {
-      res.status(404).json({
+      return res.status(404).json({
          msg: 'User not found',
       });
    }

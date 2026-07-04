@@ -64,9 +64,11 @@ class UserService {
 
       const { userHasRoles, ...rest } = user;
 
-      const roles = userHasRoles.map(
-         ({ role: { roleHasPermissions, ...role } }) => role,
-      );
+      const roles = userHasRoles.map(({ role }) => ({
+         id: role.id,
+         roleName: role.roleName,
+         status: role.status,
+      }));
 
       // Merge all permissions from all roles, remove the duplicates using id
       const permissionMap = new Map<

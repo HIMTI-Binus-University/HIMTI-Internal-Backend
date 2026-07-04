@@ -1,5 +1,7 @@
 import { Prisma, Role } from '@prisma/client';
 import { auth } from '@/utils/auth.js';
+import { AppError } from '@/utils/appError.js';
+import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
 import { roleRepository } from './roleRepository.js';
 import type {
    AssignPermissionToRoleRequest,
@@ -70,14 +72,18 @@ class RoleService {
    }
 
    async deleteRole(
-      payload: UpdateRoleRequest,
       id: string,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Role> {
-      const timestamp = Date.now();
+      const role = await roleRepository.findById(id);
+
+      if (!role) {
+         throw new AppError('Role not found', 404);
+      }
+
       const updateData: Prisma.RoleUpdateInput = {
-         roleName: `${payload.roleName}_del_${timestamp}`,
-         status: payload.status,
+         roleName: buildDeletedUniqueValue(role.roleName, role.id, 255),
+         status: 'INACTIVE',
          updater: {
             connect: {
                id: user.id,

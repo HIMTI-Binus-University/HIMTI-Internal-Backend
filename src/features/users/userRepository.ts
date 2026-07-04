@@ -60,6 +60,11 @@ class UserRepository {
                university: { select: { id: true, name: true } },
                studyProgram: { select: { id: true, name: true } },
                userHasRoles: {
+                  where: {
+                     role: {
+                        status: 'ACTIVE',
+                     },
+                  },
                   select: {
                      role: {
                         select: {
@@ -99,6 +104,11 @@ class UserRepository {
             university: { select: { id: true, name: true } },
             studyProgram: { select: { id: true, name: true } },
             userHasRoles: {
+               where: {
+                  role: {
+                     status: 'ACTIVE',
+                  },
+               },
                select: {
                   role: {
                      select: {
@@ -106,6 +116,11 @@ class UserRepository {
                         roleName: true,
                         status: true,
                         roleHasPermissions: {
+                           where: {
+                              permission: {
+                                 status: 'ACTIVE',
+                              },
+                           },
                            select: {
                               permission: {
                                  select: {
