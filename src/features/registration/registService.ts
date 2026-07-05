@@ -4,6 +4,7 @@ import { registRepository } from './registRepository.js';
 import { auth } from '@/utils/auth.js';
 import crypto from 'crypto';
 import { sendOutlookVerificationEmail } from '@/utils/mailer.js';
+import { AppError } from '@/utils/appError.js';
 
 class RegistService {
    async completeProfile(
@@ -37,7 +38,7 @@ class RegistService {
             !payload.outlookEmail ||
             !payload.outlookEmail.toLowerCase().endsWith('@binus.ac.id')
          ) {
-            throw new Error('You must use your Binusian Outlook Email');
+            throw new AppError('You must use your Binusian Outlook Email', 400);
          }
          validOutlookEmail = payload.outlookEmail;
          isEmailChanged = validOutlookEmail !== currentUser?.outlookEmail;
