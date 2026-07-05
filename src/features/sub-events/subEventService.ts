@@ -2,12 +2,18 @@ import { Subevent, Prisma } from '@prisma/client';
 import { CreateSubEventRequest } from './subEventTypes.js';
 import { auth } from '@/utils/auth.js';
 import { subEventRepository } from './subEventRepository.js';
+import { generateUniqueFieldKeys } from '@/utils/fieldKey.js';
 
 class SubEventService {
    async createSubEvent(
       payload: CreateSubEventRequest,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Subevent> {
+      const questions = payload.questions ?? [];
+      const fieldKeys = generateUniqueFieldKeys(
+         questions.map((question) => question.label),
+      );
+
       const subEventData: Prisma.SubeventCreateInput = {
          // Relational connects to other tables
          event: {
@@ -41,38 +47,34 @@ class SubEventService {
 
          // Build the regist form if exists
          registrationForms:
-            payload.questions && payload.questions.length > 0
+            questions.length > 0
                ? {
                     create: {
                        creator: { connect: { id: user.id } },
                        status: 'DRAFT',
                        questions: {
-                          create: payload.questions.map(
-                             (q: any, index: any) => ({
-                                label: q.label,
-                                fieldKey: q.label,
-                                fieldType: q.fieldType,
-                                isRequired: q.isRequired,
-                                helpText: q.helpText,
-                                orderIndex: index,
-                                creator: { connect: { id: user.id } },
-                                // Add options if exists
-                                options:
-                                   q.options && q.options.length > 0
-                                      ? {
-                                           create: q.options.map(
-                                              (opt: any) => ({
-                                                 label: opt.label,
-                                                 value: opt.value,
-                                                 creator: {
-                                                    connect: { id: user.id },
-                                                 },
-                                              }),
-                                           ),
-                                        }
-                                      : undefined,
-                             }),
-                          ),
+                          create: questions.map((question, index) => ({
+                             label: question.label,
+                             fieldKey: fieldKeys[index],
+                             fieldType: question.fieldType,
+                             isRequired: question.isRequired,
+                             helpText: question.helpText,
+                             orderIndex: index,
+                             creator: { connect: { id: user.id } },
+                             // Add options if exists
+                             options:
+                                question.options && question.options.length > 0
+                                   ? {
+                                        create: question.options.map((opt) => ({
+                                           label: opt.label,
+                                           value: opt.value,
+                                           creator: {
+                                              connect: { id: user.id },
+                                           },
+                                        })),
+                                     }
+                                   : undefined,
+                          })),
                        },
                     },
                  }
