@@ -1,6 +1,5 @@
-import { PrismaClient, Prisma, Subevent } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Prisma, Subevent } from '@prisma/client';
+import { prisma } from '@/config/prisma.js';
 
 class SubEventRepository {
    async create(data: Prisma.SubeventCreateInput): Promise<Subevent> {

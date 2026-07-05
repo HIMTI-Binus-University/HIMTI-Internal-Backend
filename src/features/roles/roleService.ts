@@ -2,6 +2,7 @@ import { Prisma, Role } from '@prisma/client';
 import { auth } from '@/utils/auth.js';
 import { AppError } from '@/utils/appError.js';
 import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
+import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
 import { roleRepository } from './roleRepository.js';
 import type {
    AssignPermissionToRoleRequest,
@@ -15,8 +16,15 @@ import type {
 } from './roleTypes.js';
 
 class RoleService {
-   async getRoles(params: GetRoleQuery): Promise<GetRoleResponse> {
-      const { data, total } = await roleRepository.findAll(params);
+   async getRoles(
+      params: GetRoleQuery,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<GetRoleResponse> {
+      const query = {
+         ...params,
+         status: getAuthorizedStatusFilter(params.status, user),
+      };
+      const { data, total } = await roleRepository.findAll(query);
 
       return {
          data: data.map(({ roleHasPermissions, ...role }) => ({
@@ -24,10 +32,10 @@ class RoleService {
             permissions: roleHasPermissions.map((rhp) => rhp.permission),
          })),
          meta: {
-            page: params.page,
-            limit: params.limit,
+            page: query.page,
+            limit: query.limit,
             totalRecords: total,
-            totalPages: Math.ceil(total / params.limit),
+            totalPages: Math.ceil(total / query.limit),
          },
       };
    }

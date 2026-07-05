@@ -1,7 +1,15 @@
-import { PrismaClient, Prisma, Url, UrlDetail } from '@prisma/client';
+import { Prisma, Url, UrlDetail } from '@prisma/client';
 import { GetUrlSchema } from './urlTypes.js';
+import { parseSort } from '@/utils/sort.js';
+import { prisma } from '@/config/prisma.js';
 
-const prisma = new PrismaClient();
+const allowedUrlSortFields = [
+   'createdAt',
+   'shortCode',
+   'originalUrl',
+   'status',
+   'expiresAt',
+] as const;
 
 class UrlRepository {
    async create(data: Prisma.UrlCreateInput): Promise<Url> {
@@ -31,7 +39,7 @@ class UrlRepository {
       const { page, limit, search, sort, status } = params;
 
       const where: Prisma.UrlWhereInput = {
-         status: status,
+         ...(status && { status }),
       };
 
       const adminRole = await prisma.userHasRole.findFirst({
@@ -56,13 +64,13 @@ class UrlRepository {
          ];
       }
 
-      let orderBy: Prisma.UrlOrderByWithRelationInput = { createdAt: 'desc' };
-      if (sort) {
-         const [field, direction] = sort.split(':');
-         if (['asc', 'desc'].includes(direction)) {
-            orderBy = { [field]: direction as 'asc' | 'desc' };
-         }
-      }
+      const sortOption = parseSort(sort, allowedUrlSortFields, {
+         field: 'createdAt',
+         direction: 'desc',
+      });
+      const orderBy: Prisma.UrlOrderByWithRelationInput = {
+         [sortOption.field]: sortOption.direction,
+      };
 
       const skip = (page - 1) * limit;
 

@@ -10,6 +10,7 @@ import { auth } from '@/utils/auth.js';
 import { urlRepository } from './urlRepository.js';
 import { AppError } from '@/utils/appError.js';
 import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
+import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
 
 class UrlService {
    async createUrl(
@@ -82,14 +83,18 @@ class UrlService {
       params: GetUrlSchema,
       user: typeof auth.$Infer.Session.user,
    ): Promise<GetUrlResponse> {
-      const { data, total } = await urlRepository.findAll(params, user.id);
+      const query = {
+         ...params,
+         status: getAuthorizedStatusFilter(params.status, user),
+      };
+      const { data, total } = await urlRepository.findAll(query, user.id);
       return {
          data,
          meta: {
-            page: params.page,
-            limit: params.limit,
+            page: query.page,
+            limit: query.limit,
             totalRecords: total,
-            totalPages: Math.ceil(total / params.limit),
+            totalPages: Math.ceil(total / query.limit),
          },
       };
    }
