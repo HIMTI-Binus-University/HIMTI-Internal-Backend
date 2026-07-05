@@ -1,6 +1,5 @@
-import { PrismaClient, Prisma, Event } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Prisma, Event } from '@prisma/client';
+import { prisma } from '@/config/prisma.js';
 
 class EventRepository {
    async create(data: Prisma.EventCreateInput): Promise<Event> {

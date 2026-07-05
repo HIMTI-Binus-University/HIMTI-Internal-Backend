@@ -13,7 +13,8 @@ import { roleService } from './roleService.js';
 
 export const getRoles = async (req: Request, res: Response) => {
    const query = GetRoleSchema.parse(req.query);
-   const result = await roleService.getRoles(query);
+   const userData = res.locals.user;
+   const result = await roleService.getRoles(query, userData);
    res.status(200).json({ msg: 'success', ...result });
 };
 

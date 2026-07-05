@@ -1,9 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { PrismaClient } from '@prisma/client';
 import { customSession } from 'better-auth/plugins';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/prisma.js';
 
 export const auth = betterAuth({
    database: prismaAdapter(prisma, {
@@ -36,7 +34,12 @@ export const auth = betterAuth({
    plugins: [
       customSession(async ({ user, session }) => {
          const userRoles = await prisma.userHasRole.findMany({
-            where: { userId: user.id },
+            where: {
+               userId: user.id,
+               role: {
+                  status: 'ACTIVE',
+               },
+            },
             include: { role: true },
          });
 

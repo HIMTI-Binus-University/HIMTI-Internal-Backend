@@ -1,7 +1,9 @@
-import { PrismaClient, Prisma, User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { GetUserSchema } from './userTypes.js';
+import { parseSort } from '@/utils/sort.js';
+import { prisma } from '@/config/prisma.js';
 
-const prisma = new PrismaClient();
+const allowedUserSortFields = ['createdAt', 'name', 'email', 'status'] as const;
 
 class UserRepository {
    async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
@@ -26,13 +28,13 @@ class UserRepository {
          ];
       }
 
-      let orderBy: Prisma.UserOrderByWithRelationInput = { createdAt: 'desc' };
-      if (sort) {
-         const [field, direction] = sort.split(':');
-         if (['asc', 'desc'].includes(direction)) {
-            orderBy = { [field]: direction as 'asc' | 'desc' };
-         }
-      }
+      const sortOption = parseSort(sort, allowedUserSortFields, {
+         field: 'createdAt',
+         direction: 'desc',
+      });
+      const orderBy: Prisma.UserOrderByWithRelationInput = {
+         [sortOption.field]: sortOption.direction,
+      };
 
       const skip = (page - 1) * limit;
 

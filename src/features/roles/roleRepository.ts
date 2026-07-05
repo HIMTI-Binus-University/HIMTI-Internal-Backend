@@ -1,7 +1,9 @@
-import { PrismaClient, Prisma, Role } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import type { GetRoleQuery } from './roleTypes.js';
+import { parseSort } from '@/utils/sort.js';
+import { prisma } from '@/config/prisma.js';
 
-const prisma = new PrismaClient();
+const allowedRoleSortFields = ['createdAt', 'roleName', 'status'] as const;
 
 class RoleRepository {
    async create(data: Prisma.RoleCreateInput): Promise<Role> {
@@ -47,13 +49,13 @@ class RoleRepository {
          where.OR = [{ roleName: { contains: search, mode: 'insensitive' } }];
       }
 
-      let orderBy: Prisma.RoleOrderByWithRelationInput = { createdAt: 'desc' };
-      if (sort) {
-         const [field, direction] = sort.split(':');
-         if (['asc', 'desc'].includes(direction)) {
-            orderBy = { [field]: direction as 'asc' | 'desc' };
-         }
-      }
+      const sortOption = parseSort(sort, allowedRoleSortFields, {
+         field: 'createdAt',
+         direction: 'desc',
+      });
+      const orderBy: Prisma.RoleOrderByWithRelationInput = {
+         [sortOption.field]: sortOption.direction,
+      };
 
       const skip = (page - 1) * limit;
 

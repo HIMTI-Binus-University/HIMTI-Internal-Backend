@@ -4,7 +4,8 @@ import { userService } from './userService.js';
 
 export const getUsers = async (req: Request, res: Response) => {
    const query = GetUserSchema.parse(req.query);
-   const result = await userService.getUsers(query);
+   const userData = res.locals.user;
+   const result = await userService.getUsers(query, userData);
    res.status(200).json({
       msg: 'success',
       ...result,

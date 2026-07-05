@@ -9,7 +9,8 @@ import { permissionService } from './permissionService.js';
 
 export const getPermissions = async (req: Request, res: Response) => {
    const query = GetPermissionSchema.parse(req.query);
-   const result = await permissionService.getPermissions(query);
+   const userData = res.locals.user;
+   const result = await permissionService.getPermissions(query, userData);
    res.status(200).json({
       msg: 'success',
       ...result,

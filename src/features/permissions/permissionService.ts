@@ -8,6 +8,7 @@ import type {
 import { auth } from '@/utils/auth.js';
 import { AppError } from '@/utils/appError.js';
 import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
+import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
 import { permissionRepository } from './permissionRepository.js';
 
 class PermissionService {
@@ -61,15 +62,20 @@ class PermissionService {
 
    async getPermissions(
       params: GetPermissionSchema,
+      user: typeof auth.$Infer.Session.user,
    ): Promise<GetPermissionResponse> {
-      const { data, total } = await permissionRepository.findAll(params);
+      const query = {
+         ...params,
+         status: getAuthorizedStatusFilter(params.status, user),
+      };
+      const { data, total } = await permissionRepository.findAll(query);
       return {
          data,
          meta: {
-            page: params.page,
-            limit: params.limit,
+            page: query.page,
+            limit: query.limit,
             totalRecords: total,
-            totalPages: Math.ceil(total / params.limit),
+            totalPages: Math.ceil(total / query.limit),
          },
       };
    }
