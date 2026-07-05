@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { OUTLOOK_VERIFICATION_TOKEN_TTL_HOURS } from '@/config/verification.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -22,7 +23,7 @@ export const sendOutlookVerificationEmail = async (
                </div>
                <p style="font-size: 14px; color: #666;">Atau salin tautan berikut ke browser kamu:</p>
                <p style="font-size: 14px; word-break: break-all;"><a href="${verifyLink}" style="color: #0078D4;">${verifyLink}</a></p>
-               <p style="font-size: 12px; color: #999; margin-top: 40px;">Link ini akan kadaluarsa dalam 24 jam.</p>
+               <p style="font-size: 12px; color: #999; margin-top: 40px;">Link ini akan kadaluarsa dalam ${OUTLOOK_VERIFICATION_TOKEN_TTL_HOURS} jam.</p>
             </div>
          `,
       });

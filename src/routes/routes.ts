@@ -1,7 +1,6 @@
 import express from 'express';
-import { Router } from 'express';
+import type { Request, Response, Router } from 'express';
 import urlRoutes from '@/features/url-shortener/urlRoutes.js';
-import blasterRoutes from '@/features/email-blaster/blasterRoutes.js';
 import registRoutes from '@/features/registration/registRoutes.js';
 import eventRoutes from '@/features/events/eventRoutes.js';
 import subEventRoutes from '@/features/sub-events/subEventRoutes.js';
@@ -11,8 +10,15 @@ import roleRoutes from '@/features/roles/roleRoutes.js';
 
 const router: Router = express.Router();
 
+router.get('/health', (_req: Request, res: Response) => {
+   res.status(200).json({
+      status: 'ok',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+   });
+});
+
 router.use('/url', urlRoutes);
-router.use('/email-blast', blasterRoutes);
 router.use('/registration', registRoutes);
 router.use('/event', eventRoutes);
 router.use('/sub-event', subEventRoutes);

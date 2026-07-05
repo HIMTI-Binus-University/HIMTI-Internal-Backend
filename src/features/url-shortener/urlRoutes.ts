@@ -1,5 +1,5 @@
 import express from 'express';
-import type { Router, Response, Request } from 'express';
+import type { Router } from 'express';
 import {
    clickUrl,
    createUrl,
@@ -12,10 +12,6 @@ import { requireAuth } from '@/middleware/authMiddleware.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
 
 const router: Router = express.Router();
-
-router.get('/urltest', (_req: Request, res: Response) => {
-   res.json({ message: 'test oi' });
-});
 
 router.post(
    '/create-url',
