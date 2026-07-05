@@ -296,7 +296,8 @@ export const registerUrlShortenerDocs = (registry: OpenAPIRegistry) => {
       path: '/api/url/get-list',
       tags: [tag],
       summary: 'List short links',
-      description: 'Requires authentication and the manage_urls permission.',
+      description:
+         'Requires authentication and the manage_urls permission. Status defaults to ACTIVE; only Admin users may request INACTIVE records.',
       security: [protectedEndpoint],
       request: {
          query: z.object({
@@ -304,7 +305,7 @@ export const registerUrlShortenerDocs = (registry: OpenAPIRegistry) => {
             limit: z.coerce.number().min(1).max(100).optional(),
             search: z.string().optional(),
             sort: z.string().optional(),
-            status: statusSchema,
+            status: statusSchema.optional(),
          }),
       },
       responses: {
