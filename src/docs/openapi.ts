@@ -13,12 +13,12 @@ import { registerUserDocs } from '@/features/users/userDocs.js';
 
 const registry = new OpenAPIRegistry();
 
-registry.registerComponent('securitySchemes', 'bearerAuth', {
-   type: 'http',
-   scheme: 'bearer',
-   bearerFormat: 'JWT',
+registry.registerComponent('securitySchemes', 'sessionCookie', {
+   type: 'apiKey',
+   in: 'cookie',
+   name: 'better-auth.session_token',
    description:
-      'Protected endpoints require an active Better Auth session accepted by the backend auth middleware.',
+      'Protected endpoints require an active Better Auth session cookie. In HTTPS environments Better Auth may prefix the cookie name with __Secure-. Scalar sends the existing browser cookie automatically when using the current docs host.',
 });
 
 registerHealthDocs(registry);
@@ -41,6 +41,10 @@ export const generateOpenApiDocument = () => {
          description: 'API documentation for HIMTI Internal Tools.',
       },
       servers: [
+         {
+            url: '/',
+            description: 'Current docs host',
+         },
          {
             url: `http://localhost:${process.env.PORT || 8000}`,
             description: 'Local development',
