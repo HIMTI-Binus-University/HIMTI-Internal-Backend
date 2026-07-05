@@ -1,5 +1,6 @@
 import { Prisma, User } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
+import { OUTLOOK_VERIFICATION_TOKEN_TTL_MS } from '@/config/verification.js';
 
 class RegistRepository {
    async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
@@ -26,7 +27,7 @@ class RegistRepository {
          data: {
             identifier: `outlook_verify_${id}`,
             value: token,
-            expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000),
+            expiresAt: new Date(Date.now() + OUTLOOK_VERIFICATION_TOKEN_TTL_MS),
          },
       });
    }
