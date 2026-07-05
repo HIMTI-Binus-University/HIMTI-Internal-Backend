@@ -18,9 +18,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 8000;
-const shouldEnableApiDocs =
-   process.env.ENABLE_API_DOCS === 'true' &&
-   process.env.NODE_ENV !== 'production';
+const shouldEnableApiDocs = process.env.ENABLE_API_DOCS === 'true';
 
 // app.use(limiter);
 app.use(express.json());
