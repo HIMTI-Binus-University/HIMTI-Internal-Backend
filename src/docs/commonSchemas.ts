@@ -2,7 +2,7 @@ import '@/docs/zodOpenApi.js';
 import { z } from 'zod';
 
 export const protectedEndpoint = {
-   bearerAuth: [],
+   sessionCookie: [],
 };
 
 export const idParamSchema = z.object({

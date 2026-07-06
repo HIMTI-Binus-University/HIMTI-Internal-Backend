@@ -62,7 +62,7 @@ const updateUrlRequestSchema = z.object({
 });
 
 const protectedEndpoint = {
-   bearerAuth: [],
+   sessionCookie: [],
 };
 
 export const registerUrlShortenerDocs = (registry: OpenAPIRegistry) => {

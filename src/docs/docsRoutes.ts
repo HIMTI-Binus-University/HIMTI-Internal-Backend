@@ -13,6 +13,13 @@ router.use(
    '/docs',
    apiReference({
       url: '/api/openapi.json',
+      pageTitle: 'HIMTI Internal Tools API',
+      proxyUrl: '',
+      customFetch: (input, init) =>
+         fetch(input, {
+            ...init,
+            credentials: 'include',
+         }),
    }),
 );
 
