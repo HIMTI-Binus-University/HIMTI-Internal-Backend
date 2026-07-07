@@ -15,6 +15,53 @@ class EventRepository {
       return await prisma.event.create({ data });
    }
 
+   async update(id: string, data: Prisma.EventUpdateInput): Promise<Event> {
+      return await prisma.event.update({ where: { id }, data });
+   }
+
+   async findById(id: string): Promise<Event | null> {
+      return await prisma.event.findUnique({ where: { id } });
+   }
+
+   async cancelEvent(id: string, userId: string): Promise<Event> {
+      return await prisma.$transaction(async (tx) => {
+         await tx.registrationForm.updateMany({
+            where: {
+               subEvent: {
+                  eventId: id,
+               },
+            },
+            data: {
+               status: 'CLOSED',
+               updatedBy: userId,
+            },
+         });
+
+         await tx.subevent.updateMany({
+            where: {
+               eventId: id,
+            },
+            data: {
+               status: 'CANCELLED',
+               isRegistrationOpen: false,
+               updatedBy: userId,
+            },
+         });
+
+         return await tx.event.update({
+            where: { id },
+            data: {
+               status: 'CANCELLED',
+               updater: {
+                  connect: {
+                     id: userId,
+                  },
+               },
+            },
+         });
+      });
+   }
+
    async findAllForCommitteeUser(params: GetEventQuery, userId: string) {
       const { page, limit, search, sort, status, visibility } = params;
 

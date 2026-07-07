@@ -1,6 +1,12 @@
 import type { CommitteeRole } from '@prisma/client';
 import { AppError } from '@/utils/appError.js';
+import { isAdminUser } from '@/utils/statusAccess.js';
 import { eventCommitteeRepository } from './eventCommitteeRepository.js';
+
+type SessionUserWithRoles = {
+   id: string;
+   roles?: unknown;
+};
 
 const steeringCommitteeRoles: readonly CommitteeRole[] = [
    'CHAIRPERSON',
@@ -42,6 +48,15 @@ class EventCommitteeService {
       }
 
       return membership;
+   }
+
+   async assertEventSteeringCommitteeMemberOrAdmin(
+      eventId: string,
+      user: SessionUserWithRoles,
+   ) {
+      if (isAdminUser(user)) return null;
+
+      return await this.assertEventSteeringCommitteeMember(eventId, user.id);
    }
 }
 

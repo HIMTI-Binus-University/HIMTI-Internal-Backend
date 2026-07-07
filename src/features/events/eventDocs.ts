@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
    errorResponseSchema,
    eventStatusSchema,
+   idParamSchema,
    paginationMetaSchema,
    protectedEndpoint,
    subeventStatusSchema,
@@ -30,6 +31,13 @@ const createEventRequestSchema = z.object({
    name: z.string(),
    publicDescription: z.string(),
    coverImageUrl: z.string(),
+   status: eventStatusSchema.optional(),
+});
+
+const updateEventRequestSchema = z.object({
+   name: z.string().min(1).optional(),
+   publicDescription: z.string().nullable().optional(),
+   coverImageUrl: z.string().nullable().optional(),
    status: eventStatusSchema.optional(),
 });
 
@@ -82,6 +90,10 @@ export const registerEventDocs = (registry: OpenAPIRegistry) => {
    const EventMutationResponse = registry.register(
       'EventMutationResponse',
       eventMutationResponseSchema,
+   );
+   const UpdateEventRequest = registry.register(
+      'UpdateEventRequest',
+      updateEventRequestSchema,
    );
    const EventListResponse = registry.register(
       'EventListResponse',
@@ -158,6 +170,106 @@ export const registerEventDocs = (registry: OpenAPIRegistry) => {
          },
          401: {
             description: 'Authentication required.',
+            content: {
+               'application/json': {
+                  schema: errorResponseSchema,
+               },
+            },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/event/update-event/{id}',
+      tags: [tag],
+      summary: 'Update an event',
+      description:
+         'Requires authentication, manage_events permission, and either Admin ' +
+         'role or steering committee membership. If status is CANCELLED, the ' +
+         'event cancellation flow is applied.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+         body: {
+            required: true,
+            content: {
+               'application/json': {
+                  schema: UpdateEventRequest,
+               },
+            },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Event updated.',
+            content: {
+               'application/json': {
+                  schema: EventMutationResponse,
+               },
+            },
+         },
+         400: {
+            description: 'Validation error.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema,
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: {
+            description:
+               'Missing manage_events permission, Admin role, or steering committee membership.',
+         },
+         404: {
+            description: 'Event not found.',
+            content: {
+               'application/json': {
+                  schema: errorResponseSchema,
+               },
+            },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/event/delete/{id}',
+      tags: [tag],
+      summary: 'Cancel an event',
+      description:
+         'Requires authentication, manage_events permission, and either Admin ' +
+         'role or steering committee membership. Cancels the event, related ' +
+         'sub-events, and closes related registration forms.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+      },
+      responses: {
+         200: {
+            description: 'Event cancelled.',
+            content: {
+               'application/json': {
+                  schema: EventMutationResponse,
+               },
+            },
+         },
+         400: {
+            description: 'Validation error.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema,
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: {
+            description:
+               'Missing manage_events permission, Admin role, or steering committee membership.',
+         },
+         404: {
+            description: 'Event not found.',
             content: {
                'application/json': {
                   schema: errorResponseSchema,

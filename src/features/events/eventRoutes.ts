@@ -2,7 +2,12 @@ import express from 'express';
 import type { Router } from 'express';
 import { requireAuth } from '@/middleware/authMiddleware.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
-import { createEvent, getEvents } from './eventController.js';
+import {
+   createEvent,
+   deleteEvent,
+   getEvents,
+   updateEvent,
+} from './eventController.js';
 
 const router: Router = express.Router();
 
@@ -17,6 +22,18 @@ router.post(
    requireAuth,
    requirePermission('manage_events'),
    createEvent,
+);
+router.patch(
+   '/update-event/:id',
+   requireAuth,
+   requirePermission('manage_events'),
+   updateEvent,
+);
+router.patch(
+   '/delete/:id',
+   requireAuth,
+   requirePermission('manage_events'),
+   deleteEvent,
 );
 
 export default router;

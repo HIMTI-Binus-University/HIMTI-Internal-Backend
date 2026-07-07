@@ -5,6 +5,7 @@ import {
    errorResponseSchema,
    formFieldTypeSchema,
    formQuestionStatusSchema,
+   idParamSchema,
    protectedEndpoint,
    registrationFormStatusSchema,
    subeventStatusSchema,
@@ -47,6 +48,29 @@ const createSubEventRequestSchema = z.object({
    maxParticipants: z.number().int().optional(),
    maxTicketsPerUser: z.number().int().optional(),
    questions: z.array(formQuestionRequestSchema).optional(),
+});
+
+const updateSubEventRequestSchema = z.object({
+   name: z.string().min(1).optional(),
+   publicDescription: z.string().nullable().optional(),
+   privateDescription: z.string().nullable().optional(),
+   date: z.string().datetime().optional(),
+   type: subeventTypeSchema.optional(),
+   locationName: z.string().nullable().optional(),
+   locationUrl: z.string().url().nullable().optional(),
+   price: z.number().int().min(0).optional(),
+   paid: z.boolean().optional(),
+   paymentAccountBank: z.string().optional(),
+   paymentAccountNumber: z.number().int().nullable().optional(),
+   paymentAccountName: z.string().nullable().optional(),
+   priceModifier: z.number().int().nullable().optional(),
+   paymentDesc: z.string().optional(),
+   maxParticipants: z.number().int().nullable().optional(),
+   maxTicketsPerUser: z.number().int().nullable().optional(),
+   isRegistrationOpen: z.boolean().optional(),
+   autoAcceptRegistration: z.boolean().optional(),
+   visibility: subeventVisibilitySchema.optional(),
+   status: subeventStatusSchema.optional(),
 });
 
 const formQuestionOptionSchema = z.object({
@@ -134,6 +158,10 @@ export const registerSubEventDocs = (registry: OpenAPIRegistry) => {
       'SubEventMutationResponse',
       subEventMutationResponseSchema,
    );
+   const UpdateSubEventRequest = registry.register(
+      'UpdateSubEventRequest',
+      updateSubEventRequestSchema,
+   );
 
    registry.registerPath({
       method: 'post',
@@ -141,7 +169,9 @@ export const registerSubEventDocs = (registry: OpenAPIRegistry) => {
       tags: [tag],
       summary: 'Create a sub-event',
       description:
-         'Requires authentication, manage_events permission, and event committee membership. If questions are provided, a draft registration form is created with generated field keys.',
+         'Requires authentication, manage_events permission, and event ' +
+         'committee membership. If questions are provided, a draft ' +
+         'registration form is created with generated field keys.',
       security: [protectedEndpoint],
       request: {
          body: {
@@ -172,6 +202,106 @@ export const registerSubEventDocs = (registry: OpenAPIRegistry) => {
          },
          401: {
             description: 'Authentication required.',
+            content: {
+               'application/json': {
+                  schema: errorResponseSchema,
+               },
+            },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/sub-event/update-sub-event/{id}',
+      tags: [tag],
+      summary: 'Update a sub-event',
+      description:
+         'Requires authentication, manage_events permission, and either Admin ' +
+         'role or steering committee membership on the parent event. If status ' +
+         'is CANCELLED, the sub-event cancellation flow is applied.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+         body: {
+            required: true,
+            content: {
+               'application/json': {
+                  schema: UpdateSubEventRequest,
+               },
+            },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Sub-event updated.',
+            content: {
+               'application/json': {
+                  schema: SubEventMutationResponse,
+               },
+            },
+         },
+         400: {
+            description: 'Validation error.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema,
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: {
+            description:
+               'Missing manage_events permission, Admin role, or steering committee membership.',
+         },
+         404: {
+            description: 'Sub-event not found.',
+            content: {
+               'application/json': {
+                  schema: errorResponseSchema,
+               },
+            },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/sub-event/delete/{id}',
+      tags: [tag],
+      summary: 'Cancel a sub-event',
+      description:
+         'Requires authentication, manage_events permission, and either Admin ' +
+         'role or steering committee membership on the parent event. Cancels ' +
+         'the sub-event and closes related registration forms.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+      },
+      responses: {
+         200: {
+            description: 'Sub-event cancelled.',
+            content: {
+               'application/json': {
+                  schema: SubEventMutationResponse,
+               },
+            },
+         },
+         400: {
+            description: 'Validation error.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema,
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: {
+            description:
+               'Missing manage_events permission, Admin role, or steering committee membership.',
+         },
+         404: {
+            description: 'Sub-event not found.',
             content: {
                'application/json': {
                   schema: errorResponseSchema,

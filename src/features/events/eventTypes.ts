@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { CreateEventSchema, GetEventSchema } from './eventSchema.js';
+import {
+   CreateEventSchema,
+   DeleteEventSchema,
+   GetEventSchema,
+   UpdateEventSchema,
+} from './eventSchema.js';
 import type {
    EventStatus,
    SubeventStatus,
@@ -8,7 +13,9 @@ import type {
 } from '@prisma/client';
 
 export type CreateEventRequest = z.infer<typeof CreateEventSchema>;
+export type DeleteEventRequest = z.infer<typeof DeleteEventSchema>;
 export type GetEventQuery = z.infer<typeof GetEventSchema>;
+export type UpdateEventRequest = z.infer<typeof UpdateEventSchema>;
 
 export interface EventListItem {
    id: string;
