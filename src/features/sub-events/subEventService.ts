@@ -1,6 +1,8 @@
 import { Subevent, Prisma } from '@prisma/client';
 import type {
    CreateSubEventRequest,
+   GetSubEventQuery,
+   GetSubEventResponse,
    UpdateSubEventRequest,
 } from './subEventTypes.js';
 import { auth } from '@/utils/auth.js';
@@ -8,8 +10,62 @@ import { subEventRepository } from './subEventRepository.js';
 import { generateUniqueFieldKeys } from '@/utils/fieldKey.js';
 import { eventCommitteeService } from '@/features/event-committee/eventCommitteeService.js';
 import { AppError } from '@/utils/appError.js';
+import { isAdminUser } from '@/utils/statusAccess.js';
 
 class SubEventService {
+   async getSubEvents(
+      params: GetSubEventQuery,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<GetSubEventResponse> {
+      const { data, total } = await subEventRepository.findAll(
+         params,
+         user.id,
+         isAdminUser(user),
+      );
+
+      return {
+         data: data.map(({ participants, registrationForms, ...subEvent }) => ({
+            ...subEvent,
+            registrationForms: registrationForms.map(({ _count, ...form }) => ({
+               ...form,
+               questionCount: _count.questions,
+            })),
+            participantCount: participants.length,
+            submittedResponseCount: participants.reduce(
+               (total, participant) =>
+                  total +
+                  participant.registrationResponses.filter(
+                     (response) => response.status === 'SUBMITTED',
+                  ).length,
+               0,
+            ),
+         })),
+         meta: {
+            page: params.page,
+            limit: params.limit,
+            totalRecords: total,
+            totalPages: Math.ceil(total / params.limit),
+         },
+      };
+   }
+
+   async getSubEventById(id: string, user: typeof auth.$Infer.Session.user) {
+      const subEvent = await subEventRepository.findDetailById(id);
+
+      if (!subEvent) {
+         throw new AppError('Sub-event not found', 404);
+      }
+
+      if (!isAdminUser(user)) {
+         await eventCommitteeService.assertEventCommitteeMember(
+            subEvent.eventId,
+            user.id,
+         );
+      }
+
+      return subEvent;
+   }
+
    async createSubEvent(
       payload: CreateSubEventRequest,
       user: typeof auth.$Infer.Session.user,

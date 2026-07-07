@@ -39,3 +39,26 @@ export const generateUniqueFieldKeys = (labels: string[]): string[] => {
       return fieldKey;
    });
 };
+
+export const generateUniqueFieldKey = (
+   label: string,
+   existingFieldKeys: string[],
+): string => {
+   const usedKeys = new Set(existingFieldKeys);
+   const baseKey = createFieldKey(label);
+   let fieldKey = baseKey;
+   let suffix = 2;
+
+   while (usedKeys.has(fieldKey)) {
+      const suffixText = `_${suffix}`;
+      const baseWithRoomForSuffix = truncateFieldKey(
+         baseKey,
+         MAX_FIELD_KEY_LENGTH - suffixText.length,
+      );
+
+      fieldKey = `${baseWithRoomForSuffix}${suffixText}`;
+      suffix += 1;
+   }
+
+   return fieldKey;
+};

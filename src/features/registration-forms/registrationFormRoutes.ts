@@ -3,44 +3,30 @@ import type { Router } from 'express';
 import { requireAuth } from '@/middleware/authMiddleware.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
 import {
-   createSubEvent,
-   deleteSubEvent,
-   getSubEventById,
-   getSubEvents,
-   updateSubEvent,
-} from './subEventController.js';
+   createFormQuestion,
+   deleteFormQuestion,
+   updateFormQuestion,
+} from './registrationFormController.js';
 
 const router: Router = express.Router();
 
-router.get(
-   '/get-list',
-   requireAuth,
-   requirePermission('manage_events'),
-   getSubEvents,
-);
-router.get(
-   '/get-list/:id',
-   requireAuth,
-   requirePermission('manage_events'),
-   getSubEventById,
-);
 router.post(
-   '/create-sub-event',
+   '/:id/question',
    requireAuth,
    requirePermission('manage_events'),
-   createSubEvent,
+   createFormQuestion,
 );
 router.patch(
-   '/update-sub-event/:id',
+   '/question/:id',
    requireAuth,
    requirePermission('manage_events'),
-   updateSubEvent,
+   updateFormQuestion,
 );
 router.patch(
-   '/delete/:id',
+   '/question/delete/:id',
    requireAuth,
    requirePermission('manage_events'),
-   deleteSubEvent,
+   deleteFormQuestion,
 );
 
 export default router;

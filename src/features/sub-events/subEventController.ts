@@ -2,9 +2,32 @@ import { Request, Response } from 'express';
 import {
    CreateSubEventSchema,
    DeleteSubEventSchema,
+   GetSubEventSchema,
    UpdateSubEventSchema,
 } from './subEventSchema.js';
 import { subEventService } from './subEventService.js';
+
+export const getSubEvents = async (req: Request, res: Response) => {
+   const query = GetSubEventSchema.parse(req.query);
+   const userData = res.locals.user;
+   const result = await subEventService.getSubEvents(query, userData);
+
+   res.status(200).json({
+      msg: 'success',
+      ...result,
+   });
+};
+
+export const getSubEventById = async (req: Request, res: Response) => {
+   const { id } = req.params;
+   const userData = res.locals.user;
+   const result = await subEventService.getSubEventById(id as string, userData);
+
+   res.status(200).json({
+      msg: 'success',
+      data: result,
+   });
+};
 
 export const createSubEvent = async (req: Request, res: Response) => {
    const data = req.body;

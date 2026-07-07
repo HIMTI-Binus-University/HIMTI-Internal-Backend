@@ -6,6 +6,7 @@ import {
    formFieldTypeSchema,
    formQuestionStatusSchema,
    idParamSchema,
+   paginationMetaSchema,
    protectedEndpoint,
    registrationFormStatusSchema,
    subeventStatusSchema,
@@ -15,6 +16,34 @@ import {
 } from '@/docs/commonSchemas.js';
 
 const tag = 'Sub-events';
+
+const registrationStatusSchema = z.enum([
+   'PENDING',
+   'APPROVED',
+   'REJECTED',
+   'CANCELLED',
+]);
+const paymentStatusSchema = z.enum([
+   'UNPAID',
+   'SUBMITTED',
+   'VERIFIED',
+   'REJECTED',
+]);
+const registrationResponseStatusSchema = z.enum([
+   'DRAFT',
+   'SUBMITTED',
+   'LOCKED',
+]);
+
+const getSubEventQuerySchema = z.object({
+   page: z.coerce.number().min(1).optional(),
+   limit: z.coerce.number().min(1).max(100).optional(),
+   search: z.string().optional(),
+   sort: z.string().optional(),
+   status: subeventStatusSchema.optional(),
+   visibility: subeventVisibilitySchema.optional(),
+   eventId: z.string().optional(),
+});
 
 const questionOptionRequestSchema = z.object({
    label: z.string().min(1),
@@ -144,6 +173,99 @@ const subEventSchema = z.object({
    registrationForms: z.array(registrationFormSchema),
 });
 
+const registrationFormListItemSchema = z.object({
+   id: z.string(),
+   status: registrationFormStatusSchema,
+   questionCount: z.number(),
+});
+
+const subEventListItemSchema = z.object({
+   id: z.string(),
+   eventId: z.string(),
+   name: z.string(),
+   publicDescription: z.string().nullable(),
+   privateDescription: z.string().nullable(),
+   date: z.string().datetime(),
+   type: subeventTypeSchema,
+   locationName: z.string().nullable(),
+   locationUrl: z.string().nullable(),
+   price: z.number(),
+   paid: z.boolean(),
+   visibility: subeventVisibilitySchema,
+   status: subeventStatusSchema,
+   isRegistrationOpen: z.boolean(),
+   autoAcceptRegistration: z.boolean(),
+   maxParticipants: z.number().nullable(),
+   maxTicketsPerUser: z.number().nullable(),
+   registrationForms: z.array(registrationFormListItemSchema),
+   participantCount: z.number(),
+   submittedResponseCount: z.number(),
+});
+
+const formAnswerSchema = z.object({
+   id: z.string(),
+   registrationResponseId: z.string(),
+   formQuestionId: z.string(),
+   value: z.string().nullable(),
+   selectedOptionValue: z.string().nullable(),
+   fileUrl: z.string().nullable(),
+   createdAt: z.string().datetime(),
+   updatedAt: z.string().datetime().nullable(),
+});
+
+const registrationResponseSchema = z.object({
+   id: z.string(),
+   eventHasParticipantId: z.string(),
+   registrationFormId: z.string(),
+   userId: z.string(),
+   status: registrationResponseStatusSchema,
+   submittedAt: z.string().datetime().nullable(),
+   createdAt: z.string().datetime(),
+   updatedAt: z.string().datetime().nullable(),
+   answers: z.array(formAnswerSchema),
+});
+
+const participantUserSchema = z.object({
+   id: z.string(),
+   name: z.string(),
+   email: z.string().email(),
+   image: z.string().nullable(),
+});
+
+const participantSchema = z.object({
+   id: z.string(),
+   eventId: z.string(),
+   eventModeId: z.string(),
+   userId: z.string(),
+   registrationStatus: registrationStatusSchema,
+   approvedAt: z.string().datetime().nullable(),
+   approvedBy: z.string().nullable(),
+   paymentStatus: paymentStatusSchema,
+   paymentProofUrl: z.string().nullable(),
+   paymentSubmittedAt: z.string().datetime().nullable(),
+   paymentVerifiedAt: z.string().datetime().nullable(),
+   paymentVerifiedBy: z.string().nullable(),
+   createdAt: z.string().datetime(),
+   updatedAt: z.string().datetime().nullable(),
+   user: participantUserSchema,
+   registrationResponses: z.array(registrationResponseSchema),
+});
+
+const subEventDetailSchema = subEventSchema.extend({
+   participants: z.array(participantSchema),
+});
+
+const subEventListResponseSchema = z.object({
+   msg: z.literal('success'),
+   data: z.array(subEventListItemSchema),
+   meta: paginationMetaSchema,
+});
+
+const subEventDetailResponseSchema = z.object({
+   msg: z.literal('success'),
+   data: subEventDetailSchema,
+});
+
 const subEventMutationResponseSchema = z.object({
    msg: z.literal('success'),
    data: subEventSchema,
@@ -162,6 +284,87 @@ export const registerSubEventDocs = (registry: OpenAPIRegistry) => {
       'UpdateSubEventRequest',
       updateSubEventRequestSchema,
    );
+   const SubEventListResponse = registry.register(
+      'SubEventListResponse',
+      subEventListResponseSchema,
+   );
+   const SubEventDetailResponse = registry.register(
+      'SubEventDetailResponse',
+      subEventDetailResponseSchema,
+   );
+
+   registry.registerPath({
+      method: 'get',
+      path: '/api/sub-event/get-list',
+      tags: [tag],
+      summary: 'List accessible sub-events',
+      description:
+         'Requires authentication and manage_events permission. Admin users ' +
+         'can list all sub-events; other users only see sub-events under events ' +
+         'where they are assigned in EventComittee.',
+      security: [protectedEndpoint],
+      request: {
+         query: getSubEventQuerySchema,
+      },
+      responses: {
+         200: {
+            description: 'Accessible sub-event list.',
+            content: {
+               'application/json': {
+                  schema: SubEventListResponse,
+               },
+            },
+         },
+         400: {
+            description: 'Validation error, including invalid sort format.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema.or(errorResponseSchema),
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: { description: 'Missing manage_events permission.' },
+      },
+   });
+
+   registry.registerPath({
+      method: 'get',
+      path: '/api/sub-event/get-list/{id}',
+      tags: [tag],
+      summary: 'Get sub-event detail',
+      description:
+         'Requires authentication, manage_events permission, and either Admin ' +
+         'role or parent event committee membership. Includes forms, questions, ' +
+         'options, participants, registration responses, and form answers.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+      },
+      responses: {
+         200: {
+            description: 'Sub-event detail.',
+            content: {
+               'application/json': {
+                  schema: SubEventDetailResponse,
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: {
+            description:
+               'Missing manage_events permission, Admin role, or parent event committee membership.',
+         },
+         404: {
+            description: 'Sub-event not found.',
+            content: {
+               'application/json': {
+                  schema: errorResponseSchema,
+               },
+            },
+         },
+      },
+   });
 
    registry.registerPath({
       method: 'post',

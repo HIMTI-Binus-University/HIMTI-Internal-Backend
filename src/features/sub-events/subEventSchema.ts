@@ -86,3 +86,13 @@ export const UpdateSubEventSchema = z.object({
 });
 
 export const DeleteSubEventSchema = z.object({});
+
+export const GetSubEventSchema = z.object({
+   page: z.coerce.number().min(1).default(1),
+   limit: z.coerce.number().min(1).max(100).default(10),
+   search: z.string().optional(),
+   sort: z.string().default('date:asc'),
+   status: z.enum(['DRAFT', 'OPEN', 'CLOSED', 'CANCELLED']).optional(),
+   visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).optional(),
+   eventId: z.string().optional(),
+});

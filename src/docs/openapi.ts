@@ -6,6 +6,7 @@ import { registerHealthDocs } from '@/docs/healthDocs.js';
 import { registerEventDocs } from '@/features/events/eventDocs.js';
 import { registerPermissionDocs } from '@/features/permissions/permissionDocs.js';
 import { registerRegistrationDocs } from '@/features/registration/registDocs.js';
+import { registerRegistrationFormDocs } from '@/features/registration-forms/registrationFormDocs.js';
 import { registerRoleDocs } from '@/features/roles/roleDocs.js';
 import { registerSubEventDocs } from '@/features/sub-events/subEventDocs.js';
 import { registerUrlShortenerDocs } from '@/features/url-shortener/urlDocs.js';
@@ -29,6 +30,7 @@ registerPermissionDocs(registry);
 registerUrlShortenerDocs(registry);
 registerEventDocs(registry);
 registerSubEventDocs(registry);
+registerRegistrationFormDocs(registry);
 
 export const generateOpenApiDocument = () => {
    const generator = new OpenApiGeneratorV3(registry.definitions);
