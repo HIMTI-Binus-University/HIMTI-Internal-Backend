@@ -1,6 +1,17 @@
 import { Request, Response } from 'express';
-import { CreateEventSchema } from './eventSchema.js';
+import { CreateEventSchema, GetEventSchema } from './eventSchema.js';
 import { eventService } from './eventService.js';
+
+export const getEvents = async (req: Request, res: Response) => {
+   const query = GetEventSchema.parse(req.query);
+   const userData = res.locals.user;
+   const result = await eventService.getEvents(query, userData);
+
+   res.status(200).json({
+      msg: 'success',
+      ...result,
+   });
+};
 
 export const createEvent = async (req: Request, res: Response) => {
    const data = req.body;

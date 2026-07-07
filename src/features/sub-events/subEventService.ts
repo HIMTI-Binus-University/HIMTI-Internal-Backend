@@ -3,12 +3,18 @@ import { CreateSubEventRequest } from './subEventTypes.js';
 import { auth } from '@/utils/auth.js';
 import { subEventRepository } from './subEventRepository.js';
 import { generateUniqueFieldKeys } from '@/utils/fieldKey.js';
+import { eventCommitteeService } from '@/features/event-committee/eventCommitteeService.js';
 
 class SubEventService {
    async createSubEvent(
       payload: CreateSubEventRequest,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Subevent> {
+      await eventCommitteeService.assertEventCommitteeMember(
+         payload.eventId,
+         user.id,
+      );
+
       const questions = payload.questions ?? [];
       const fieldKeys = generateUniqueFieldKeys(
          questions.map((question) => question.label),

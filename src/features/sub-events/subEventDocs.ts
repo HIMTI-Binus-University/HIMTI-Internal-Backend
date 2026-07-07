@@ -141,7 +141,7 @@ export const registerSubEventDocs = (registry: OpenAPIRegistry) => {
       tags: [tag],
       summary: 'Create a sub-event',
       description:
-         'Requires authentication. If questions are provided, a draft registration form is created with generated field keys.',
+         'Requires authentication, manage_events permission, and event committee membership. If questions are provided, a draft registration form is created with generated field keys.',
       security: [protectedEndpoint],
       request: {
          body: {
