@@ -1,4 +1,4 @@
-import { FormQuestion, Prisma } from '@prisma/client';
+import { FormQuestion, FormQuestionOption, Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
 
 class RegistrationFormRepository {
@@ -21,8 +21,10 @@ class RegistrationFormRepository {
             registrationFormId,
          },
          select: {
+            id: true,
             fieldKey: true,
             orderIndex: true,
+            status: true,
          },
       });
    }
@@ -61,6 +63,43 @@ class RegistrationFormRepository {
          where: {
             registrationFormId: formId,
          },
+      });
+   }
+
+   async reorderQuestions(
+      formId: string,
+      questionIds: string[],
+      userId: string,
+   ) {
+      return await prisma.$transaction(async (tx) => {
+         await Promise.all(
+            questionIds.map((questionId, orderIndex) =>
+               tx.formQuestion.update({
+                  where: { id: questionId },
+                  data: {
+                     orderIndex,
+                     updater: {
+                        connect: {
+                           id: userId,
+                        },
+                     },
+                  },
+               }),
+            ),
+         );
+
+         return await tx.formQuestion.findMany({
+            where: {
+               registrationFormId: formId,
+               status: 'ACTIVE',
+            },
+            orderBy: {
+               orderIndex: 'asc',
+            },
+            include: {
+               options: true,
+            },
+         });
       });
    }
 
@@ -103,6 +142,88 @@ class RegistrationFormRepository {
                options: true,
             },
          });
+      });
+   }
+
+   async findOptionById(id: string) {
+      return await prisma.formQuestionOption.findUnique({
+         where: { id },
+         include: {
+            question: {
+               include: {
+                  form: {
+                     select: {
+                        id: true,
+                        status: true,
+                        subEvent: {
+                           select: {
+                              eventId: true,
+                           },
+                        },
+                     },
+                  },
+               },
+            },
+         },
+      });
+   }
+
+   async findActiveOptionByValue(
+      formQuestionId: string,
+      value: string,
+      excludeId?: string,
+   ) {
+      return await prisma.formQuestionOption.findFirst({
+         where: {
+            formQuestionId,
+            value,
+            isActive: true,
+            ...(excludeId && { id: { not: excludeId } }),
+         },
+      });
+   }
+
+   async countActiveOptionsForQuestion(
+      formQuestionId: string,
+   ): Promise<number> {
+      return await prisma.formQuestionOption.count({
+         where: {
+            formQuestionId,
+            isActive: true,
+         },
+      });
+   }
+
+   async createQuestionOption(
+      data: Prisma.FormQuestionOptionCreateInput,
+   ): Promise<FormQuestionOption> {
+      return await prisma.formQuestionOption.create({ data });
+   }
+
+   async updateQuestionOption(
+      id: string,
+      data: Prisma.FormQuestionOptionUpdateInput,
+   ): Promise<FormQuestionOption> {
+      return await prisma.formQuestionOption.update({
+         where: { id },
+         data,
+      });
+   }
+
+   async deleteQuestionOption(
+      id: string,
+      userId: string,
+   ): Promise<FormQuestionOption> {
+      return await prisma.formQuestionOption.update({
+         where: { id },
+         data: {
+            isActive: false,
+            updater: {
+               connect: {
+                  id: userId,
+               },
+            },
+         },
       });
    }
 }

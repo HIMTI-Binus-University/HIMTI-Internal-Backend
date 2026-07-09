@@ -35,6 +35,16 @@ const updateFormQuestionRequestSchema = z.object({
    status: formQuestionStatusSchema.optional(),
 });
 
+const reorderFormQuestionsRequestSchema = z.object({
+   questionIds: z.array(z.string()).min(1),
+});
+
+const updateFormQuestionOptionRequestSchema = z.object({
+   label: z.string().min(1).max(255).optional(),
+   value: z.string().min(1).max(255).optional(),
+   isActive: z.boolean().optional(),
+});
+
 const formQuestionOptionSchema = z.object({
    id: z.string(),
    formQuestionId: z.string(),
@@ -69,6 +79,16 @@ const formQuestionMutationResponseSchema = z.object({
    data: formQuestionSchema,
 });
 
+const formQuestionListResponseSchema = z.object({
+   msg: z.literal('success'),
+   data: z.array(formQuestionSchema),
+});
+
+const formQuestionOptionMutationResponseSchema = z.object({
+   msg: z.literal('success'),
+   data: formQuestionOptionSchema,
+});
+
 export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    const CreateFormQuestionRequest = registry.register(
       'CreateFormQuestionRequest',
@@ -78,9 +98,25 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
       'UpdateFormQuestionRequest',
       updateFormQuestionRequestSchema,
    );
+   const ReorderFormQuestionsRequest = registry.register(
+      'ReorderFormQuestionsRequest',
+      reorderFormQuestionsRequestSchema,
+   );
+   const UpdateFormQuestionOptionRequest = registry.register(
+      'UpdateFormQuestionOptionRequest',
+      updateFormQuestionOptionRequestSchema,
+   );
    const FormQuestionMutationResponse = registry.register(
       'FormQuestionMutationResponse',
       formQuestionMutationResponseSchema,
+   );
+   const FormQuestionListResponse = registry.register(
+      'FormQuestionListResponse',
+      formQuestionListResponseSchema,
+   );
+   const FormQuestionOptionMutationResponse = registry.register(
+      'FormQuestionOptionMutationResponse',
+      formQuestionOptionMutationResponseSchema,
    );
 
    registry.registerPath({
@@ -140,6 +176,114 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
 
    registry.registerPath({
       method: 'patch',
+      path: '/api/registration-form/{id}/reorder-questions',
+      tags: [tag],
+      summary: 'Reorder form questions',
+      description:
+         'Requires authentication, manage_events permission, and either Admin ' +
+         'role or steering committee membership on the parent event. The body ' +
+         'must include all active question ids in the desired order.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+         body: {
+            required: true,
+            content: {
+               'application/json': {
+                  schema: ReorderFormQuestionsRequest,
+               },
+            },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Form questions reordered.',
+            content: {
+               'application/json': {
+                  schema: FormQuestionListResponse,
+               },
+            },
+         },
+         400: {
+            description: 'Validation error or form is not editable.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema.or(errorResponseSchema),
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: {
+            description:
+               'Missing manage_events permission, Admin role, or steering committee membership.',
+         },
+         404: {
+            description: 'Registration form not found.',
+            content: {
+               'application/json': {
+                  schema: errorResponseSchema,
+               },
+            },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'post',
+      path: '/api/registration-form/question/{id}/option',
+      tags: [tag],
+      summary: 'Create a form question option',
+      description:
+         'Requires authentication, manage_events permission, and either Admin ' +
+         'role or steering committee membership on the parent event. Only ' +
+         'option-based questions on draft forms without responses can receive options.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+         body: {
+            required: true,
+            content: {
+               'application/json': {
+                  schema: formQuestionOptionRequestSchema,
+               },
+            },
+         },
+      },
+      responses: {
+         201: {
+            description: 'Form question option created.',
+            content: {
+               'application/json': {
+                  schema: FormQuestionOptionMutationResponse,
+               },
+            },
+         },
+         400: {
+            description: 'Validation error or form is not editable.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema.or(errorResponseSchema),
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: {
+            description:
+               'Missing manage_events permission, Admin role, or steering committee membership.',
+         },
+         404: {
+            description: 'Form question not found.',
+            content: {
+               'application/json': {
+                  schema: errorResponseSchema,
+               },
+            },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
       path: '/api/registration-form/question/{id}',
       tags: [tag],
       summary: 'Update a form question',
@@ -183,6 +327,106 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
          },
          404: {
             description: 'Form question not found.',
+            content: {
+               'application/json': {
+                  schema: errorResponseSchema,
+               },
+            },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/registration-form/option/{id}',
+      tags: [tag],
+      summary: 'Update a form question option',
+      description:
+         'Requires authentication, manage_events permission, and either Admin ' +
+         'role or steering committee membership on the parent event. Only draft ' +
+         'forms without responses can be edited.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+         body: {
+            required: true,
+            content: {
+               'application/json': {
+                  schema: UpdateFormQuestionOptionRequest,
+               },
+            },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Form question option updated.',
+            content: {
+               'application/json': {
+                  schema: FormQuestionOptionMutationResponse,
+               },
+            },
+         },
+         400: {
+            description: 'Validation error or form is not editable.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema.or(errorResponseSchema),
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: {
+            description:
+               'Missing manage_events permission, Admin role, or steering committee membership.',
+         },
+         404: {
+            description: 'Form question option not found.',
+            content: {
+               'application/json': {
+                  schema: errorResponseSchema,
+               },
+            },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/registration-form/option/delete/{id}',
+      tags: [tag],
+      summary: 'Delete a form question option',
+      description:
+         'Requires authentication, manage_events permission, and either Admin ' +
+         'role or steering committee membership on the parent event. Soft ' +
+         'deletes the option by setting isActive to false.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+      },
+      responses: {
+         200: {
+            description: 'Form question option deleted.',
+            content: {
+               'application/json': {
+                  schema: FormQuestionOptionMutationResponse,
+               },
+            },
+         },
+         400: {
+            description: 'Validation error or form is not editable.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema.or(errorResponseSchema),
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: {
+            description:
+               'Missing manage_events permission, Admin role, or steering committee membership.',
+         },
+         404: {
+            description: 'Form question option not found.',
             content: {
                'application/json': {
                   schema: errorResponseSchema,

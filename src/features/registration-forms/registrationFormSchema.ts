@@ -25,6 +25,10 @@ export const CreateFormQuestionSchema = z.object({
    options: z.array(FormQuestionOptionSchema).optional(),
 });
 
+export const ReorderFormQuestionsSchema = z.object({
+   questionIds: z.array(z.string()).min(1),
+});
+
 export const UpdateFormQuestionSchema = z.object({
    label: z.string().min(1).max(255).optional(),
    fieldType: FormFieldTypeEnum.optional(),
@@ -35,3 +39,16 @@ export const UpdateFormQuestionSchema = z.object({
 });
 
 export const DeleteFormQuestionSchema = z.object({});
+
+export const CreateFormQuestionOptionSchema = z.object({
+   label: z.string().min(1).max(255),
+   value: z.string().min(1).max(255),
+});
+
+export const UpdateFormQuestionOptionSchema = z.object({
+   label: z.string().min(1).max(255).optional(),
+   value: z.string().min(1).max(255).optional(),
+   isActive: z.boolean().optional(),
+});
+
+export const DeleteFormQuestionOptionSchema = z.object({});
