@@ -3,6 +3,7 @@ import {
    OpenApiGeneratorV3,
 } from '@asteasolutions/zod-to-openapi';
 import { registerHealthDocs } from '@/docs/healthDocs.js';
+import { registerEventCommitteeDocs } from '@/features/event-committee/eventCommitteeDocs.js';
 import { registerEventDocs } from '@/features/events/eventDocs.js';
 import { registerPermissionDocs } from '@/features/permissions/permissionDocs.js';
 import { registerRegistrationDocs } from '@/features/registration/registDocs.js';
@@ -29,6 +30,7 @@ registerRoleDocs(registry);
 registerPermissionDocs(registry);
 registerUrlShortenerDocs(registry);
 registerEventDocs(registry);
+registerEventCommitteeDocs(registry);
 registerSubEventDocs(registry);
 registerRegistrationFormDocs(registry);
 
