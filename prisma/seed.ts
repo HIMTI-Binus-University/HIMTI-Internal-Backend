@@ -34,6 +34,32 @@ async function main() {
    }
 
    // ==========================================
+   // SEED BINUS REGIONS
+   // ==========================================
+   console.log('⏳ Seeding BINUS Regions...');
+   const binusRegions = [
+      'Kemanggisan',
+      'Alam Sutera',
+      'Semarang',
+      'Malang',
+      'Bekasi',
+      'Medan',
+      'Bandung',
+   ];
+   for (const name of binusRegions) {
+      await prisma.binusRegion.upsert({
+         where: { name },
+         update: {
+            status: 'ACTIVE',
+         },
+         create: {
+            name,
+            status: 'ACTIVE',
+         },
+      });
+   }
+
+   // ==========================================
    // SEED SYSTEM USER (for createdBy references)
    // ==========================================
    console.log('⏳ Seeding System User...');
@@ -105,6 +131,22 @@ async function main() {
          });
       }
    }
+
+   // ==========================================
+   // SEED NORMAL MEMBER ROLE
+   // ==========================================
+   console.log('⏳ Seeding Member Role...');
+   await prisma.role.upsert({
+      where: { roleName: 'Member' },
+      update: {
+         status: 'ACTIVE',
+      },
+      create: {
+         roleName: 'Member',
+         status: 'ACTIVE',
+         creator: { connect: { id: systemUser.id } },
+      },
+   });
 
    console.log('✅ Seeding berhasil diselesaikan!');
 }
