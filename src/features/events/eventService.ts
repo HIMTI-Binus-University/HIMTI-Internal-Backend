@@ -11,6 +11,9 @@ import { AppError } from '@/utils/appError.js';
 import { eventCommitteeService } from '@/features/event-committee/eventCommitteeService.js';
 
 class EventService {
+   async getPublishedForMembers() {
+      return await eventRepository.findPublishedForMembers();
+   }
    async getEvents(
       params: GetEventQuery,
       user: typeof auth.$Infer.Session.user,

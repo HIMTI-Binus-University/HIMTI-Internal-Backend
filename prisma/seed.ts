@@ -22,14 +22,49 @@ async function main() {
    // ==========================================
    console.log('⏳ Seeding Study Programs...');
    const studyPrograms = [
-      { name: 'Computer Science Reguler', shortName: 'CS Reguler' },
-      { name: 'Computer Science Global', shortName: 'CS Global' },
+      { name: 'Artificial Intelligence', shortName: 'AI' },
+      { name: 'Computer Science - Global Class', shortName: 'CS Global' },
+      { name: 'Computer Science - Regular Class', shortName: 'CS Regular' },
+      { name: 'Computer Science - Master Track', shortName: 'CS Master' },
+      {
+         name: 'Computer Science - Software Engineering',
+         shortName: 'CS Software Engineering',
+      },
+      { name: 'Cyber Security', shortName: 'Cyber Security' },
+      { name: 'Data Science', shortName: 'Data Science' },
+      { name: 'Digital Psychology', shortName: 'Digital Psychology' },
+      {
+         name: 'Game Application and Technology',
+         shortName: 'GAT',
+      },
    ];
    for (const sp of studyPrograms) {
       await prisma.studyProgram.upsert({
          where: { name: sp.name },
          update: {},
          create: { name: sp.name, shortName: sp.shortName },
+      });
+   }
+
+   // ==========================================
+   // SEED REGIONS
+   // ==========================================
+   console.log('⏳ Seeding Regions...');
+   const regions = [
+      'Alam Sutera',
+      'Bandung',
+      'Bekasi',
+      'Kemanggisan',
+      'Malang',
+      'Medan',
+      'Senayan',
+      'Semarang',
+   ];
+   for (const name of regions) {
+      await prisma.region.upsert({
+         where: { name },
+         update: {},
+         create: { name },
       });
    }
 

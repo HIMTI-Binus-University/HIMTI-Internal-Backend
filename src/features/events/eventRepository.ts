@@ -11,6 +11,20 @@ const allowedEventSortFields = [
 ] as const;
 
 class EventRepository {
+   async findPublishedForMembers() {
+      return await prisma.event.findMany({
+         where: { status: 'PUBLISHED', subevents: { some: { status: 'OPEN', isRegistrationOpen: true, visibility: 'PUBLIC' } } },
+         orderBy: { createdAt: 'desc' },
+         select: {
+            id: true, name: true, publicDescription: true, coverImageUrl: true,
+            subevents: {
+               where: { status: 'OPEN', isRegistrationOpen: true, visibility: 'PUBLIC' },
+               orderBy: { date: 'asc' },
+               select: { id: true, name: true, publicDescription: true, date: true, type: true, locationName: true, price: true, maxParticipants: true },
+            },
+         },
+      });
+   }
    async create(data: Prisma.EventCreateInput): Promise<Event> {
       return await prisma.event.create({ data });
    }

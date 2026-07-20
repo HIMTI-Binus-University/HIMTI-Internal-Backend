@@ -6,10 +6,13 @@ import {
    createEvent,
    deleteEvent,
    getEvents,
+   getPublishedEvents,
    updateEvent,
 } from './eventController.js';
 
 const router: Router = express.Router();
+
+router.get('/published', requireAuth, getPublishedEvents);
 
 router.get(
    '/get-list',

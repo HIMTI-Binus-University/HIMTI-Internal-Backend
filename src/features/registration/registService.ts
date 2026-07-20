@@ -30,17 +30,19 @@ class RegistService {
          .toLowerCase()
          .includes('computer science');
 
-      let validOutlookEmail = null;
+      let validOutlookEmail = payload.outlookEmail || null;
       let isEmailChanged = false;
 
       if (isBinus && isCompSci) {
          if (
             !payload.outlookEmail ||
-            !payload.outlookEmail.toLowerCase().endsWith('@binus.ac.id')
+            !['@binus.ac.id', '@binus.edu'].some((domain) =>
+               payload.outlookEmail?.toLowerCase().endsWith(domain),
+            )
          ) {
             throw new AppError('You must use your Binusian Outlook Email', 400);
          }
-         validOutlookEmail = payload.outlookEmail;
+         validOutlookEmail = payload.outlookEmail.toLowerCase();
          isEmailChanged = validOutlookEmail !== currentUser?.outlookEmail;
       }
 
@@ -59,11 +61,14 @@ class RegistService {
             },
          },
 
-         studyProgram: {
-            connect: {
-               id: payload.studyProgramId,
-            },
-         },
+          studyProgram: {
+             connect: {
+                id: payload.studyProgramId,
+             },
+          },
+          region: payload.regionId
+             ? { connect: { id: payload.regionId } }
+             : { disconnect: true },
       };
 
       if (isEmailChanged) {
@@ -88,7 +93,12 @@ class RegistService {
          !updatedUser.outlookEmailVerified
       ) {
          const token = crypto.randomBytes(32).toString('hex');
-         await registRepository.verifyOutlook(updatedUser.id, token);
+          await registRepository.verifyOutlook(
+             updatedUser.id,
+             validOutlookEmail,
+             token,
+          );
+
          const verifyLink = `${process.env.FRONTEND_URL}/verify-outlook?token=${token}`;
          // console.log(`Link: ${verifyLink}`);
          try {
@@ -128,7 +138,11 @@ class RegistService {
          status: user.status,
          nim: user.nim,
          universityId: user.universityId,
-         studyProgramId: user.studyProgramId,
+          studyProgramId: user.studyProgramId,
+          regionId: user.regionId,
+          university: user.university,
+          studyProgram: user.studyProgram,
+          region: user.region,
          graduateBatch: user.graduateBatch,
          phoneNumber: user.phoneNumber,
          lineId: user.lineId,
@@ -137,8 +151,9 @@ class RegistService {
          updatedAt: user.updatedAt,
          updatedBy: user.updatedBy,
          roles,
-         permissions,
-      };
+          permissions,
+          registrationCompleted: Boolean(user.name && user.universityId && user.studyProgramId && user.regionId),
+       };
    }
 }
 
