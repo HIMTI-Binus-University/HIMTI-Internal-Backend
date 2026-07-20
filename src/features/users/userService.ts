@@ -6,10 +6,18 @@ import {
    GetUserResponse,
 } from './userTypes.js';
 import { auth } from '@/utils/auth.js';
+import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
 
 class UserService {
-   async getUsers(params: GetUserSchema): Promise<GetUserResponse> {
-      const { data, total } = await userRepository.findAll(params);
+   async getUsers(
+      params: GetUserSchema,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<GetUserResponse> {
+      const query = {
+         ...params,
+         status: getAuthorizedStatusFilter(params.status, user),
+      };
+      const { data, total } = await userRepository.findAll(query);
 
       return {
          data: data.map(({ userHasRoles, ...user }) => ({
@@ -17,10 +25,10 @@ class UserService {
             roles: userHasRoles.map((uhr) => uhr.role),
          })),
          meta: {
-            page: params.page,
-            limit: params.limit,
+            page: query.page,
+            limit: query.limit,
             totalRecords: total,
-            totalPages: Math.ceil(total / params.limit),
+            totalPages: Math.ceil(total / query.limit),
          },
       };
    }
@@ -64,9 +72,11 @@ class UserService {
 
       const { userHasRoles, ...rest } = user;
 
-      const roles = userHasRoles.map(
-         ({ role: { roleHasPermissions, ...role } }) => role,
-      );
+      const roles = userHasRoles.map(({ role }) => ({
+         id: role.id,
+         roleName: role.roleName,
+         status: role.status,
+      }));
 
       // Merge all permissions from all roles, remove the duplicates using id
       const permissionMap = new Map<

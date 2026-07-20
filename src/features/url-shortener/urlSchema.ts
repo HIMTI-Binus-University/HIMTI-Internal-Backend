@@ -46,16 +46,7 @@ export const UpdateUrlSchema = z.object({
    status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
-export const DeleteUrlSchema = z.object({
-   shortCode: z
-      .string()
-      .min(3, { message: 'Short code must be at least 3 characters' })
-      .regex(/^[a-zA-Z0-9]+$/, {
-         message: 'Short code cannot contain special characters or spaces',
-      })
-      .optional(),
-   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
-});
+export const DeleteUrlSchema = z.object({});
 
 export const LogClickSchema = z.object({
    urlId: z.string().uuid(),
@@ -75,7 +66,7 @@ export const GetUrlSchema = z.object({
    limit: z.coerce.number().min(1).max(100).default(10),
    search: z.string().optional(),
    sort: z.string().default('createdAt:desc'),
-   status: z.enum(['ACTIVE', 'INACTIVE']),
+   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
 export const GeoDataSchema = z.object({

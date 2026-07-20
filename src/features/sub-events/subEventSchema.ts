@@ -61,3 +61,38 @@ export const CreateSubEventSchema = z.object({
    // Questions
    questions: z.array(FormQuestionSchema).optional(),
 });
+
+export const UpdateSubEventSchema = z.object({
+   name: z.string().min(1, 'Sub-event name is required').optional(),
+   publicDescription: z.string().optional().nullable(),
+   privateDescription: z.string().optional().nullable(),
+   date: z.string().datetime().optional(),
+   type: SubeventTypeEnum.optional(),
+   locationName: z.string().optional().nullable(),
+   locationUrl: z.string().url().optional().nullable(),
+   price: z.number().int().min(0).optional(),
+   paid: z.boolean().optional(),
+   paymentAccountBank: z.string().optional(),
+   paymentAccountNumber: z.int().optional().nullable(),
+   paymentAccountName: z.string().optional().nullable(),
+   priceModifier: z.number().int().optional().nullable(),
+   paymentDesc: z.string().optional(),
+   maxParticipants: z.number().int().optional().nullable(),
+   maxTicketsPerUser: z.number().int().optional().nullable(),
+   isRegistrationOpen: z.boolean().optional(),
+   autoAcceptRegistration: z.boolean().optional(),
+   visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).optional(),
+   status: z.enum(['DRAFT', 'OPEN', 'CLOSED', 'CANCELLED']).optional(),
+});
+
+export const DeleteSubEventSchema = z.object({});
+
+export const GetSubEventSchema = z.object({
+   page: z.coerce.number().min(1).default(1),
+   limit: z.coerce.number().min(1).max(100).default(10),
+   search: z.string().optional(),
+   sort: z.string().default('date:asc'),
+   status: z.enum(['DRAFT', 'OPEN', 'CLOSED', 'CANCELLED']).optional(),
+   visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).optional(),
+   eventId: z.string().optional(),
+});

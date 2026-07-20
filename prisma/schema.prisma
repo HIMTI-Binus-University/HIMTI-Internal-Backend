@@ -57,6 +57,7 @@ enum SubeventType {
 }
 
 enum CommitteeRole {
+   ADVISOR
    CHAIRPERSON
    VICE_CHAIRPERSON
    SECRETARY

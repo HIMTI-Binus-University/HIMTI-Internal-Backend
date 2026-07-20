@@ -9,11 +9,13 @@ export const UpdatePermissionSchema = z.object({
    status: z.enum(['ACTIVE', 'INACTIVE']),
 });
 
+export const DeletePermissionSchema = z.object({});
+
 export const GetPermissionSchema = z.object({
    page: z.coerce.number().min(1).default(1),
    limit: z.coerce.number().min(1).max(100).default(10),
    search: z.string().optional(),
    sort: z.string().default('createdAt:desc'),
-   status: z.enum(['ACTIVE', 'INACTIVE']),
+   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 //

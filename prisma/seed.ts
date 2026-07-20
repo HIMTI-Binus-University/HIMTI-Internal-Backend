@@ -57,6 +57,7 @@ async function main() {
       'manage_permissions',
       'manage_users',
       'manage_roles',
+      'manage_events',
    ];
 
    const permissions: Record<string, { id: string }> = {};

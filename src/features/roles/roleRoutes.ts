@@ -9,6 +9,7 @@ import {
    removeRoleFromUser,
    assignPermissionToRole,
    removePermissionFromRole,
+   deleteRole,
 } from './roleController.js';
 import { requireAuth } from '@/middleware/authMiddleware.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
@@ -59,6 +60,13 @@ router.delete(
    requireAuth,
    requirePermission('manage_roles'),
    removePermissionFromRole,
+);
+
+router.patch(
+   '/role/delete/:id',
+   requireAuth,
+   requirePermission('manage_roles'),
+   deleteRole,
 );
 
 export default router;

@@ -11,3 +11,11 @@ public/index.html
 
 /prisma/dbml/
 dist
+
+IMPROVEMENT.md
+debug-photo/
+
+AGENTS.md 
+.codex/
+.agents/
+/plan/

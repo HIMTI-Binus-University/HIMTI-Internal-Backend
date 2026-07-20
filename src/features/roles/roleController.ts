@@ -6,13 +6,15 @@ import {
    GetRoleSchema,
    RemovePermissionFromRoleSchema,
    RemoveRoleFromUserSchema,
+   DeleteRoleSchema,
    UpdateRoleSchema,
 } from './roleSchema.js';
 import { roleService } from './roleService.js';
 
 export const getRoles = async (req: Request, res: Response) => {
    const query = GetRoleSchema.parse(req.query);
-   const result = await roleService.getRoles(query);
+   const userData = res.locals.user;
+   const result = await roleService.getRoles(query, userData);
    res.status(200).json({ msg: 'success', ...result });
 };
 
@@ -43,6 +45,17 @@ export const updateRole = async (req: Request, res: Response) => {
       return res.status(400).json({ errors: validation.error.format() });
    }
    const result = await roleService.updateRole(validation.data, id, userData);
+   res.status(200).json({ msg: 'success', data: result });
+};
+
+export const deleteRole = async (req: Request, res: Response) => {
+   const { id } = req.params;
+   const userData = res.locals.user;
+   const validation = DeleteRoleSchema.safeParse(req.body ?? {});
+   if (!validation.success) {
+      return res.status(400).json({ errors: validation.error.format() });
+   }
+   const result = await roleService.deleteRole(id, userData);
    res.status(200).json({ msg: 'success', data: result });
 };
 

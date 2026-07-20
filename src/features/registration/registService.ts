@@ -4,6 +4,7 @@ import { registRepository } from './registRepository.js';
 import { auth } from '@/utils/auth.js';
 import crypto from 'crypto';
 import { sendOutlookVerificationEmail } from '@/utils/mailer.js';
+import { AppError } from '@/utils/appError.js';
 
 class RegistService {
    async completeProfile(
@@ -37,7 +38,7 @@ class RegistService {
             !payload.outlookEmail ||
             !payload.outlookEmail.toLowerCase().endsWith('@binus.ac.id')
          ) {
-            throw new Error('You must use your Binusian Outlook Email');
+            throw new AppError('You must use your Binusian Outlook Email', 400);
          }
          validOutlookEmail = payload.outlookEmail;
          isEmailChanged = validOutlookEmail !== currentUser?.outlookEmail;
@@ -116,10 +117,25 @@ class RegistService {
          ),
       ];
 
-      const { userHasRoles, ...userData } = user;
-
       return {
-         ...userData,
+         id: user.id,
+         name: user.name,
+         email: user.email,
+         emailVerified: user.emailVerified,
+         outlookEmail: user.outlookEmail,
+         outlookEmailVerified: user.outlookEmailVerified,
+         image: user.image,
+         status: user.status,
+         nim: user.nim,
+         universityId: user.universityId,
+         studyProgramId: user.studyProgramId,
+         graduateBatch: user.graduateBatch,
+         phoneNumber: user.phoneNumber,
+         lineId: user.lineId,
+         createdAt: user.createdAt,
+         createdBy: user.createdBy,
+         updatedAt: user.updatedAt,
+         updatedBy: user.updatedBy,
          roles,
          permissions,
       };

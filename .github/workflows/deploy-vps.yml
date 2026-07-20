@@ -1,0 +1,145 @@
+name: Deploy Internal Backend to VPS
+
+on:
+   push:
+      branches:
+         - dev
+         - main
+   workflow_dispatch:
+      inputs:
+         target:
+            description: Deployment target
+            required: true
+            type: choice
+            options:
+               - development
+               - production
+            default: development
+
+env:
+   IMAGE_NAME: ghcr.io/himti-binus-university/himti-internal-backend
+
+jobs:
+   build-and-push:
+      name: Build and Push Docker Image
+      runs-on: ubuntu-latest
+
+      permissions:
+         contents: read
+         packages: write
+
+      outputs:
+         target: ${{ steps.vars.outputs.target }}
+         image_tag: ${{ steps.vars.outputs.image_tag }}
+         service: ${{ steps.vars.outputs.service }}
+         profile: ${{ steps.vars.outputs.profile }}
+         env_file: ${{ steps.vars.outputs.env_file }}
+
+      steps:
+         - name: Checkout Code
+           uses: actions/checkout@v4
+
+         - name: Resolve deployment target
+           id: vars
+           shell: bash
+           run: |
+              if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+                TARGET="${{ inputs.target }}"
+              elif [[ "${{ github.ref_name }}" == "main" ]]; then
+                TARGET="production"
+              else
+                TARGET="development"
+              fi
+
+              if [[ "$TARGET" == "production" ]]; then
+                echo "target=production" >> "$GITHUB_OUTPUT"
+                echo "image_tag=prod" >> "$GITHUB_OUTPUT"
+                echo "service=internal-backend-prod" >> "$GITHUB_OUTPUT"
+                echo "profile=prod" >> "$GITHUB_OUTPUT"
+                echo "env_file=env/internal-backend-prod.env" >> "$GITHUB_OUTPUT"
+              else
+                echo "target=development" >> "$GITHUB_OUTPUT"
+                echo "image_tag=dev" >> "$GITHUB_OUTPUT"
+                echo "service=internal-backend-dev" >> "$GITHUB_OUTPUT"
+                echo "profile=dev" >> "$GITHUB_OUTPUT"
+                echo "env_file=env/internal-backend-dev.env" >> "$GITHUB_OUTPUT"
+              fi
+
+         - name: Show deployment target
+           run: |
+              echo "Target: ${{ steps.vars.outputs.target }}"
+              echo "Image:  ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.image_tag }}"
+              echo "Service: ${{ steps.vars.outputs.service }}"
+
+         - name: Login to GitHub Container Registry
+           uses: docker/login-action@v3
+           with:
+              registry: ghcr.io
+              username: ${{ github.actor }}
+              password: ${{ secrets.GITHUB_TOKEN }}
+
+         - name: Set Docker tags
+           id: tags
+           shell: bash
+           run: |
+              SHORT_SHA="$(echo "${{ github.sha }}" | cut -c1-7)"
+
+              {
+                echo "tags<<EOF"
+                echo "${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.image_tag }}"
+                echo "${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.image_tag }}-${SHORT_SHA}"
+
+                if [[ "${{ steps.vars.outputs.target }}" == "production" ]]; then
+                  echo "${{ env.IMAGE_NAME }}:latest"
+                fi
+
+                echo "EOF"
+              } >> "$GITHUB_OUTPUT"
+
+         - name: Build and Push Image
+           uses: docker/build-push-action@v6
+           with:
+              context: .
+              push: true
+              tags: ${{ steps.tags.outputs.tags }}
+
+   deploy:
+      name: Deploy on VPS
+      runs-on: ubuntu-latest
+      needs: build-and-push
+
+      steps:
+         - name: Deploy via SSH
+           uses: appleboy/ssh-action@v1.2.0
+           with:
+              host: ${{ secrets.VPS_HOST }}
+              username: ${{ secrets.VPS_USERNAME }}
+              key: ${{ secrets.VPS_SSH_KEY }}
+              port: 22
+              script: |
+                 set -e
+
+                 echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+
+                 cd /opt/himti-platform
+
+                 mkdir -p env
+                 chmod 700 env
+
+                 if [ "${{ needs.build-and-push.outputs.target }}" = "production" ]; then
+                   printf '%s' "${{ secrets.INTERNAL_BACKEND_PROD_ENV_B64 }}" | base64 -d > "${{ needs.build-and-push.outputs.env_file }}"
+                 else
+                   printf '%s' "${{ secrets.INTERNAL_BACKEND_DEV_ENV_B64 }}" | base64 -d > "${{ needs.build-and-push.outputs.env_file }}"
+                 fi
+                 chmod 600 "${{ needs.build-and-push.outputs.env_file }}"
+
+                 docker compose --profile "${{ needs.build-and-push.outputs.profile }}" pull "${{ needs.build-and-push.outputs.service }}"
+
+                 docker compose --profile "${{ needs.build-and-push.outputs.profile }}" run --rm \
+                   "${{ needs.build-and-push.outputs.service }}" \
+                   npx prisma migrate deploy
+
+                 docker compose --profile "${{ needs.build-and-push.outputs.profile }}" up -d "${{ needs.build-and-push.outputs.service }}"
+
+                 docker compose restart caddy
+                 docker image prune -f
