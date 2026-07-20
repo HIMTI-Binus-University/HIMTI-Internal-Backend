@@ -151,6 +151,19 @@ model StudyProgram {
    @@map("study_programs")
 }
 
+model Region {
+   id        String   @id @default(nanoid())
+   name      String   @unique @db.VarChar(255)
+   shortName String?  @db.VarChar(50)
+   status    Status   @default(ACTIVE)
+   createdAt DateTime @default(now()) @db.Timestamp(0)
+   updatedAt DateTime? @updatedAt
+
+   users User[]
+
+   @@map("regions")
+}
+
 // ==========================================
 // USER & AUTH
 // ==========================================
@@ -170,6 +183,7 @@ model User {
    nim            String? @db.VarChar(50)
    universityId   String?
    studyProgramId String?
+   regionId       String?
    graduateBatch  String? @db.VarChar(20)
 
    // Contact
@@ -185,6 +199,7 @@ model User {
    // Relations
    university   University?   @relation(fields: [universityId], references: [id])
    studyProgram StudyProgram? @relation(fields: [studyProgramId], references: [id])
+   region       Region?       @relation(fields: [regionId], references: [id])
 
    sessions             Session[]
    accounts             Account[]

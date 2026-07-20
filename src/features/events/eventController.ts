@@ -18,6 +18,10 @@ export const getEvents = async (req: Request, res: Response) => {
    });
 };
 
+export const getPublishedEvents = async (_req: Request, res: Response) => {
+   res.status(200).json({ msg: 'success', data: await eventService.getPublishedForMembers() });
+};
+
 export const createEvent = async (req: Request, res: Response) => {
    const data = req.body;
    const userData = res.locals.user;

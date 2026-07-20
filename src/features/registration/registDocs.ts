@@ -107,7 +107,7 @@ export const registerRegistrationDocs = (registry: OpenAPIRegistry) => {
       tags: [tag],
       summary: 'Complete the authenticated user profile',
       description:
-         'Requires authentication. BINUS Computer Science users must provide a @binus.ac.id Outlook email.',
+          'Requires authentication. BINUS Computer Science users must provide an @binus.ac.id or @binus.edu email.',
       security: [protectedEndpoint],
       request: {
          body: {

@@ -22,13 +22,34 @@ class RegistRepository {
       });
    }
 
-   async verifyOutlook(id: string, token: string) {
-      return await prisma.verification.create({
-         data: {
-            identifier: `outlook_verify_${id}`,
-            value: token,
-            expiresAt: new Date(Date.now() + OUTLOOK_VERIFICATION_TOKEN_TTL_MS),
-         },
+   async findRegionById(id: string) {
+      return await prisma.region.findFirst({ where: { id } });
+   }
+
+   async findOptions() {
+      return await prisma.$transaction([
+         prisma.university.findMany({ where: { status: 'ACTIVE' }, orderBy: { name: 'asc' }, select: { id: true, name: true, shortName: true } }),
+         prisma.studyProgram.findMany({ where: { status: 'ACTIVE' }, orderBy: { name: 'asc' }, select: { id: true, name: true, shortName: true } }),
+         prisma.region.findMany({ where: { status: 'ACTIVE' }, orderBy: { name: 'asc' }, select: { id: true, name: true, shortName: true } }),
+      ]);
+   }
+
+   async verifyOutlook(id: string, email: string, token: string) {
+      return await prisma.$transaction(async (tx) => {
+         await tx.user.update({
+            where: { id },
+            data: { outlookEmail: email, outlookEmailVerified: false },
+         });
+         await tx.verification.deleteMany({
+            where: { identifier: { startsWith: `outlook_verify_${id}` } },
+         });
+         return await tx.verification.create({
+            data: {
+               identifier: `outlook_verify_${id}:${email}`,
+               value: token,
+               expiresAt: new Date(Date.now() + OUTLOOK_VERIFICATION_TOKEN_TTL_MS),
+            },
+         });
       });
    }
 
@@ -41,9 +62,9 @@ class RegistRepository {
       });
    }
 
-   async updateVerifStatus(id: string) {
-      return await prisma.user.update({
-         where: { id },
+   async updateVerifStatus(id: string, email: string) {
+      return await prisma.user.updateMany({
+         where: { id, outlookEmail: email },
          data: { outlookEmailVerified: true },
       });
    }
@@ -58,6 +79,9 @@ class RegistRepository {
       return await prisma.user.findUnique({
          where: { id },
          include: {
+            university: { select: { id: true, name: true, shortName: true } },
+            studyProgram: { select: { id: true, name: true, shortName: true } },
+            region: { select: { id: true, name: true, shortName: true } },
             userHasRoles: {
                include: {
                   role: {
