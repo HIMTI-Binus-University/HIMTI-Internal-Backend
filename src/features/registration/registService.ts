@@ -1,105 +1,114 @@
-import { User, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { CompleteProfileRequest } from './registTypes.js';
 import { registRepository } from './registRepository.js';
 import { auth } from '@/utils/auth.js';
 import crypto from 'crypto';
-import { sendOutlookVerificationEmail } from '@/utils/mailer.js';
+import { sendBinusVerificationEmail } from '@/utils/mailer.js';
 
 class RegistService {
    async completeProfile(
       payload: CompleteProfileRequest,
       id: string,
       user: typeof auth.$Infer.Session.user,
-   ): Promise<{ user: User; verificationSent: boolean }> {
+   ) {
       const currentUser = await registRepository.findUserById(id);
-      const university = await registRepository.findUnivById(
-         payload.universityId,
-      );
-      const studyProgram = await registRepository.findStudyProgramById(
-         payload.studyProgramId,
-      );
-
+      if (!currentUser) throw new Error('User not found');
       // Binusian?
-      const isBinus = university?.name
-         .toLowerCase()
-         .includes('binus university');
+      const isBinus = payload.institutionType === 'BINUS';
 
       // CompSci?
-      const isCompSci = studyProgram?.name
-         .toLowerCase()
-         .includes('computer science');
+      let validBinusEmail = null;
 
-      let validOutlookEmail = null;
-      let isEmailChanged = false;
-
-      if (isBinus && isCompSci) {
+      if (isBinus) {
          if (
-            !payload.outlookEmail ||
-            !payload.outlookEmail.toLowerCase().endsWith('@binus.ac.id')
+            !payload.binusEmail ||
+            !/^[^@]+@binus\.(ac\.id|edu)$/i.test(payload.binusEmail)
          ) {
-            throw new Error('You must use your Binusian Outlook Email');
+            throw new Error('You must use a @binus.ac.id or @binus.edu email');
          }
-         validOutlookEmail = payload.outlookEmail;
-         isEmailChanged = validOutlookEmail !== currentUser?.outlookEmail;
+         validBinusEmail = payload.binusEmail.toLowerCase();
+         if (
+            !currentUser.binusEmailVerified ||
+            currentUser.binusEmail?.toLowerCase() !== validBinusEmail
+         ) {
+            throw new Error('Verify this BINUS email before continuing');
+         }
       }
 
       const profileData: Prisma.UserUpdateInput = {
          name: payload.name,
-         nim: payload.nim,
-         graduateBatch: payload.graduateBatch,
+         nim: payload.nim ?? null,
+         graduateBatch: payload.graduateBatch ?? null,
          phoneNumber: payload.phoneNumber,
-         outlookEmail: validOutlookEmail,
+         binusEmail: validBinusEmail,
+         memberType: payload.memberType,
+         institutionType: payload.institutionType,
+         binusRegion: payload.binusRegionId
+            ? { connect: { id: payload.binusRegionId } }
+            : { disconnect: true },
+         universityName: payload.universityName ?? null,
+         studyProgramName: payload.studyProgramName ?? null,
+         department: payload.department ?? null,
+         affiliation: payload.affiliation ?? null,
          lineId: payload.lineId,
-         updatedBy: user.name,
+         updatedBy: user.id,
 
-         university: {
-            connect: {
-               id: payload.universityId,
-            },
-         },
-
-         studyProgram: {
-            connect: {
-               id: payload.studyProgramId,
-            },
-         },
+         university: payload.universityId
+            ? { connect: { id: payload.universityId } }
+            : { disconnect: true },
+         studyProgram: payload.studyProgramId
+            ? { connect: { id: payload.studyProgramId } }
+            : { disconnect: true },
       };
 
-      if (isEmailChanged) {
-         profileData.outlookEmailVerified = false;
+      if (payload.institutionType !== 'BINUS') {
+         profileData.binusEmail = null;
+         profileData.binusEmailVerified = false;
+         profileData.binusEmailVerifiedAt = null;
+         profileData.binusRegion = { disconnect: true };
       }
 
-      const updatedUser = await registRepository.update(id, profileData);
+      profileData.registrationCompletedAt = new Date();
+      await registRepository.update(id, profileData);
+      return this.getUserById(id);
+   }
 
-      // console.log('Email debug:', {
-      //    isBinus,
-      //    isCompSci,
-      //    validOutlookEmail,
-      //    outlookEmailVerified: updatedUser.outlookEmailVerified,
-      // });
-
-      let verificationSent = false;
-
+   async sendVerification(id: string, email: string) {
+      const normalizedEmail = email.toLowerCase();
+      if (!/^[^@]+@binus\.(ac\.id|edu)$/.test(normalizedEmail))
+         throw new Error('Invalid BINUS email domain');
+      const user = await registRepository.findUserById(id);
+      if (!user) throw new Error('User not found');
       if (
-         isBinus &&
-         isCompSci &&
-         validOutlookEmail &&
-         !updatedUser.outlookEmailVerified
+         user.binusEmail?.toLowerCase() !== normalizedEmail ||
+         user.binusEmailVerified
       ) {
-         const token = crypto.randomBytes(32).toString('hex');
-         await registRepository.verifyOutlook(updatedUser.id, token);
-         const verifyLink = `${process.env.FRONTEND_URL}/verify-outlook?token=${token}`;
-         // console.log(`Link: ${verifyLink}`);
-         try {
-            await sendOutlookVerificationEmail(validOutlookEmail, verifyLink);
-            console.log('Email sent OK');
-         } catch (err) {
-            console.error('Email failed:', err);
-         }
-         verificationSent = true;
+         await registRepository.update(id, {
+            binusEmail: normalizedEmail,
+            binusEmailVerified: false,
+            binusEmailVerifiedAt: null,
+         });
       }
+      const token = crypto.randomBytes(32).toString('hex');
+      await registRepository.createVerification(
+         id,
+         normalizedEmail,
+         crypto.createHash('sha256').update(token).digest('hex'),
+      );
+      await sendBinusVerificationEmail(
+         normalizedEmail,
+         `${process.env.FRONTEND_URL}/verify-outlook?token=${token}`,
+      );
+   }
 
-      return { user: updatedUser, verificationSent };
+   async verify(token: string) {
+      return registRepository.consumeVerification(
+         crypto.createHash('sha256').update(token).digest('hex'),
+      );
+   }
+
+   getOptions() {
+      return registRepository.findOptions();
    }
 
    async getUserById(id: string) {
@@ -117,9 +126,11 @@ class RegistService {
       ];
 
       const { userHasRoles, ...userData } = user;
+      void userHasRoles;
 
       return {
          ...userData,
+         registrationCompleted: userData.registrationCompletedAt !== null,
          roles,
          permissions,
       };

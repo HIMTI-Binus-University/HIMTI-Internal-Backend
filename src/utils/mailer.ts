@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const sendOutlookVerificationEmail = async (
+export const sendBinusVerificationEmail = async (
    to: string,
    verifyLink: string,
 ) => {
@@ -10,7 +10,7 @@ export const sendOutlookVerificationEmail = async (
       const { data, error } = await resend.emails.send({
          from: 'HIMTI Registration <registration@himtibinus.or.id>',
          to: [to],
-         subject: 'Verifikasi Email Outlook BINUS',
+         subject: 'Verifikasi Email BINUS',
          html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
                <h2 style="color: #0078D4;">Verifikasi Akun Kamu</h2>
@@ -39,3 +39,6 @@ export const sendOutlookVerificationEmail = async (
       throw error;
    }
 };
+
+// Compatibility for the existing users feature while it migrates to BINUS naming.
+export const sendOutlookVerificationEmail = sendBinusVerificationEmail;

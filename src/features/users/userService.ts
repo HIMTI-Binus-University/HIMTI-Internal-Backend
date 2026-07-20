@@ -1,91 +1,120 @@
-import { User, Prisma } from '@prisma/client';
 import { userRepository } from './userRepository.js';
-import {
-   GetUserSchema,
-   UpdateUserRequest,
-   GetUserResponse,
+import { registService } from '@/features/registration/registService.js';
+import type {
+   ManageRegistrationsQuery,
+   ManageRegistrationUpdate,
 } from './userTypes.js';
-import { auth } from '@/utils/auth.js';
 
 class UserService {
-   async getUsers(params: GetUserSchema): Promise<GetUserResponse> {
-      const { data, total } = await userRepository.findAll(params);
-
+   async getRegistrations(params: ManageRegistrationsQuery) {
+      const { data, total } = await userRepository.findRegistrations(params);
+      const totalPages = Math.ceil(total / params.limit);
       return {
          data: data.map(({ userHasRoles, ...user }) => ({
             ...user,
-            roles: userHasRoles.map((uhr) => uhr.role),
+            roles: userHasRoles.map(({ role }) => role),
          })),
          meta: {
             page: params.page,
             limit: params.limit,
             totalRecords: total,
-            totalPages: Math.ceil(total / params.limit),
+            totalPages,
+            previousPage: params.page > 1 ? params.page - 1 : null,
+            nextPage: params.page < totalPages ? params.page + 1 : null,
          },
       };
    }
 
-   async updateUser(
-      payload: UpdateUserRequest,
-      id: string,
-      user: typeof auth.$Infer.Session.user,
-   ): Promise<User> {
-      const updatedUser: Prisma.UserUpdateInput = {
-         name: payload.name,
-         email: payload.email,
-         outlookEmail: payload.outlookEmail,
-         outlookEmailVerified: payload.outlookEmailVerified,
-         image: payload.image,
-         status: payload.status,
-         nim: payload.nim,
-         phoneNumber: payload.phoneNumber,
-         lineId: payload.lineId,
-         graduateBatch: payload.graduateBatch,
-         university:
-            payload.universityId !== undefined
-               ? payload.universityId
-                  ? { connect: { id: payload.universityId } }
-                  : { disconnect: true }
-               : undefined,
-         studyProgram:
-            payload.studyProgramId !== undefined
-               ? payload.studyProgramId
-                  ? { connect: { id: payload.studyProgramId } }
-                  : { disconnect: true }
-               : undefined,
-         updatedBy: user.id,
-      };
-      return await userRepository.update(id, updatedUser);
+   getRegistrationById(id: string) {
+      return userRepository.findRegistrationById(id).then((user) => {
+         if (!user) return null;
+         const { userHasRoles, ...data } = user;
+         return { ...data, roles: userHasRoles.map(({ role }) => role) };
+      });
    }
 
-   async getUserById(id: string) {
-      const user = await userRepository.findById(id);
+   getRegistrationSummary() {
+      return userRepository.registrationSummary();
+   }
+
+   async updateRegistration(
+      id: string,
+      payload: ManageRegistrationUpdate,
+      updatedBy: string,
+   ) {
+      const current = await userRepository.findRegistrationById(id);
+      if (!current) return null;
+      const binusEmailChanged =
+         payload.binusEmail !== undefined &&
+         payload.binusEmail?.toLowerCase() !== current.binusEmail;
+      return userRepository.update(id, {
+         ...payload,
+         ...(payload.binusEmail !== undefined && {
+            binusEmail: payload.binusEmail?.toLowerCase() ?? null,
+         }),
+         ...(payload.binusRegionId !== undefined && {
+            binusRegion: payload.binusRegionId
+               ? { connect: { id: payload.binusRegionId } }
+               : { disconnect: true },
+            binusRegionId: undefined,
+         }),
+         ...(binusEmailChanged && {
+            binusEmailVerified: false,
+            binusEmailVerifiedAt: null,
+         }),
+         updatedBy,
+      });
+   }
+
+   async resendRegistrationVerification(id: string) {
+      const user = await userRepository.findRegistrationById(id);
       if (!user) return null;
+      if (!user.binusEmail || user.binusEmailVerified) return false;
+      await registService.sendVerification(user.id, user.binusEmail);
+      return true;
+   }
 
-      const { userHasRoles, ...rest } = user;
-
-      const roles = userHasRoles.map(
-         ({ role: { roleHasPermissions, ...role } }) => role,
-      );
-
-      // Merge all permissions from all roles, remove the duplicates using id
-      const permissionMap = new Map<
-         string,
-         { id: string; name: string; status: string }
-      >();
-      for (const { role } of userHasRoles) {
-         for (const { permission } of role.roleHasPermissions) {
-            if (!permissionMap.has(permission.id)) {
-               permissionMap.set(permission.id, permission);
-            }
-         }
-      }
-
-      return {
-         ...rest,
-         roles,
-         permissions: Array.from(permissionMap.values()),
+   async exportRegistrations(params: ManageRegistrationsQuery) {
+      const { data } = await userRepository.findRegistrations(params, false);
+      const columns = [
+         'id',
+         'name',
+         'email',
+         'binusEmail',
+         'binusEmailVerified',
+         'memberType',
+         'institutionType',
+         'binusRegion',
+         'nim',
+         'universityName',
+         'studyProgramName',
+         'graduateBatch',
+         'department',
+         'affiliation',
+         'phoneNumber',
+         'lineId',
+         'status',
+         'registrationCompletedAt',
+         'createdAt',
+      ];
+      const escape = (value: unknown) => {
+         const text = value == null ? '' : String(value);
+         return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
       };
+      return [
+         columns.join(','),
+         ...data.map((row) =>
+            columns
+               .map((column) =>
+                  escape(
+                     column === 'binusRegion'
+                        ? row.binusRegion?.name
+                        : row[column as keyof typeof row],
+                  ),
+               )
+               .join(','),
+         ),
+      ].join('\r\n');
    }
 }
 

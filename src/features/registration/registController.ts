@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
-import { CompleteProfileSchema, GetUserSchema } from './registSchema.js';
+import {
+   CompleteProfileSchema,
+   GetUserSchema,
+   SendVerificationSchema,
+} from './registSchema.js';
 import { registService } from './registService.js';
-import { registRepository } from './registRepository.js';
 
 export const completeProfile = async (req: Request, res: Response) => {
    const data = req.body;
@@ -12,16 +15,21 @@ export const completeProfile = async (req: Request, res: Response) => {
       return res.status(400).json({ errors: validation.error.format() });
    }
 
-   const { user, verificationSent } = await registService.completeProfile(
-      validation.data,
-      userData.id as string,
-      userData,
-   );
+   let user;
+   try {
+      user = await registService.completeProfile(
+         validation.data,
+         userData.id as string,
+         userData,
+      );
+   } catch (error) {
+      return res.status(400).json({
+         message: 'validation_failed',
+         errors: { registration: (error as Error).message },
+      });
+   }
    res.status(200).json({
-      msg: 'success',
-      ...(verificationSent && {
-         notice: `Verification email has been sent to ${user.outlookEmail}`,
-      }),
+      message: 'registration_complete',
       data: user,
    });
 };
@@ -35,23 +43,44 @@ export const verifyOutlookEmail = async (req: Request, res: Response) => {
       });
    }
 
-   const verification = await registRepository.findVerification(token);
-
-   if (!verification || verification.expiresAt < new Date()) {
+   const verification = await registService.verify(token);
+   if (!verification) {
       return res.status(400).json({
          msg: 'Link has expired or invalid',
       });
    }
 
-   const userId = verification.identifier.replace('outlook_verify_', '');
-
-   // Update verification status
-   await registRepository.updateVerifStatus(userId);
-   // Delete token
-   await registRepository.deleteToken(verification.id);
-
    res.status(200).json({
-      msg: 'Your Outlook Email has been verified',
+      message: 'email_verified',
+      email: verification.email,
+   });
+};
+
+export const sendVerification = async (req: Request, res: Response) => {
+   const validation = SendVerificationSchema.safeParse(req.body);
+   if (!validation.success)
+      return res.status(400).json({ errors: validation.error.format() });
+   try {
+      await registService.sendVerification(
+         res.locals.user.id,
+         validation.data.email,
+      );
+   } catch (error) {
+      return res.status(400).json({
+         message: 'validation_failed',
+         errors: { email: (error as Error).message },
+      });
+   }
+   res.status(202).json({
+      message: 'verification_sent',
+      email: validation.data.email.toLowerCase(),
+   });
+};
+
+export const getOptions = async (_req: Request, res: Response) => {
+   res.status(200).json({
+      msg: 'success',
+      data: await registService.getOptions(),
    });
 };
 
@@ -60,7 +89,7 @@ export const getUserById = async (req: Request, res: Response) => {
    const data = await registService.getUserById(id);
 
    if (!data) {
-      res.status(404).json({
+      return res.status(404).json({
          msg: 'User not found',
       });
    }
