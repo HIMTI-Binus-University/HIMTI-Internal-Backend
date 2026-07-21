@@ -72,7 +72,7 @@ class UserRepository {
       updatedBy: true,
       university: { select: { id: true, name: true, shortName: true } },
       studyProgram: { select: { id: true, name: true, shortName: true } },
-      region: { select: { id: true, name: true, shortName: true } },
+       region: { select: { id: true, name: true, shortName: true } },
    } satisfies Prisma.UserSelect;
 
    private readonly adminSelect = {
@@ -277,18 +277,73 @@ class UserRepository {
    async completeProfile(
       id: string,
       data: Prisma.UserUncheckedUpdateManyInput,
+      periodId: string,
       verifiedOutlookEmail?: string,
    ) {
-      return await prisma.user.updateMany({
-         where: {
-            id,
-            registrationCompletedAt: null,
-            ...(verifiedOutlookEmail && {
-               outlookEmail: verifiedOutlookEmail,
-               outlookEmailVerified: true,
-            }),
-         },
-         data,
+      return await prisma.$transaction(async (tx) => {
+         const periodExists = await tx.membershipPeriod.count({
+            where: { id: periodId, isActive: true },
+         });
+         if (!periodExists) return { count: 0 };
+
+         const result = await tx.user.updateMany({
+            where: {
+               id,
+               registrationCompletedAt: null,
+               ...(verifiedOutlookEmail && {
+                  outlookEmail: verifiedOutlookEmail,
+                  outlookEmailVerified: true,
+               }),
+            },
+            data,
+         });
+         if (result.count) {
+            await tx.userMembershipPeriod.create({
+               data: { userId: id, periodId, isCurrent: true },
+            });
+         }
+         return result;
+      });
+   }
+
+   async reregister(
+      id: string,
+      data: Prisma.UserUncheckedUpdateManyInput,
+      periodId: string,
+      verifiedOutlookEmail?: string,
+   ) {
+      return await prisma.$transaction(async (tx) => {
+         const periodExists = await tx.membershipPeriod.count({
+            where: {
+               id: periodId,
+               isActive: true,
+               registrationOpen: true,
+               memberships: { none: { userId: id } },
+            },
+         });
+         if (!periodExists) return { count: 0 };
+
+         const result = await tx.user.updateMany({
+            where: {
+               id,
+               registrationCompletedAt: { not: null },
+               ...(verifiedOutlookEmail && {
+                  outlookEmail: verifiedOutlookEmail,
+                  outlookEmailVerified: true,
+               }),
+            },
+            data,
+         });
+         if (!result.count) return result;
+
+         await tx.userMembershipPeriod.updateMany({
+            where: { userId: id, isCurrent: true },
+            data: { isCurrent: false },
+         });
+         await tx.userMembershipPeriod.create({
+            data: { userId: id, periodId, isCurrent: true },
+         });
+         return result;
       });
    }
 

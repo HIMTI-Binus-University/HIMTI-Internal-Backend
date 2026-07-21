@@ -128,6 +128,10 @@ const relationSchema = z
    })
    .nullable();
 
+const periodSchema = z
+   .object({ id: z.string(), label: z.string() })
+   .nullable();
+
 export const CurrentUserSchema = z.object({
    id: z.string(),
    name: z.string(),
@@ -161,6 +165,8 @@ export const CurrentUserSchema = z.object({
    updatedBy: z.string().nullable(),
    roles: z.array(z.string()),
    permissions: z.array(z.string()),
+   membershipPeriod: periodSchema,
+   reregistrationPeriod: periodSchema,
 });
 
 export const OutlookEmailSchema = z.object({

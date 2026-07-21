@@ -11,6 +11,11 @@ import { auth } from '@/utils/auth.js';
 import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
 import { AppError } from '@/utils/appError.js';
 import { sendOutlookVerificationEmail } from '@/utils/mailer.js';
+import { membershipRepository } from '@/features/membership/membershipRepository.js';
+
+type CurrentUser = NonNullable<
+   Awaited<ReturnType<typeof userRepository.findCurrentById>>
+>;
 
 class UserService {
    async getUsers(
@@ -222,6 +227,7 @@ class UserService {
    async getCurrentUser(id: string) {
       const user = await userRepository.findCurrentById(id);
       if (!user) return null;
+      const membershipStatus = await membershipRepository.findStatus(id);
 
       const roles = user.userHasRoles.map(({ role }) => role.roleName);
       const permissions = [
@@ -264,8 +270,10 @@ class UserService {
          updatedAt: user.updatedAt,
          updatedBy: user.updatedBy,
          roles,
-         permissions,
-      };
+          permissions,
+         membershipPeriod: membershipStatus.currentPeriod,
+          reregistrationPeriod: membershipStatus.availablePeriod,
+       };
    }
 
    async updateProfile(payload: UpdateProfileRequest, id: string) {
@@ -293,66 +301,17 @@ class UserService {
       if (currentUser.registrationCompletedAt) {
          throw new AppError('Registration has already been completed', 403);
       }
-
-      if (payload.institutionType === 'BINUS') {
-         const [university, region, studyProgram] = await Promise.all([
-            userRepository.findActiveUniversity(payload.universityId!),
-            userRepository.findActiveRegion(payload.regionId!),
-            payload.memberType === 'STUDENT'
-               ? userRepository.findActiveStudyProgram(payload.studyProgramId!)
-               : Promise.resolve(null),
-         ]);
-         if (
-            !university ||
-            (university.shortName?.toUpperCase() !== 'BINUS' &&
-               university.name.toUpperCase() !== 'BINUS UNIVERSITY')
-         ) {
-            throw new AppError('Active BINUS university is required', 400);
-         }
-         if (!region)
-            throw new AppError('Active BINUS region is required', 400);
-         if (payload.memberType === 'STUDENT' && !studyProgram) {
-            throw new AppError('Active study program is required', 400);
-         }
-         if (
-            !currentUser.outlookEmailVerified ||
-            currentUser.outlookEmail?.toLowerCase() !== payload.outlookEmail
-         ) {
-            throw new AppError(
-               'The Outlook email must be verified for the current user',
-               400,
-            );
-         }
+      await this.validateRegistrationProfile(payload, currentUser);
+      const periods = await membershipRepository.listPeriods();
+      const activePeriod = periods.find((period) => period.isActive);
+      if (!activePeriod) {
+         throw new AppError('No active membership period is available', 409);
       }
-
       const isBinus = payload.institutionType === 'BINUS';
-      const isStudent = payload.memberType === 'STUDENT';
       const result = await userRepository.completeProfile(
          id,
-         {
-            name: payload.name,
-            phoneNumber: payload.phoneNumber,
-            lineId: payload.lineId || null,
-            memberType: payload.memberType,
-            institutionType: payload.institutionType,
-            universityId: isBinus ? payload.universityId : null,
-            universityName: isBinus ? null : payload.universityName,
-            regionId: isBinus ? payload.regionId : null,
-            outlookEmail: isBinus ? payload.outlookEmail : null,
-            outlookEmailVerified: isBinus,
-            studyProgramId:
-               isBinus && isStudent ? payload.studyProgramId : null,
-            studyProgramName:
-               !isBinus && isStudent ? payload.studyProgramName : null,
-            nim: isStudent ? payload.nim : null,
-            graduateBatch: isBinus && isStudent ? payload.graduateBatch : null,
-            department:
-               payload.memberType === 'LECTURER' ? payload.department : null,
-            affiliation:
-               payload.memberType === 'OTHER' ? payload.affiliation : null,
-            registrationCompletedAt: new Date(),
-            updatedBy: id,
-         },
+         this.registrationProfileData(payload, id),
+         activePeriod.id,
          isBinus ? payload.outlookEmail : undefined,
       );
 
@@ -362,12 +321,117 @@ class UserService {
          if (user.registrationCompletedAt) {
             throw new AppError('Registration has already been completed', 403);
          }
+         const status = await membershipRepository.findStatus(id);
+         if (status.activePeriod?.id !== activePeriod.id) {
+            throw new AppError('The active membership period changed', 409);
+         }
          throw new AppError(
             'The Outlook email must be verified for the current user',
             400,
          );
       }
       return await this.getCurrentUser(id);
+   }
+
+   async reregister(payload: CompleteProfileRequest, id: string) {
+      const currentUser = await userRepository.findCurrentById(id);
+      if (!currentUser) throw new AppError('User not found', 404);
+      if (!currentUser.registrationCompletedAt) {
+         throw new AppError('Complete initial registration first', 403);
+      }
+      await this.validateRegistrationProfile(payload, currentUser);
+
+      const { availablePeriod } = await membershipRepository.findStatus(id);
+      if (!availablePeriod) {
+         throw new AppError('Re-registration is not currently available', 409);
+      }
+
+      const isBinus = payload.institutionType === 'BINUS';
+      const result = await userRepository.reregister(
+         id,
+         this.registrationProfileData(payload, id, false),
+         availablePeriod.id,
+         isBinus ? payload.outlookEmail : undefined,
+      );
+      if (!result.count) {
+         if (!(await membershipRepository.findStatus(id)).availablePeriod) {
+            throw new AppError('Re-registration is not currently available', 409);
+         }
+         throw new AppError(
+            'The Outlook email must be verified for the current user',
+            400,
+         );
+      }
+      return await this.getCurrentUser(id);
+   }
+
+   private async validateRegistrationProfile(
+      payload: CompleteProfileRequest,
+      currentUser: CurrentUser,
+   ) {
+      if (payload.institutionType !== 'BINUS') return;
+
+      const [university, region, studyProgram] = await Promise.all([
+         userRepository.findActiveUniversity(payload.universityId!),
+         userRepository.findActiveRegion(payload.regionId!),
+         payload.memberType === 'STUDENT'
+            ? userRepository.findActiveStudyProgram(payload.studyProgramId!)
+            : Promise.resolve(null),
+      ]);
+      if (
+         !university ||
+         (university.shortName?.toUpperCase() !== 'BINUS' &&
+            university.name.toUpperCase() !== 'BINUS UNIVERSITY')
+      ) {
+         throw new AppError('Active BINUS university is required', 400);
+      }
+      if (!region) throw new AppError('Active BINUS region is required', 400);
+      if (payload.memberType === 'STUDENT' && !studyProgram) {
+         throw new AppError('Active study program is required', 400);
+      }
+      if (
+         !currentUser.outlookEmailVerified ||
+         currentUser.outlookEmail?.toLowerCase() !== payload.outlookEmail
+      ) {
+         throw new AppError(
+            'The Outlook email must be verified for the current user',
+            400,
+         );
+      }
+   }
+
+   private registrationProfileData(
+      payload: CompleteProfileRequest,
+      id: string,
+      setRegistrationCompletedAt = true,
+   ): Prisma.UserUncheckedUpdateManyInput {
+      const isBinus = payload.institutionType === 'BINUS';
+      const isStudent = payload.memberType === 'STUDENT';
+      return {
+         name: payload.name,
+         phoneNumber: payload.phoneNumber,
+         lineId: payload.lineId || null,
+         memberType: payload.memberType,
+         institutionType: payload.institutionType,
+         universityId: isBinus ? payload.universityId : null,
+         universityName: isBinus ? null : payload.universityName,
+         regionId: isBinus ? payload.regionId : null,
+         outlookEmail: isBinus ? payload.outlookEmail : null,
+         outlookEmailVerified: isBinus,
+         studyProgramId:
+            isBinus && isStudent ? payload.studyProgramId : null,
+         studyProgramName:
+            !isBinus && isStudent ? payload.studyProgramName : null,
+         nim: isStudent ? payload.nim : null,
+         graduateBatch: isBinus && isStudent ? payload.graduateBatch : null,
+         department:
+            payload.memberType === 'LECTURER' ? payload.department : null,
+         affiliation: payload.memberType === 'OTHER' ? payload.affiliation : null,
+         ...(setRegistrationCompletedAt && {
+            registrationCompletedAt: new Date(),
+         }),
+         updatedBy: id,
+      };
    }
 
    async getRegistrationOptions() {

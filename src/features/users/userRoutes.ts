@@ -10,6 +10,7 @@ import {
    getUserById,
    sendOutlookVerification,
    resendUserVerification,
+   reregister,
    updateProfile,
    updateUser,
    verifyOutlookEmail,
@@ -34,6 +35,7 @@ router.get(
 router.get('/user/me', requireAuth, getCurrentUser);
 router.patch('/user/me', requireAuth, updateProfile);
 router.patch('/user/me/complete-profile', requireAuth, completeProfile);
+router.patch('/user/me/reregister', requireAuth, reregister);
 router.get('/user/registration-options', requireAuth, getRegistrationOptions);
 router.post(
    '/user/me/binus-email/send-verification',

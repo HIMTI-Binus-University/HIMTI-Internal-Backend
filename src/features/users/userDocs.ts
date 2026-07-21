@@ -141,6 +141,12 @@ const currentUserSchema = z.object({
    updatedBy: z.string().nullable(),
    roles: z.array(z.string()),
    permissions: z.array(z.string()),
+   membershipPeriod: z
+      .object({ id: z.string(), label: z.string() })
+      .nullable(),
+   reregistrationPeriod: z
+      .object({ id: z.string(), label: z.string() })
+      .nullable(),
 });
 
 const currentUserResponseSchema = currentUserSchema.extend({
@@ -471,6 +477,36 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
          401: { description: 'Authentication required.' },
          403: { description: 'Onboarding was already completed.' },
          404: { description: 'User not found.' },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/user/me/reregister',
+      tags: [tag],
+      summary: 'Review the profile and join the open active period',
+      description:
+         'Uses the onboarding profile shape, preserves prior period history, and requires re-registration to be open.',
+      security: [protectedEndpoint],
+      request: {
+         body: {
+            required: true,
+            content: {
+               'application/json': { schema: CompleteProfileRequest },
+            },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Re-registration completed.',
+            content: {
+               'application/json': { schema: ProfileMutationResponse },
+            },
+         },
+         400: { description: 'Invalid profile or unverified Outlook email.' },
+         401: { description: 'Authentication required.' },
+         403: { description: 'Initial registration is incomplete.' },
+         409: { description: 'Re-registration is not currently available.' },
       },
    });
 

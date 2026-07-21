@@ -104,6 +104,19 @@ export const completeProfile = async (req: Request, res: Response) => {
    res.status(200).json({ msg: 'success', data: result });
 };
 
+export const reregister = async (req: Request, res: Response) => {
+   const validation = CompleteProfileSchema.safeParse(req.body);
+   if (!validation.success) {
+      return res.status(400).json({ errors: validation.error.format() });
+   }
+
+   const result = await userService.reregister(
+      validation.data,
+      res.locals.user.id,
+   );
+   res.status(200).json({ msg: 'success', data: result });
+};
+
 export const getRegistrationOptions = async (_req: Request, res: Response) => {
    const result = await userService.getRegistrationOptions();
    res.status(200).json({ msg: 'success', data: result });

@@ -95,8 +95,9 @@ async function main() {
       'manage_urls',
       'manage_permissions',
       'manage_users',
-      'manage_roles',
-      'manage_events',
+       'manage_roles',
+       'manage_events',
+       'manage_batch',
    ];
 
    const permissions: Record<string, { id: string }> = {};
@@ -128,8 +129,11 @@ async function main() {
          },
       });
 
-      // Assign all permissions to each role
+      // Batch configuration is restricted to administrators.
       for (const perm of Object.values(permissions)) {
+         if (perm.id === permissions.manage_batch.id && roleName !== 'Admin') {
+            continue;
+         }
          await prisma.roleHasPermission.upsert({
             where: {
                roleId_permissionId: {
