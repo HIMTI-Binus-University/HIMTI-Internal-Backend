@@ -33,12 +33,7 @@ app.use(
 app.use(express.static(path.join(__dirname, '../public')));
 app.all('/api/auth/*splat', toNodeHandler(auth));
 if (shouldEnableApiDocs) {
-   app.use(
-      '/api',
-      requireAuth,
-      requirePermission('manage_permissions'),
-      docsRoutes,
-   );
+   app.use('/api', requireAuth, docsRoutes);
 }
 app.use('/api', routes);
 app.use(globalErrorHandler);
