@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { z } from 'zod';
-import { CompleteProfileSchema, GetUserSchema } from './registSchema.js';
+import {
+   CompleteProfileSchema,
+   GetUserSchema,
+   UpdateProfileSchema,
+} from './registSchema.js';
 import { registService } from './registService.js';
 import { registRepository } from './registRepository.js';
 import { sendOutlookVerificationEmail } from '@/utils/mailer.js';
@@ -27,6 +31,20 @@ export const completeProfile = async (req: Request, res: Response) => {
       }),
       data: user,
    });
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+   const validation = UpdateProfileSchema.safeParse(req.body);
+
+   if (!validation.success) {
+      return res.status(400).json({ errors: validation.error.format() });
+   }
+
+   const data = await registService.updateProfile(
+      validation.data,
+      res.locals.user.id,
+   );
+   res.status(200).json({ msg: 'success', data });
 };
 
 export const verifyOutlookEmail = async (req: Request, res: Response) => {

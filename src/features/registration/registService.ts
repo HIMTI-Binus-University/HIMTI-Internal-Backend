@@ -1,5 +1,8 @@
 import { User, Prisma } from '@prisma/client';
-import { CompleteProfileRequest } from './registTypes.js';
+import {
+   CompleteProfileRequest,
+   UpdateProfileRequest,
+} from './registTypes.js';
 import { registRepository } from './registRepository.js';
 import { auth } from '@/utils/auth.js';
 import crypto from 'crypto';
@@ -7,12 +10,35 @@ import { sendOutlookVerificationEmail } from '@/utils/mailer.js';
 import { AppError } from '@/utils/appError.js';
 
 class RegistService {
+   async updateProfile(payload: UpdateProfileRequest, id: string) {
+      const currentUser = await registRepository.findUserById(id);
+
+      if (!currentUser?.registrationCompletedAt) {
+         throw new AppError('Complete registration before editing your profile', 403);
+      }
+
+      await registRepository.update(id, {
+         name: payload.name,
+         phoneNumber: payload.phoneNumber,
+         lineId: payload.lineId || null,
+         updatedBy: id,
+      });
+
+      return await this.getUserById(id);
+   }
+
    async completeProfile(
       payload: CompleteProfileRequest,
       id: string,
       user: typeof auth.$Infer.Session.user,
    ): Promise<{ user: User; verificationSent: boolean }> {
       const currentUser = await registRepository.findUserById(id);
+      if (!currentUser) {
+         throw new AppError('User not found', 404);
+      }
+      if (currentUser.registrationCompletedAt) {
+         throw new AppError('Registration has already been completed', 403);
+      }
       const university = await registRepository.findUnivById(
          payload.universityId,
       );
@@ -48,6 +74,8 @@ class RegistService {
 
       const profileData: Prisma.UserUpdateInput = {
          name: payload.name,
+         registrationCompletedAt:
+            currentUser?.registrationCompletedAt ?? new Date(),
          nim: payload.nim,
          graduateBatch: payload.graduateBatch,
          phoneNumber: payload.phoneNumber,
@@ -61,14 +89,14 @@ class RegistService {
             },
          },
 
-          studyProgram: {
-             connect: {
-                id: payload.studyProgramId,
-             },
-          },
-          region: payload.regionId
-             ? { connect: { id: payload.regionId } }
-             : { disconnect: true },
+         studyProgram: {
+            connect: {
+               id: payload.studyProgramId,
+            },
+         },
+         region: payload.regionId
+            ? { connect: { id: payload.regionId } }
+            : { disconnect: true },
       };
 
       if (isEmailChanged) {
@@ -93,11 +121,11 @@ class RegistService {
          !updatedUser.outlookEmailVerified
       ) {
          const token = crypto.randomBytes(32).toString('hex');
-          await registRepository.verifyOutlook(
-             updatedUser.id,
-             validOutlookEmail,
-             token,
-          );
+         await registRepository.verifyOutlook(
+            updatedUser.id,
+            validOutlookEmail,
+            token,
+         );
 
          const verifyLink = `${process.env.FRONTEND_URL}/verify-outlook?token=${token}`;
          // console.log(`Link: ${verifyLink}`);
@@ -138,11 +166,11 @@ class RegistService {
          status: user.status,
          nim: user.nim,
          universityId: user.universityId,
-          studyProgramId: user.studyProgramId,
-          regionId: user.regionId,
-          university: user.university,
-          studyProgram: user.studyProgram,
-          region: user.region,
+         studyProgramId: user.studyProgramId,
+         regionId: user.regionId,
+         university: user.university,
+         studyProgram: user.studyProgram,
+         region: user.region,
          graduateBatch: user.graduateBatch,
          phoneNumber: user.phoneNumber,
          lineId: user.lineId,
@@ -150,10 +178,11 @@ class RegistService {
          createdBy: user.createdBy,
          updatedAt: user.updatedAt,
          updatedBy: user.updatedBy,
+         registrationCompletedAt: user.registrationCompletedAt,
          roles,
-          permissions,
-          registrationCompleted: Boolean(user.name && user.universityId && user.studyProgramId && user.regionId),
-       };
+         permissions,
+         registrationCompleted: user.registrationCompletedAt !== null,
+      };
    }
 }
 

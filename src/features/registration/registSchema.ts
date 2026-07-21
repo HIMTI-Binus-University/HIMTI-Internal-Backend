@@ -13,6 +13,14 @@ export const CompleteProfileSchema = z.object({
    status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
+export const UpdateProfileSchema = z
+   .object({
+      name: z.string().trim().min(1).max(255),
+      phoneNumber: z.string().trim().min(1).max(20),
+      lineId: z.string().trim().max(50),
+   })
+   .strict();
+
 export const GetUserSchema = z.object({
    id: z.string(),
    name: z.string(),
@@ -29,14 +37,33 @@ export const GetUserSchema = z.object({
    graduateBatch: z.string().nullable(),
    phoneNumber: z.string().nullable(),
    lineId: z.string().nullable(),
-   university: z.object({ id: z.string(), name: z.string(), shortName: z.string().nullable() }).nullable(),
-   studyProgram: z.object({ id: z.string(), name: z.string(), shortName: z.string().nullable() }).nullable(),
-   region: z.object({ id: z.string(), name: z.string(), shortName: z.string().nullable() }).nullable(),
+   university: z
+      .object({
+         id: z.string(),
+         name: z.string(),
+         shortName: z.string().nullable(),
+      })
+      .nullable(),
+   studyProgram: z
+      .object({
+         id: z.string(),
+         name: z.string(),
+         shortName: z.string().nullable(),
+      })
+      .nullable(),
+   region: z
+      .object({
+         id: z.string(),
+         name: z.string(),
+         shortName: z.string().nullable(),
+      })
+      .nullable(),
    registrationCompleted: z.boolean(),
    createdAt: z.coerce.date(),
    createdBy: z.string().nullable(),
    updatedAt: z.coerce.date(),
    updatedBy: z.string().nullable(),
+   registrationCompletedAt: z.coerce.date().nullable(),
 
    roles: z.array(z.string()),
    permissions: z.array(z.string()),

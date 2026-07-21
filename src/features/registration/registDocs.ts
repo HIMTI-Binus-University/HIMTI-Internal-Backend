@@ -22,6 +22,12 @@ const completeProfileRequestSchema = z.object({
    status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
+const updateProfileRequestSchema = z.object({
+   name: z.string().min(1).max(255),
+   phoneNumber: z.string().min(1).max(20),
+   lineId: z.string().max(50),
+});
+
 const fullUserSchema = z.object({
    id: z.string(),
    name: z.string(),
@@ -41,11 +47,13 @@ const fullUserSchema = z.object({
    createdBy: z.string().nullable(),
    updatedAt: z.string().datetime().nullable(),
    updatedBy: z.string().nullable(),
+   registrationCompletedAt: z.string().datetime().nullable(),
 });
 
 const profileResponseSchema = fullUserSchema.extend({
    roles: z.array(z.string()),
    permissions: z.array(z.string()),
+   registrationCompleted: z.boolean(),
 });
 
 const completeProfileResponseSchema = z.object({
@@ -78,8 +86,10 @@ const getMeResponseSchema = z.object({
    createdBy: z.string().nullable(),
    updatedAt: z.string().datetime().nullable(),
    updatedBy: z.string().nullable(),
+   registrationCompletedAt: z.string().datetime().nullable(),
    roles: z.array(z.string()),
    permissions: z.array(z.string()),
+   registrationCompleted: z.boolean(),
 });
 
 export const registerRegistrationDocs = (registry: OpenAPIRegistry) => {
@@ -87,9 +97,13 @@ export const registerRegistrationDocs = (registry: OpenAPIRegistry) => {
       'CompleteProfileRequest',
       completeProfileRequestSchema,
    );
-   const CompleteProfileResponse = registry.register(
+    const CompleteProfileResponse = registry.register(
       'CompleteProfileResponse',
       completeProfileResponseSchema,
+    );
+   const UpdateProfileRequest = registry.register(
+      'UpdateProfileRequest',
+      updateProfileRequestSchema,
    );
    registry.register('RegistrationProfile', profileResponseSchema);
    const VerifyOutlookResponse = registry.register(
@@ -101,13 +115,13 @@ export const registerRegistrationDocs = (registry: OpenAPIRegistry) => {
       getMeResponseSchema,
    );
 
-   registry.registerPath({
+    registry.registerPath({
       method: 'patch',
       path: '/api/registration/complete-profile',
       tags: [tag],
       summary: 'Complete the authenticated user profile',
       description:
-          'Requires authentication. BINUS Computer Science users must provide an @binus.ac.id or @binus.edu email.',
+         'Requires authentication. BINUS Computer Science users must provide an @binus.ac.id or @binus.edu email.',
       security: [protectedEndpoint],
       request: {
          body: {
@@ -143,6 +157,55 @@ export const registerRegistrationDocs = (registry: OpenAPIRegistry) => {
                'application/json': {
                   schema: errorResponseSchema,
                },
+            },
+         },
+      },
+    });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/registration/profile',
+      tags: [tag],
+      summary: 'Update member contact information',
+      description:
+         'Updates only name, phone number, and LINE ID. Registration path and academic fields are immutable.',
+      security: [protectedEndpoint],
+      request: {
+         body: {
+            required: true,
+            content: {
+               'application/json': { schema: UpdateProfileRequest },
+            },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Contact information updated.',
+            content: {
+               'application/json': {
+                  schema: z.object({
+                     msg: z.literal('success'),
+                     data: profileResponseSchema,
+                  }),
+               },
+            },
+         },
+         400: {
+            description: 'Validation error, including unknown fields.',
+            content: {
+               'application/json': { schema: validationErrorResponseSchema },
+            },
+         },
+         401: {
+            description: 'Authentication required.',
+            content: {
+               'application/json': { schema: errorResponseSchema },
+            },
+         },
+         403: {
+            description: 'Registration must be completed first.',
+            content: {
+               'application/json': { schema: errorResponseSchema },
             },
          },
       },

@@ -178,6 +178,7 @@ model User {
    outlookEmailVerified Boolean    @default(false)
    image                String?
    status               UserStatus @default(ACTIVE)
+   registrationCompletedAt DateTime? @db.Timestamp(0)
 
    // Academic
    nim            String? @db.VarChar(50)
