@@ -17,6 +17,17 @@ enum UserStatus {
    SUSPENDED
 }
 
+enum MemberType {
+   STUDENT
+   LECTURER
+   OTHER
+}
+
+enum InstitutionType {
+   BINUS
+   NON_BINUS
+}
+
 enum Status {
    ACTIVE
    INACTIVE
@@ -178,6 +189,15 @@ model User {
    outlookEmailVerified Boolean    @default(false)
    image                String?
    status               UserStatus @default(ACTIVE)
+   registrationCompletedAt DateTime? @db.Timestamp(0)
+
+   // Membership path
+   memberType      MemberType?
+   institutionType InstitutionType?
+   universityName  String?             @db.VarChar(255)
+   studyProgramName String?             @db.VarChar(255)
+   department      String?             @db.VarChar(255)
+   affiliation     String?             @db.VarChar(255)
 
    // Academic
    nim            String? @db.VarChar(50)

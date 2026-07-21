@@ -12,6 +12,11 @@ import {
    userStatusSchema,
    validationErrorResponseSchema,
 } from '@/docs/commonSchemas.js';
+import {
+   CompleteProfileSchema,
+   OutlookEmailSchema,
+   UpdateProfileSchema,
+} from './userSchema.js';
 
 const tag = 'Users';
 
@@ -104,6 +109,67 @@ const userMutationResponseSchema = z.object({
    data: fullUserSchema,
 });
 
+const profileRelationSchema = z
+   .object({
+      id: z.string(),
+      name: z.string(),
+      shortName: z.string().nullable(),
+   })
+   .nullable();
+
+const currentUserSchema = z.object({
+   id: z.string(),
+   name: z.string(),
+   email: z.string().email(),
+   emailVerified: z.boolean(),
+   outlookEmail: z.string().email().nullable(),
+   outlookEmailVerified: z.boolean(),
+   image: z.string().nullable(),
+   status: userStatusSchema,
+   memberType: z.enum(['STUDENT', 'LECTURER', 'OTHER']).nullable(),
+   institutionType: z.enum(['BINUS', 'NON_BINUS']).nullable(),
+   universityName: z.string().nullable(),
+   studyProgramName: z.string().nullable(),
+   department: z.string().nullable(),
+   affiliation: z.string().nullable(),
+   nim: z.string().nullable(),
+   universityId: z.string().nullable(),
+   studyProgramId: z.string().nullable(),
+   regionId: z.string().nullable(),
+   graduateBatch: z.string().nullable(),
+   phoneNumber: z.string().nullable(),
+   lineId: z.string().nullable(),
+   university: profileRelationSchema,
+   studyProgram: profileRelationSchema,
+   region: profileRelationSchema,
+   registrationCompletedAt: z.string().datetime().nullable(),
+   registrationCompleted: z.boolean(),
+   createdAt: z.string().datetime(),
+   createdBy: z.string().nullable(),
+   updatedAt: z.string().datetime().nullable(),
+   updatedBy: z.string().nullable(),
+   roles: z.array(z.string()),
+   permissions: z.array(z.string()),
+});
+
+const currentUserResponseSchema = currentUserSchema.extend({
+   msg: z.literal('success'),
+});
+
+const profileMutationResponseSchema = z.object({
+   msg: z.literal('success'),
+   data: currentUserSchema,
+});
+
+const registrationOptionsResponseSchema = z.object({
+   msg: z.literal('success'),
+   data: z.object({
+      universities: z.array(profileRelationSchema.unwrap()),
+      studyPrograms: z.array(profileRelationSchema.unwrap()),
+      binusRegions: z.array(profileRelationSchema.unwrap()),
+   }),
+});
+
 export const registerUserDocs = (registry: OpenAPIRegistry) => {
    const UpdateUserRequest = registry.register(
       'UpdateUserRequest',
@@ -120,6 +186,26 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
    const UserMutationResponse = registry.register(
       'UserMutationResponse',
       userMutationResponseSchema,
+   );
+   const CompleteProfileRequest = registry.register(
+      'CompleteProfileRequest',
+      CompleteProfileSchema,
+   );
+   const UpdateProfileRequest = registry.register(
+      'UpdateProfileRequest',
+      UpdateProfileSchema,
+   );
+   const CurrentUserResponse = registry.register(
+      'CurrentUserResponse',
+      currentUserResponseSchema,
+   );
+   const ProfileMutationResponse = registry.register(
+      'ProfileMutationResponse',
+      profileMutationResponseSchema,
+   );
+   const RegistrationOptionsResponse = registry.register(
+      'RegistrationOptionsResponse',
+      registrationOptionsResponseSchema,
    );
 
    registry.registerPath({
@@ -231,6 +317,171 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
                   schema: errorResponseSchema,
                },
             },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'get',
+      path: '/api/user/me',
+      tags: [tag],
+      summary: 'Get the authenticated user profile',
+      security: [protectedEndpoint],
+      responses: {
+         200: {
+            description: 'Authenticated user profile and access grants.',
+            content: {
+               'application/json': { schema: CurrentUserResponse },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         404: {
+            description: 'User not found.',
+            content: { 'application/json': { schema: errorResponseSchema } },
+         },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/user/me',
+      tags: [tag],
+      summary: 'Update self-service contact profile',
+      description:
+         'Updates only name, phone number, and LINE ID after onboarding. Academic and membership path fields are immutable here.',
+      security: [protectedEndpoint],
+      request: {
+         body: {
+            required: true,
+            content: {
+               'application/json': { schema: UpdateProfileRequest },
+            },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Profile updated.',
+            content: {
+               'application/json': { schema: ProfileMutationResponse },
+            },
+         },
+         400: {
+            description: 'Validation error.',
+            content: {
+               'application/json': { schema: validationErrorResponseSchema },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: { description: 'Onboarding is not complete.' },
+         404: { description: 'User not found.' },
+      },
+   });
+
+   registry.registerPath({
+      method: 'patch',
+      path: '/api/user/me/complete-profile',
+      tags: [tag],
+      summary: 'Complete one-time user onboarding',
+      description:
+         'Completes one of the six member/institution paths. BINUS paths require active controlled options and the current verified BINUS Outlook address.',
+      security: [protectedEndpoint],
+      request: {
+         body: {
+            required: true,
+            content: {
+               'application/json': { schema: CompleteProfileRequest },
+            },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Onboarding completed.',
+            content: {
+               'application/json': { schema: ProfileMutationResponse },
+            },
+         },
+         400: {
+            description: 'Invalid path data or controlled option.',
+            content: {
+               'application/json': {
+                  schema: validationErrorResponseSchema.or(errorResponseSchema),
+               },
+            },
+         },
+         401: { description: 'Authentication required.' },
+         403: { description: 'Onboarding was already completed.' },
+         404: { description: 'User not found.' },
+      },
+   });
+
+   registry.registerPath({
+      method: 'get',
+      path: '/api/user/registration-options',
+      tags: [tag],
+      summary: 'List active controlled onboarding options',
+      security: [protectedEndpoint],
+      responses: {
+         200: {
+            description: 'Active universities, study programs, and regions.',
+            content: {
+               'application/json': { schema: RegistrationOptionsResponse },
+            },
+         },
+         401: { description: 'Authentication required.' },
+      },
+   });
+
+   registry.registerPath({
+      method: 'post',
+      path: '/api/user/me/binus-email/send-verification',
+      tags: [tag],
+      summary: 'Send BINUS Outlook email verification',
+      description:
+         'Replaces the pending token without changing the current Outlook address or verification status.',
+      security: [protectedEndpoint],
+      request: {
+         body: {
+            required: true,
+            content: { 'application/json': { schema: OutlookEmailSchema } },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Verification email sent.',
+            content: {
+               'application/json': {
+                  schema: z.object({
+                     msg: z.literal('Verification email sent'),
+                  }),
+               },
+            },
+         },
+         400: { description: 'Invalid BINUS email.' },
+         401: { description: 'Authentication required.' },
+         404: { description: 'User not found.' },
+      },
+   });
+
+   registry.registerPath({
+      method: 'get',
+      path: '/api/user/binus-email/verify',
+      tags: [tag],
+      summary: 'Consume a BINUS Outlook verification token',
+      request: { query: z.object({ token: z.string().min(1) }) },
+      responses: {
+         200: {
+            description: 'Outlook address updated and verified.',
+            content: {
+               'application/json': {
+                  schema: z.object({
+                     msg: z.literal('Your Outlook Email has been verified'),
+                  }),
+               },
+            },
+         },
+         400: {
+            description: 'Token is missing, invalid, or expired.',
+            content: { 'application/json': { schema: errorResponseSchema } },
          },
       },
    });
