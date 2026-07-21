@@ -1,29 +1,10 @@
 import '@/docs/zodOpenApi.js';
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import { z } from 'zod';
 import {
    errorResponseSchema,
    protectedEndpoint,
 } from '@/docs/commonSchemas.js';
-
-const resourceResponseSchema = z.object({
-   msg: z.literal('success'),
-   data: z.object({
-      period: z.object({ id: z.string(), label: z.string() }),
-      groups: z.array(
-         z.object({ id: z.string(), title: z.string(), url: z.string().url() }),
-      ),
-      contacts: z.array(
-         z.object({
-            id: z.string(),
-            areas: z.array(z.string()),
-            name: z.string(),
-            phoneNumber: z.string(),
-            contactUrl: z.string().url(),
-         }),
-      ),
-   }),
-});
+import { MembershipResourcesResponseSchema } from './membershipSchema.js';
 
 export const registerMembershipDocs = (registry: OpenAPIRegistry) => {
    registry.registerPath({
@@ -35,7 +16,11 @@ export const registerMembershipDocs = (registry: OpenAPIRegistry) => {
       responses: {
          200: {
             description: 'Resources for the active membership period.',
-            content: { 'application/json': { schema: resourceResponseSchema } },
+            content: {
+               'application/json': {
+                  schema: MembershipResourcesResponseSchema,
+               },
+            },
          },
          403: {
             description: 'Registration is incomplete.',

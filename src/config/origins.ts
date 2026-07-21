@@ -1,5 +1,6 @@
 export const trustedOrigins = [
    'http://localhost:3000',
+   'http://localhost:4000',
    'http://localhost:8000',
    'https://registration.himtibinus.or.id',
    'https://dev-registration.himtibinus.or.id',
