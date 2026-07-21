@@ -5,6 +5,7 @@ import {
 import { registerHealthDocs } from '@/docs/healthDocs.js';
 import { registerEventCommitteeDocs } from '@/features/event-committee/eventCommitteeDocs.js';
 import { registerEventDocs } from '@/features/events/eventDocs.js';
+import { registerMembershipDocs } from '@/features/membership/membershipDocs.js';
 import { registerPermissionDocs } from '@/features/permissions/permissionDocs.js';
 import { registerRegistrationFormDocs } from '@/features/registration-forms/registrationFormDocs.js';
 import { registerRoleDocs } from '@/features/roles/roleDocs.js';
@@ -28,7 +29,7 @@ registerRoleDocs(registry);
 registerPermissionDocs(registry);
 registerUrlShortenerDocs(registry);
 registerEventDocs(registry);
-registerEventCommitteeDocs(registry);
+registerMembershipDocs(registry);
 registerSubEventDocs(registry);
 registerRegistrationFormDocs(registry);
 

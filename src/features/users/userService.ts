@@ -4,7 +4,6 @@ import { userRepository } from './userRepository.js';
 import {
    GetUserSchema,
    UpdateUserRequest,
-   GetUserResponse,
    CompleteProfileRequest,
    UpdateProfileRequest,
 } from './userTypes.js';
@@ -17,10 +16,10 @@ class UserService {
    async getUsers(
       params: GetUserSchema,
       user: typeof auth.$Infer.Session.user,
-   ): Promise<GetUserResponse> {
+   ) {
       const query = {
          ...params,
-         status: getAuthorizedStatusFilter(params.status, user),
+         status: this.getAuthorizedStatus(params.status, user),
       };
       const { data, total } = await userRepository.findAll(query);
 
@@ -34,6 +33,8 @@ class UserService {
             limit: query.limit,
             totalRecords: total,
             totalPages: Math.ceil(total / query.limit),
+            previousPage: query.page > 1 ? query.page - 1 : null,
+            nextPage: query.page * query.limit < total ? query.page + 1 : null,
          },
       };
    }
@@ -43,32 +44,64 @@ class UserService {
       id: string,
       user: typeof auth.$Infer.Session.user,
    ) {
+      const isBinus = payload.institutionType === 'BINUS';
+      const isNonBinus = payload.institutionType === 'NON_BINUS';
+      const isStudent = payload.memberType === 'STUDENT';
+      const isLecturer = payload.memberType === 'LECTURER';
+      const isOther = payload.memberType === 'OTHER';
       const updatedUser: Prisma.UserUpdateInput = {
          name: payload.name,
          email: payload.email,
-         outlookEmail: payload.outlookEmail,
-         outlookEmailVerified: payload.outlookEmailVerified,
+         emailVerified: payload.emailVerified,
+         outlookEmail: isNonBinus ? null : payload.outlookEmail,
+         outlookEmailVerified:
+            payload.outlookEmailVerified ??
+            (payload.outlookEmail !== undefined || isNonBinus
+               ? false
+               : undefined),
          image: payload.image,
          status: payload.status,
-         nim: payload.nim,
+         memberType: payload.memberType,
+         institutionType: payload.institutionType,
+         universityName: isBinus ? null : payload.universityName,
+         studyProgramName:
+            isBinus || isLecturer || isOther ? null : payload.studyProgramName,
+         department: isStudent || isOther ? null : payload.department,
+         affiliation: isStudent || isLecturer ? null : payload.affiliation,
+         nim: isLecturer || isOther ? null : payload.nim,
          phoneNumber: payload.phoneNumber,
          lineId: payload.lineId,
-         graduateBatch: payload.graduateBatch,
-         university:
-            payload.universityId !== undefined
-               ? payload.universityId
-                  ? { connect: { id: payload.universityId } }
-                  : { disconnect: true }
-               : undefined,
+         graduateBatch:
+            isNonBinus || isLecturer || isOther ? null : payload.graduateBatch,
+         university: isNonBinus
+            ? { disconnect: true }
+            : payload.universityId !== undefined
+              ? payload.universityId
+                 ? { connect: { id: payload.universityId } }
+                 : { disconnect: true }
+              : undefined,
          studyProgram:
-            payload.studyProgramId !== undefined
-               ? payload.studyProgramId
-                  ? { connect: { id: payload.studyProgramId } }
-                  : { disconnect: true }
-               : undefined,
+            isNonBinus || isLecturer || isOther
+               ? { disconnect: true }
+               : payload.studyProgramId !== undefined
+                 ? payload.studyProgramId
+                    ? { connect: { id: payload.studyProgramId } }
+                    : { disconnect: true }
+                 : undefined,
+         region: isNonBinus
+            ? { disconnect: true }
+            : payload.regionId !== undefined
+              ? payload.regionId
+                 ? { connect: { id: payload.regionId } }
+                 : { disconnect: true }
+              : undefined,
          updatedBy: user.id,
       };
-      return await userRepository.update(id, updatedUser);
+      return await userRepository.update(
+         id,
+         updatedUser,
+         payload.outlookEmail !== undefined || isNonBinus,
+      );
    }
 
    async getUserById(id: string) {
@@ -101,6 +134,89 @@ class UserService {
          roles,
          permissions: Array.from(permissionMap.values()),
       };
+   }
+
+   async getSummary(
+      params: GetUserSchema,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const result = await userRepository.summarize({
+         ...params,
+         status: this.getAuthorizedStatus(params.status, user),
+      });
+      return {
+         ...result,
+         byMemberType: Object.fromEntries(
+            result.byMemberType.map((item) => [
+               item.memberType ?? 'UNKNOWN',
+               item._count,
+            ]),
+         ),
+      };
+   }
+
+   async exportUsers(
+      params: GetUserSchema,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const query = {
+         ...params,
+         status: this.getAuthorizedStatus(params.status, user),
+      };
+      const { data } = await userRepository.findAll(query, false);
+      const fields = [
+         'id',
+         'name',
+         'email',
+         'emailVerified',
+         'outlookEmail',
+         'outlookEmailVerified',
+         'phoneNumber',
+         'memberType',
+         'institutionType',
+         'regionId',
+         'nim',
+         'universityName',
+         'studyProgramName',
+         'graduateBatch',
+         'department',
+         'affiliation',
+         'status',
+         'registrationCompletedAt',
+         'createdAt',
+      ] as const;
+      const csv = (value: unknown) =>
+         `"${String(value ?? '').replaceAll('"', '""')}"`;
+      return [
+         fields.join(','),
+         ...data.map((record) =>
+            fields.map((field) => csv(record[field])).join(','),
+         ),
+      ].join('\n');
+   }
+
+   async resendVerification(id: string) {
+      const user = await userRepository.findById(id);
+      if (!user) throw new AppError('User not found', 404);
+      if (!user.outlookEmail) {
+         throw new AppError('User has no Outlook email', 400);
+      }
+      if (user.outlookEmailVerified) {
+         throw new AppError('Outlook email is already verified', 400);
+      }
+
+      await this.sendOutlookVerification(id, user.outlookEmail);
+   }
+
+   private getAuthorizedStatus(
+      status: GetUserSchema['status'],
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      if (status === 'SUSPENDED') {
+         getAuthorizedStatusFilter('INACTIVE', user);
+         return status;
+      }
+      return getAuthorizedStatusFilter(status, user);
    }
 
    async getCurrentUser(id: string) {

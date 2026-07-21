@@ -51,21 +51,25 @@ async function main() {
    // ==========================================
    console.log('⏳ Seeding Regions...');
    const regions = [
-      'Alam Sutera',
-      'Bandung',
-      'Bekasi',
-      'Kemanggisan',
-      'Malang',
-      'Medan',
-      'Senayan',
-      'Semarang',
-   ];
-   for (const name of regions) {
-      await prisma.region.upsert({
-         where: { name },
-         update: {},
-         create: { name },
-      });
+      ['alam-sutera', 'Alam Sutera'],
+      ['bandung', 'Bandung'],
+      ['bekasi', 'Bekasi'],
+      ['kemanggisan', 'Kemanggisan'],
+      ['malang', 'Malang'],
+      ['medan', 'Medan'],
+      ['senayan', 'Senayan'],
+      ['semarang', 'Semarang'],
+   ] as const;
+   for (const [id, name] of regions) {
+      const existing = await prisma.region.findUnique({ where: { name } });
+      if (existing) {
+         await prisma.region.update({
+            where: { id: existing.id },
+            data: { id, status: 'ACTIVE' },
+         });
+      } else {
+         await prisma.region.create({ data: { id, name } });
+      }
    }
 
    // ==========================================
@@ -141,6 +145,22 @@ async function main() {
          });
       }
    }
+
+   // ==========================================
+   // SEED MEMBERSHIP PERIOD
+   // ==========================================
+   console.log('⏳ Seeding Membership Period...');
+   await prisma.$transaction(async (tx) => {
+      await tx.membershipPeriod.updateMany({
+         where: { isActive: true },
+         data: { isActive: false },
+      });
+      await tx.membershipPeriod.upsert({
+         where: { id: '2026-2027' },
+         update: { label: '2026/2027', isActive: true },
+         create: { id: '2026-2027', label: '2026/2027', isActive: true },
+      });
+   });
 
    console.log('✅ Seeding berhasil diselesaikan!');
 }
