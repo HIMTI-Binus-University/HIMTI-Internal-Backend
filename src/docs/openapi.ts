@@ -4,6 +4,7 @@ import {
 } from '@asteasolutions/zod-to-openapi';
 import { registerHealthDocs } from '@/docs/healthDocs.js';
 import { registerEventDocs } from '@/features/events/eventDocs.js';
+import { registerMembershipDocs } from '@/features/membership/membershipDocs.js';
 import { registerPermissionDocs } from '@/features/permissions/permissionDocs.js';
 import { registerRegistrationFormDocs } from '@/features/registration-forms/registrationFormDocs.js';
 import { registerRoleDocs } from '@/features/roles/roleDocs.js';
@@ -27,6 +28,7 @@ registerRoleDocs(registry);
 registerPermissionDocs(registry);
 registerUrlShortenerDocs(registry);
 registerEventDocs(registry);
+registerMembershipDocs(registry);
 registerSubEventDocs(registry);
 registerRegistrationFormDocs(registry);
 

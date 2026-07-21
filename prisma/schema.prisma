@@ -170,7 +170,8 @@ model Region {
    createdAt DateTime @default(now()) @db.Timestamp(0)
    updatedAt DateTime? @updatedAt
 
-   users User[]
+   users             User[]
+   membershipGroups MembershipGroup[]
 
    @@map("regions")
 }
@@ -251,6 +252,47 @@ model User {
    user                  User?                  @relation("UserUpdater", fields: [createdBy], references: [id])
 
    @@map("users")
+}
+
+model MembershipPeriod {
+   id       String  @id @db.VarChar(100)
+   label    String  @db.VarChar(100)
+   isActive Boolean @default(false)
+
+   groups   MembershipGroup[]
+   contacts MembershipContact[]
+
+   @@map("membership_periods")
+}
+
+model MembershipGroup {
+   id            String  @id @db.VarChar(100)
+   periodId      String  @db.VarChar(100)
+   title         String  @db.VarChar(255)
+   url           String  @db.Text
+   graduateBatch String? @db.VarChar(20)
+   regionId      String?
+
+   period MembershipPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+   region Region?          @relation(fields: [regionId], references: [id], onDelete: SetNull)
+
+   @@index([periodId, graduateBatch, regionId])
+   @@index([regionId])
+   @@map("membership_groups")
+}
+
+model MembershipContact {
+   id          String   @id @db.VarChar(100)
+   periodId    String   @db.VarChar(100)
+   areas       String[]
+   name        String   @db.VarChar(255)
+   phoneNumber String   @db.VarChar(30)
+   contactUrl  String   @db.Text
+
+   period MembershipPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+   @@index([periodId])
+   @@map("membership_contacts")
 }
 
 model Session {

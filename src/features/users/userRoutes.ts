@@ -2,11 +2,14 @@ import express from 'express';
 import type { Router } from 'express';
 import {
    completeProfile,
+   exportUsers,
    getCurrentUser,
    getRegistrationOptions,
    getUsers,
+   getUserSummary,
    getUserById,
    sendOutlookVerification,
+   resendUserVerification,
    updateProfile,
    updateUser,
    verifyOutlookEmail,
@@ -16,6 +19,18 @@ import { requirePermission } from '@/middleware/permissionMiddleware.js';
 const router: Router = express.Router();
 
 router.get('/users', requireAuth, requirePermission('manage_users'), getUsers);
+router.get(
+   '/users/summary',
+   requireAuth,
+   requirePermission('manage_users'),
+   getUserSummary,
+);
+router.get(
+   '/users/export',
+   requireAuth,
+   requirePermission('manage_users'),
+   exportUsers,
+);
 router.get('/user/me', requireAuth, getCurrentUser);
 router.patch('/user/me', requireAuth, updateProfile);
 router.patch('/user/me/complete-profile', requireAuth, completeProfile);
@@ -37,6 +52,12 @@ router.patch(
    requireAuth,
    requirePermission('manage_users'),
    updateUser,
+);
+router.post(
+   '/user/:id/resend-verification',
+   requireAuth,
+   requirePermission('manage_users'),
+   resendUserVerification,
 );
 
 export default router;

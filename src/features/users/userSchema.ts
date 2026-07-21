@@ -8,12 +8,21 @@ export const UpdateUserSchema = z.object({
    outlookEmail: z.string().email().max(100).optional().nullable(),
    outlookEmailVerified: z.boolean().optional(),
    image: z.string().optional().nullable(),
-   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
+
+   // Membership path
+   memberType: z.enum(['STUDENT', 'LECTURER', 'OTHER']).optional().nullable(),
+   institutionType: z.enum(['BINUS', 'NON_BINUS']).optional().nullable(),
+   universityName: z.string().max(255).optional().nullable(),
+   studyProgramName: z.string().max(255).optional().nullable(),
+   department: z.string().max(255).optional().nullable(),
+   affiliation: z.string().max(255).optional().nullable(),
 
    // Academic
    nim: z.string().max(50).optional().nullable(),
    universityId: z.string().optional().nullable(),
    studyProgramId: z.string().optional().nullable(),
+   regionId: z.string().optional().nullable(),
    graduateBatch: z.string().max(20).optional().nullable(),
 
    // Contact
@@ -26,8 +35,15 @@ export const GetUserSchema = z.object({
    limit: z.coerce.number().min(1).max(100).default(10),
    search: z.string().optional(),
    sort: z.string().default('createdAt:desc'),
-   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
+   memberType: z.enum(['STUDENT', 'LECTURER', 'OTHER']).optional(),
+   institutionType: z.enum(['BINUS', 'NON_BINUS']).optional(),
+   regionId: z.string().optional(),
+   verification: z.stringbool().optional(),
+   completed: z.stringbool().optional(),
 });
+
+export const UserFilterSchema = GetUserSchema.omit({ page: true, limit: true });
 
 const requiredText = (max: number) => z.string().trim().min(1).max(max);
 const optionalText = (max: number) => requiredText(max).optional();

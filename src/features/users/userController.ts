@@ -49,6 +49,25 @@ export const updateUser = async (req: Request, res: Response) => {
    });
 };
 
+export const getUserSummary = async (req: Request, res: Response) => {
+   const query = GetUserSchema.parse(req.query);
+   const result = await userService.getSummary(query, res.locals.user);
+   res.status(200).json({ msg: 'success', data: result });
+};
+
+export const exportUsers = async (req: Request, res: Response) => {
+   const query = GetUserSchema.parse(req.query);
+   const csv = await userService.exportUsers(query, res.locals.user);
+   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+   res.setHeader('Content-Disposition', 'attachment; filename="users.csv"');
+   res.status(200).send(csv);
+};
+
+export const resendUserVerification = async (req: Request, res: Response) => {
+   await userService.resendVerification(req.params.id as string);
+   res.status(200).json({ msg: 'Verification email sent' });
+};
+
 export const getCurrentUser = async (_req: Request, res: Response) => {
    const result = await userService.getCurrentUser(res.locals.user.id);
    if (!result) return res.status(404).json({ msg: 'User not found' });

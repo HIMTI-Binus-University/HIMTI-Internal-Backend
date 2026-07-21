@@ -7,6 +7,7 @@ import registrationFormRoutes from '@/features/registration-forms/registrationFo
 import permissionRoutes from '@/features/permissions/permissionRoutes.js';
 import userRoutes from '@/features/users/userRoutes.js';
 import roleRoutes from '@/features/roles/roleRoutes.js';
+import membershipRoutes from '@/features/membership/membershipRoutes.js';
 
 const router: Router = express.Router();
 
@@ -19,6 +20,7 @@ router.get('/health', (_req: Request, res: Response) => {
 });
 
 router.use('/url', urlRoutes);
+router.use('/membership', membershipRoutes);
 router.use('/event', eventRoutes);
 router.use('/sub-event', subEventRoutes);
 router.use('/registration-form', registrationFormRoutes);

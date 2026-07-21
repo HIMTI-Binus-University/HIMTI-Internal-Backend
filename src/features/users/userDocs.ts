@@ -4,18 +4,18 @@ import { z } from 'zod';
 import {
    errorResponseSchema,
    idParamSchema,
-   listQuerySchema,
    paginationMetaSchema,
    protectedEndpoint,
-   relationSummarySchema,
    statusSchema,
    userStatusSchema,
    validationErrorResponseSchema,
 } from '@/docs/commonSchemas.js';
 import {
    CompleteProfileSchema,
+   GetUserSchema,
    OutlookEmailSchema,
    UpdateProfileSchema,
+   UpdateUserSchema,
 } from './userSchema.js';
 
 const tag = 'Users';
@@ -32,31 +32,15 @@ const userPermissionSchema = z.object({
    status: statusSchema,
 });
 
+const profileRelationSchema = z
+   .object({
+      id: z.string(),
+      name: z.string(),
+      shortName: z.string().nullable(),
+   })
+   .nullable();
+
 const userListItemSchema = z.object({
-   id: z.string(),
-   name: z.string(),
-   email: z.string().email(),
-   emailVerified: z.boolean(),
-   outlookEmail: z.string().email().nullable(),
-   image: z.string().nullable(),
-   status: userStatusSchema,
-   nim: z.string().nullable(),
-   universityId: z.string().nullable(),
-   studyProgramId: z.string().nullable(),
-   graduateBatch: z.string().nullable(),
-   phoneNumber: z.string().nullable(),
-   lineId: z.string().nullable(),
-   createdAt: z.string().datetime(),
-   university: relationSummarySchema,
-   studyProgram: relationSummarySchema,
-   roles: z.array(userRoleSchema),
-});
-
-const userDetailSchema = userListItemSchema.extend({
-   permissions: z.array(userPermissionSchema),
-});
-
-const fullUserSchema = z.object({
    id: z.string(),
    name: z.string(),
    email: z.string().email(),
@@ -65,9 +49,17 @@ const fullUserSchema = z.object({
    outlookEmailVerified: z.boolean(),
    image: z.string().nullable(),
    status: userStatusSchema,
+   registrationCompletedAt: z.string().datetime().nullable(),
+   memberType: z.enum(['STUDENT', 'LECTURER', 'OTHER']).nullable(),
+   institutionType: z.enum(['BINUS', 'NON_BINUS']).nullable(),
+   universityName: z.string().nullable(),
+   studyProgramName: z.string().nullable(),
+   department: z.string().nullable(),
+   affiliation: z.string().nullable(),
    nim: z.string().nullable(),
    universityId: z.string().nullable(),
    studyProgramId: z.string().nullable(),
+   regionId: z.string().nullable(),
    graduateBatch: z.string().nullable(),
    phoneNumber: z.string().nullable(),
    lineId: z.string().nullable(),
@@ -75,28 +67,25 @@ const fullUserSchema = z.object({
    createdBy: z.string().nullable(),
    updatedAt: z.string().datetime().nullable(),
    updatedBy: z.string().nullable(),
+   university: profileRelationSchema,
+   studyProgram: profileRelationSchema,
+   region: profileRelationSchema,
+   roles: z.array(userRoleSchema),
 });
 
-const updateUserRequestSchema = z.object({
-   name: z.string().max(255).optional(),
-   email: z.string().email().max(100).optional(),
-   emailVerified: z.boolean().optional(),
-   outlookEmail: z.string().email().max(100).nullable().optional(),
-   outlookEmailVerified: z.boolean().optional(),
-   image: z.string().nullable().optional(),
-   status: statusSchema.optional(),
-   nim: z.string().max(50).nullable().optional(),
-   universityId: z.string().nullable().optional(),
-   studyProgramId: z.string().nullable().optional(),
-   graduateBatch: z.string().max(20).nullable().optional(),
-   phoneNumber: z.string().max(20).nullable().optional(),
-   lineId: z.string().max(50).nullable().optional(),
+const userDetailSchema = userListItemSchema.extend({
+   permissions: z.array(userPermissionSchema),
 });
+
+const fullUserSchema = userListItemSchema.omit({ roles: true });
 
 const userListResponseSchema = z.object({
    msg: z.literal('success'),
    data: z.array(userListItemSchema),
-   meta: paginationMetaSchema,
+   meta: paginationMetaSchema.extend({
+      previousPage: z.number().nullable(),
+      nextPage: z.number().nullable(),
+   }),
 });
 
 const userDetailResponseSchema = z.object({
@@ -109,13 +98,15 @@ const userMutationResponseSchema = z.object({
    data: fullUserSchema,
 });
 
-const profileRelationSchema = z
-   .object({
-      id: z.string(),
-      name: z.string(),
-      shortName: z.string().nullable(),
-   })
-   .nullable();
+const userSummaryResponseSchema = z.object({
+   msg: z.literal('success'),
+   data: z.object({
+      total: z.number(),
+      today: z.number(),
+      unverifiedOutlookEmail: z.number(),
+      byMemberType: z.record(z.string(), z.number()),
+   }),
+});
 
 const currentUserSchema = z.object({
    id: z.string(),
@@ -173,7 +164,7 @@ const registrationOptionsResponseSchema = z.object({
 export const registerUserDocs = (registry: OpenAPIRegistry) => {
    const UpdateUserRequest = registry.register(
       'UpdateUserRequest',
-      updateUserRequestSchema,
+      UpdateUserSchema,
    );
    const UserListResponse = registry.register(
       'UserListResponse',
@@ -214,10 +205,10 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
       tags: [tag],
       summary: 'List users',
       description:
-         'Requires authentication and the manage_users permission. Status defaults to ACTIVE; only Admin users may request INACTIVE records.',
+         'Requires manage_users. Status defaults to ACTIVE; only Admin users may request INACTIVE or SUSPENDED records.',
       security: [protectedEndpoint],
       request: {
-         query: listQuerySchema,
+         query: GetUserSchema,
       },
       responses: {
          200: {
@@ -238,6 +229,48 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
          },
          401: { description: 'Authentication required.' },
          403: { description: 'Missing permission or inactive-status access.' },
+      },
+   });
+
+   registry.registerPath({
+      method: 'get',
+      path: '/api/users/summary',
+      tags: [tag],
+      summary: 'Summarize users',
+      description:
+         'Returns filtered totals, registrations today, unverified Outlook addresses, and counts by member type. Uses the same filters and status authorization as the user list.',
+      security: [protectedEndpoint],
+      request: { query: GetUserSchema },
+      responses: {
+         200: {
+            description: 'User summary.',
+            content: {
+               'application/json': { schema: userSummaryResponseSchema },
+            },
+         },
+         400: { description: 'Invalid filter.' },
+         401: { description: 'Authentication required.' },
+         403: { description: 'Missing permission or non-active access.' },
+      },
+   });
+
+   registry.registerPath({
+      method: 'get',
+      path: '/api/users/export',
+      tags: [tag],
+      summary: 'Export users as CSV',
+      description:
+         'Exports all users matching the same filters and status authorization as the user list. Pagination parameters are ignored.',
+      security: [protectedEndpoint],
+      request: { query: GetUserSchema },
+      responses: {
+         200: {
+            description: 'CSV user export.',
+            content: { 'text/csv': { schema: z.string() } },
+         },
+         400: { description: 'Invalid filter or sort.' },
+         401: { description: 'Authentication required.' },
+         403: { description: 'Missing permission or non-active access.' },
       },
    });
 
@@ -270,6 +303,33 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
                },
             },
          },
+      },
+   });
+
+   registry.registerPath({
+      method: 'post',
+      path: '/api/user/{id}/resend-verification',
+      tags: [tag],
+      summary: 'Resend a user Outlook verification email',
+      description:
+         'Requires manage_users. Replaces the pending generic verification token without clearing the stored address or verification flag.',
+      security: [protectedEndpoint],
+      request: { params: idParamSchema },
+      responses: {
+         200: {
+            description: 'Verification email sent.',
+            content: {
+               'application/json': {
+                  schema: z.object({
+                     msg: z.literal('Verification email sent'),
+                  }),
+               },
+            },
+         },
+         400: { description: 'No Outlook address or already verified.' },
+         401: { description: 'Authentication required.' },
+         403: { description: 'Missing manage_users permission.' },
+         404: { description: 'User not found.' },
       },
    });
 

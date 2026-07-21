@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { GetUserSchema } from './userTypes.js';
+import { GetUserSchema, UserFilters } from './userTypes.js';
 import { parseSort } from '@/utils/sort.js';
 import { prisma } from '@/config/prisma.js';
 import { OUTLOOK_VERIFICATION_TOKEN_TTL_MS } from '@/config/verification.js';
@@ -7,49 +7,112 @@ import { OUTLOOK_VERIFICATION_TOKEN_TTL_MS } from '@/config/verification.js';
 const allowedUserSortFields = ['createdAt', 'name', 'email', 'status'] as const;
 
 class UserRepository {
-   async update(id: string, data: Prisma.UserUpdateInput) {
-      return await prisma.user.update({
-         where: { id },
-         data,
-         select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            outlookEmail: true,
-            outlookEmailVerified: true,
-            image: true,
-            status: true,
-            registrationCompletedAt: true,
-            nim: true,
-            universityId: true,
-            studyProgramId: true,
-            regionId: true,
-            graduateBatch: true,
-            phoneNumber: true,
-            lineId: true,
-            createdAt: true,
-            createdBy: true,
-            updatedAt: true,
-            updatedBy: true,
-         },
-      });
-   }
-
-   async findAll(params: GetUserSchema) {
-      const { page, limit, search, sort, status } = params;
-
+   private getWhere(params: UserFilters): Prisma.UserWhereInput {
+      const {
+         search,
+         status,
+         memberType,
+         institutionType,
+         regionId,
+         verification,
+         completed,
+      } = params;
       const where: Prisma.UserWhereInput = {
          ...(status && { status }),
+         ...(memberType && { memberType }),
+         ...(institutionType && { institutionType }),
+         ...(regionId && { regionId }),
+         ...(verification !== undefined && {
+            outlookEmailVerified: verification,
+         }),
+         ...(completed !== undefined && {
+            registrationCompletedAt: completed ? { not: null } : null,
+         }),
       };
 
       if (search) {
          where.OR = [
             { name: { contains: search, mode: 'insensitive' } },
             { email: { contains: search, mode: 'insensitive' } },
+            { outlookEmail: { contains: search, mode: 'insensitive' } },
             { nim: { contains: search, mode: 'insensitive' } },
+            { phoneNumber: { contains: search, mode: 'insensitive' } },
          ];
       }
+
+      return where;
+   }
+
+   private readonly adminUserSelect = {
+      id: true,
+      name: true,
+      email: true,
+      emailVerified: true,
+      outlookEmail: true,
+      outlookEmailVerified: true,
+      image: true,
+      status: true,
+      registrationCompletedAt: true,
+      memberType: true,
+      institutionType: true,
+      universityName: true,
+      studyProgramName: true,
+      department: true,
+      affiliation: true,
+      nim: true,
+      universityId: true,
+      studyProgramId: true,
+      regionId: true,
+      graduateBatch: true,
+      phoneNumber: true,
+      lineId: true,
+      createdAt: true,
+      createdBy: true,
+      updatedAt: true,
+      updatedBy: true,
+      university: { select: { id: true, name: true, shortName: true } },
+      studyProgram: { select: { id: true, name: true, shortName: true } },
+      region: { select: { id: true, name: true, shortName: true } },
+   } satisfies Prisma.UserSelect;
+
+   private readonly adminSelect = {
+      ...this.adminUserSelect,
+      userHasRoles: {
+         where: { role: { status: 'ACTIVE' as const } },
+         select: {
+            role: { select: { id: true, roleName: true, status: true } },
+         },
+      },
+   } satisfies Prisma.UserSelect;
+
+   async update(
+      id: string,
+      data: Prisma.UserUpdateInput,
+      invalidateOutlookVerification = false,
+   ) {
+      if (!invalidateOutlookVerification) {
+         return await prisma.user.update({
+            where: { id },
+            data,
+            select: this.adminUserSelect,
+         });
+      }
+
+      return await prisma.$transaction(async (tx) => {
+         await tx.verification.deleteMany({
+            where: { identifier: { startsWith: `outlook_verify_${id}:` } },
+         });
+         return await tx.user.update({
+            where: { id },
+            data,
+            select: this.adminUserSelect,
+         });
+      });
+   }
+
+   async findAll(params: GetUserSchema, paginate = true) {
+      const { page, limit, sort } = params;
+      const where = this.getWhere(params);
 
       const sortOption = parseSort(sort, allowedUserSortFields, {
          field: 'createdAt',
@@ -59,48 +122,12 @@ class UserRepository {
          [sortOption.field]: sortOption.direction,
       };
 
-      const skip = (page - 1) * limit;
-
       const [data, total] = await prisma.$transaction([
          prisma.user.findMany({
             where,
             orderBy,
-            skip,
-            take: limit,
-            select: {
-               id: true,
-               name: true,
-               email: true,
-               emailVerified: true,
-               outlookEmail: true,
-               image: true,
-               status: true,
-               nim: true,
-               universityId: true,
-               studyProgramId: true,
-               graduateBatch: true,
-               phoneNumber: true,
-               lineId: true,
-               createdAt: true,
-               university: { select: { id: true, name: true } },
-               studyProgram: { select: { id: true, name: true } },
-               userHasRoles: {
-                  where: {
-                     role: {
-                        status: 'ACTIVE',
-                     },
-                  },
-                  select: {
-                     role: {
-                        select: {
-                           id: true,
-                           roleName: true,
-                           status: true,
-                        },
-                     },
-                  },
-               },
-            },
+            ...(paginate ? { skip: (page - 1) * limit, take: limit } : {}),
+            select: this.adminSelect,
          }),
          prisma.user.count({ where }),
       ]);
@@ -112,22 +139,7 @@ class UserRepository {
       return await prisma.user.findUnique({
          where: { id },
          select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            outlookEmail: true,
-            image: true,
-            status: true,
-            nim: true,
-            universityId: true,
-            studyProgramId: true,
-            graduateBatch: true,
-            phoneNumber: true,
-            lineId: true,
-            createdAt: true,
-            university: { select: { id: true, name: true } },
-            studyProgram: { select: { id: true, name: true } },
+            ...this.adminSelect,
             userHasRoles: {
                where: {
                   role: {
@@ -162,6 +174,43 @@ class UserRepository {
             },
          },
       });
+   }
+
+   async summarize(params: UserFilters) {
+      const where = this.getWhere(params);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const [total, registeredToday, unverifiedOutlookEmail, byMemberType] =
+         await prisma.$transaction([
+            prisma.user.count({ where }),
+            prisma.user.count({
+               where: {
+                  AND: [where, { registrationCompletedAt: { gte: today } }],
+               },
+            }),
+            prisma.user.count({
+               where: {
+                  AND: [
+                     where,
+                     { institutionType: 'BINUS', outlookEmailVerified: false },
+                  ],
+               },
+            }),
+            prisma.user.groupBy({
+               by: ['memberType'],
+               where,
+               orderBy: { memberType: 'asc' },
+               _count: true,
+            }),
+         ]);
+
+      return {
+         total,
+         today: registeredToday,
+         unverifiedOutlookEmail,
+         byMemberType,
+      };
    }
 
    async findCurrentById(id: string) {

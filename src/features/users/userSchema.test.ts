@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { CompleteProfileSchema, UpdateProfileSchema } from './userSchema.js';
+import {
+   CompleteProfileSchema,
+   GetUserSchema,
+   UpdateProfileSchema,
+   UpdateUserSchema,
+} from './userSchema.js';
 
 const common = {
    name: 'HIMTI Member',
@@ -95,5 +100,40 @@ describe('UpdateProfileSchema', () => {
       });
 
       assert.equal(result.success, false);
+   });
+});
+
+describe('admin user schemas', () => {
+   test('parses canonical filters and supported statuses', () => {
+      const result = GetUserSchema.parse({
+         status: 'SUSPENDED',
+         memberType: 'STUDENT',
+         institutionType: 'BINUS',
+         regionId: 'region-id',
+         verification: 'false',
+         completed: 'true',
+      });
+
+      assert.equal(result.regionId, 'region-id');
+      assert.equal(result.verification, false);
+      assert.equal(result.completed, true);
+   });
+
+   test('accepts canonical admin update fields', () => {
+      const result = UpdateUserSchema.parse({
+         emailVerified: true,
+         outlookEmail: 'member@binus.ac.id',
+         outlookEmailVerified: false,
+         status: 'SUSPENDED',
+         memberType: 'STUDENT',
+         institutionType: 'BINUS',
+         universityId: 'university-id',
+         studyProgramId: 'program-id',
+         regionId: 'region-id',
+      });
+
+      assert.equal(result.emailVerified, true);
+      assert.equal(result.regionId, 'region-id');
+      assert.equal(result.outlookEmailVerified, false);
    });
 });
