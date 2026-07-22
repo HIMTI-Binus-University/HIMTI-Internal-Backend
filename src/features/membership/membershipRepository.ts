@@ -1,9 +1,5 @@
+import type { Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
-import type {
-   CreatePeriodRequest,
-   CreateResourceRequest,
-   UpdateResourceRequest,
-} from './membershipTypes.js';
 
 const periodSummarySelect = { id: true, label: true } as const;
 const resourceSelect = {
@@ -87,16 +83,21 @@ class MembershipRepository {
    async findPeriod(id: string) {
       return await prisma.membershipPeriod.findUnique({
          where: { id },
-         include: { _count: { select: { memberships: true, resources: true } } },
+         include: {
+            _count: { select: { memberships: true, resources: true } },
+         },
       });
    }
 
-   async createPeriod(data: CreatePeriodRequest) {
+   async createPeriod(data: Prisma.MembershipPeriodCreateInput) {
       return await prisma.membershipPeriod.create({ data });
    }
 
    async updatePeriod(id: string, label: string) {
-      return await prisma.membershipPeriod.update({ where: { id }, data: { label } });
+      return await prisma.membershipPeriod.update({
+         where: { id },
+         data: { label },
+      });
    }
 
    async deletePeriod(id: string) {
@@ -127,14 +128,16 @@ class MembershipRepository {
       return await prisma.region.findFirst({ where: { id, status: 'ACTIVE' } });
    }
 
-   async createResource(periodId: string, data: CreateResourceRequest) {
+   async createResource(
+      periodId: string,
+      data: Prisma.MembershipResourceCreateInput,
+   ) {
       const aggregate = await prisma.membershipResource.aggregate({
          where: { periodId },
          _max: { position: true },
       });
       return await prisma.membershipResource.create({
          data: {
-            periodId,
             ...data,
             position: (aggregate._max.position ?? -1) + 1,
          },
@@ -146,7 +149,10 @@ class MembershipRepository {
       return await prisma.membershipResource.findUnique({ where: { id } });
    }
 
-   async updateResource(id: string, data: UpdateResourceRequest) {
+   async updateResource(
+      id: string,
+      data: Prisma.MembershipResourceUpdateInput,
+   ) {
       return await prisma.membershipResource.update({
          where: { id },
          data,

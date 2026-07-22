@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isHttpUrl, normalizeHttpUrl } from '@/utils/httpUrl.js';
 
 const periodSummarySchema = z.object({
    id: z.string(),
@@ -18,7 +19,11 @@ export const MembershipResourceSchema = z.object({
    periodId: z.string(),
    title: z.string(),
    description: z.string(),
-   url: z.string().url().nullable(),
+   url: z
+      .string()
+      .url()
+      .refine(isHttpUrl, 'Only HTTP and HTTPS URLs are allowed')
+      .nullable(),
    position: z.number().int().nonnegative(),
    region: regionSummarySchema,
 });
@@ -53,24 +58,49 @@ export const UpdatePeriodSchema = z
    .object({ label: z.string().trim().min(1).max(100) })
    .strict();
 
-export const RegistrationOpenSchema = z
-   .object({ open: z.boolean() })
-   .strict();
+export const RegistrationOpenSchema = z.object({ open: z.boolean() }).strict();
 
-const optionalUrl = z
-   .union([z.string().trim().url(), z.literal(''), z.null()])
-   .transform((value) => value || null);
+const resourceUrlSchema = z
+   .string()
+   .nullable()
+   .transform((value, context) => {
+      if (value === null || value.trim() === '') return null;
+
+      try {
+         return normalizeHttpUrl(value);
+      } catch {
+         context.addIssue({
+            code: 'custom',
+            message:
+               'Enter a valid web link. Only HTTP and HTTPS links are allowed.',
+         });
+         return z.NEVER;
+      }
+   })
+   .describe(
+      'Optional HTTP(S) link. A missing scheme defaults to HTTPS; empty values are stored as null.',
+   );
+
+const resourceFields = {
+   title: z.string().trim().min(1).max(255),
+   description: z.string().trim().min(1).max(4000),
+   regionId: z.string().trim().min(1).nullable(),
+};
 
 export const CreateResourceSchema = z
    .object({
-      title: z.string().trim().min(1).max(255),
-      description: z.string().trim().min(1).max(4000),
-      url: optionalUrl,
-      regionId: z.string().trim().min(1).nullable(),
+      ...resourceFields,
+      url: resourceUrlSchema.optional().transform((value) => value ?? null),
    })
    .strict();
 
-export const UpdateResourceSchema = CreateResourceSchema.partial()
+export const UpdateResourceSchema = z
+   .object({
+      title: resourceFields.title.optional(),
+      description: resourceFields.description.optional(),
+      url: resourceUrlSchema.optional(),
+      regionId: resourceFields.regionId.optional(),
+   })
    .strict()
    .refine((value) => Object.keys(value).length > 0, {
       message: 'At least one field is required',

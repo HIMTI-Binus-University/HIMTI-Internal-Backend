@@ -4,7 +4,7 @@
    "description": "Internal tools for himti",
    "main": "index.js",
    "scripts": {
-      "test": "tsx --test src/features/users/*.test.ts",
+      "test": "tsx --test src/features/users/*.test.ts src/features/membership/*.test.ts",
       "dev": "tsx watch src/index.ts",
       "build": "tsc && tsc-alias",
       "start": "node dist/index.js",

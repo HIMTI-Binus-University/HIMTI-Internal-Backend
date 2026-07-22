@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { AppError } from '@/utils/appError.js';
 import { membershipRepository } from './membershipRepository.js';
 import type {
@@ -31,7 +32,11 @@ class MembershipService {
    }
 
    async createPeriod(data: CreatePeriodRequest) {
-      return await membershipRepository.createPeriod(data);
+      const periodData: Prisma.MembershipPeriodCreateInput = {
+         id: data.id,
+         label: data.label,
+      };
+      return await membershipRepository.createPeriod(periodData);
    }
 
    async updatePeriod(id: string, label: string) {
@@ -41,7 +46,8 @@ class MembershipService {
 
    async deletePeriod(id: string) {
       const period = await this.requirePeriod(id);
-      if (period.isActive) throw new AppError('Active period cannot be deleted', 409);
+      if (period.isActive)
+         throw new AppError('Active period cannot be deleted', 409);
       if (period._count.memberships || period._count.resources) {
          throw new AppError('Only empty periods can be deleted', 409);
       }
@@ -56,7 +62,10 @@ class MembershipService {
    async setRegistrationOpen(id: string, open: boolean) {
       const period = await this.requirePeriod(id);
       if (open && !period.isActive) {
-         throw new AppError('Only the active period can open re-registration', 409);
+         throw new AppError(
+            'Only the active period can open re-registration',
+            409,
+         );
       }
       return await membershipRepository.setRegistrationOpen(id, open);
    }
@@ -69,7 +78,17 @@ class MembershipService {
    async createResource(periodId: string, data: CreateResourceRequest) {
       await this.requirePeriod(periodId);
       await this.requireRegion(data.regionId);
-      return await membershipRepository.createResource(periodId, data);
+
+      const resourceData: Prisma.MembershipResourceCreateInput = {
+         title: data.title,
+         description: data.description,
+         url: data.url,
+         period: { connect: { id: periodId } },
+         ...(data.regionId && {
+            region: { connect: { id: data.regionId } },
+         }),
+      };
+      return await membershipRepository.createResource(periodId, resourceData);
    }
 
    async updateResource(id: string, data: UpdateResourceRequest) {
@@ -77,7 +96,18 @@ class MembershipService {
          throw new AppError('Membership resource not found', 404);
       }
       await this.requireRegion(data.regionId);
-      return await membershipRepository.updateResource(id, data);
+
+      const resourceData: Prisma.MembershipResourceUpdateInput = {
+         title: data.title,
+         description: data.description,
+         url: data.url,
+         ...(data.regionId !== undefined && {
+            region: data.regionId
+               ? { connect: { id: data.regionId } }
+               : { disconnect: true },
+         }),
+      };
+      return await membershipRepository.updateResource(id, resourceData);
    }
 
    async deleteResource(id: string) {
@@ -94,7 +124,10 @@ class MembershipService {
          new Set(resourceIds).size !== resourceIds.length ||
          current.some((resource) => !resourceIds.includes(resource.id))
       ) {
-         throw new AppError('Resource order must include every period resource once', 400);
+         throw new AppError(
+            'Resource order must include every period resource once',
+            400,
+         );
       }
       await membershipRepository.reorderResources(periodId, resourceIds);
       return await membershipRepository.findResources(periodId);
