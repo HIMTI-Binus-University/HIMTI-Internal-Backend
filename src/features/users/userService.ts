@@ -12,6 +12,10 @@ import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
 import { AppError } from '@/utils/appError.js';
 import { sendOutlookVerificationEmail } from '@/utils/mailer.js';
 import { membershipRepository } from '@/features/membership/membershipRepository.js';
+import {
+   buildOutlookVerificationUrl,
+   getRegistrationFrontendUrl,
+} from '@/config/verification.js';
 
 type CurrentUser = NonNullable<
    Awaited<ReturnType<typeof userRepository.findCurrentById>>
@@ -270,10 +274,10 @@ class UserService {
          updatedAt: user.updatedAt,
          updatedBy: user.updatedBy,
          roles,
-          permissions,
+         permissions,
          membershipPeriod: membershipStatus.currentPeriod,
-          reregistrationPeriod: membershipStatus.availablePeriod,
-       };
+         reregistrationPeriod: membershipStatus.availablePeriod,
+      };
    }
 
    async updateProfile(payload: UpdateProfileRequest, id: string) {
@@ -355,7 +359,10 @@ class UserService {
       );
       if (!result.count) {
          if (!(await membershipRepository.findStatus(id)).availablePeriod) {
-            throw new AppError('Re-registration is not currently available', 409);
+            throw new AppError(
+               'Re-registration is not currently available',
+               409,
+            );
          }
          throw new AppError(
             'The Outlook email must be verified for the current user',
@@ -418,15 +425,15 @@ class UserService {
          regionId: isBinus ? payload.regionId : null,
          outlookEmail: isBinus ? payload.outlookEmail : null,
          outlookEmailVerified: isBinus,
-         studyProgramId:
-            isBinus && isStudent ? payload.studyProgramId : null,
+         studyProgramId: isBinus && isStudent ? payload.studyProgramId : null,
          studyProgramName:
             !isBinus && isStudent ? payload.studyProgramName : null,
          nim: isStudent ? payload.nim : null,
          graduateBatch: isBinus && isStudent ? payload.graduateBatch : null,
          department:
             payload.memberType === 'LECTURER' ? payload.department : null,
-         affiliation: payload.memberType === 'OTHER' ? payload.affiliation : null,
+         affiliation:
+            payload.memberType === 'OTHER' ? payload.affiliation : null,
          ...(setRegistrationCompletedAt && {
             registrationCompletedAt: new Date(),
          }),
@@ -446,7 +453,11 @@ class UserService {
 
       const token = randomBytes(32).toString('hex');
       await userRepository.replaceOutlookVerification(id, email, token);
-      const verifyLink = `${process.env.FRONTEND_URL}/verify-outlook?token=${token}`;
+      const verifyLink = buildOutlookVerificationUrl(
+         getRegistrationFrontendUrl(),
+         token,
+         user.registrationCompletedAt ? 'reregister' : 'register',
+      );
       await sendOutlookVerificationEmail(email, verifyLink);
    }
 
