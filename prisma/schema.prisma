@@ -23,6 +23,12 @@ enum MemberType {
   OTHER
 }
 
+enum MembershipPosition {
+  OFFICER
+  STAFF
+  MEMBER
+}
+
 enum InstitutionType {
   BINUS
   NON_BINUS
@@ -269,9 +275,10 @@ model MembershipPeriod {
 
 model UserMembershipPeriod {
   userId    String
-  periodId  String   @db.VarChar(100)
-  joinedAt  DateTime @default(now()) @db.Timestamp(0)
-  isCurrent Boolean  @default(true)
+  periodId  String             @db.VarChar(100)
+  joinedAt  DateTime           @default(now()) @db.Timestamp(0)
+  isCurrent Boolean            @default(true)
+  position  MembershipPosition @default(MEMBER)
 
   user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   period MembershipPeriod @relation(fields: [periodId], references: [id], onDelete: Restrict)
@@ -442,6 +449,9 @@ model Subevent {
   type               SubeventType
   locationName       String?      @db.VarChar(255)
   locationUrl        String?      @db.Text
+  posterUrl          String?      @db.Text
+  destinationUrl     String?      @db.Text
+  position           Int          @default(0)
   price              Int          @default(0)
 
   // Payment fields
@@ -474,6 +484,7 @@ model Subevent {
   participants      EventHasParticipant[]
   registrationForms RegistrationForm[]
 
+  @@index([eventId, position])
   @@map("subevents")
 }
 

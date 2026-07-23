@@ -3,6 +3,7 @@ import {
    CreateEventSchema,
    DeleteEventSchema,
    GetEventSchema,
+   SubEventOrderSchema,
    UpdateEventSchema,
 } from './eventSchema.js';
 import { eventService } from './eventService.js';
@@ -19,7 +20,27 @@ export const getEvents = async (req: Request, res: Response) => {
 };
 
 export const getPublishedEvents = async (_req: Request, res: Response) => {
-   res.status(200).json({ msg: 'success', data: await eventService.getPublishedForMembers() });
+   res.status(200).json({
+      msg: 'success',
+      data: await eventService.getPublishedForMembers(),
+   });
+};
+
+export const getPublishedEventById = async (req: Request, res: Response) => {
+   const result = await eventService.getPublishedByIdForMembers(
+      req.params.id as string,
+   );
+   res.status(200).json({ msg: 'success', data: result });
+};
+
+export const reorderSubEvents = async (req: Request, res: Response) => {
+   const { subEventIds } = SubEventOrderSchema.parse(req.body);
+   const result = await eventService.reorderSubEvents(
+      req.params.id as string,
+      subEventIds,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data: result });
 };
 
 export const createEvent = async (req: Request, res: Response) => {

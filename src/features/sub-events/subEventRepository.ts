@@ -11,6 +11,7 @@ const allowedSubEventSortFields = [
    'status',
    'visibility',
    'price',
+   'position',
 ] as const;
 
 class SubEventRepository {
@@ -72,6 +73,9 @@ class SubEventRepository {
                type: true,
                locationName: true,
                locationUrl: true,
+               posterUrl: true,
+               destinationUrl: true,
+               position: true,
                price: true,
                paid: true,
                visibility: true,
@@ -166,9 +170,19 @@ class SubEventRepository {
       });
    }
 
-   async create(data: Prisma.SubeventCreateInput): Promise<Subevent> {
+   async create(
+      eventId: string,
+      data: Prisma.SubeventCreateInput,
+   ): Promise<Subevent> {
+      const aggregate = await prisma.subevent.aggregate({
+         where: { eventId },
+         _max: { position: true },
+      });
       return await prisma.subevent.create({
-         data,
+         data: {
+            ...data,
+            position: (aggregate._max.position ?? -1) + 1,
+         },
          include: {
             registrationForms: {
                include: {

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { isHttpUrl, normalizeHttpUrl } from '@/utils/httpUrl.js';
 
+export const MembershipPositionSchema = z.enum(['OFFICER', 'STAFF', 'MEMBER']);
+
 const periodSummarySchema = z.object({
    id: z.string(),
    label: z.string(),
@@ -40,6 +42,7 @@ export const MembershipResourcesResponseSchema = z.object({
 
 export const MembershipStatusSchema = z.object({
    currentPeriod: periodSummarySchema.nullable(),
+   currentPosition: MembershipPositionSchema.nullable(),
    availablePeriod: periodSummarySchema.nullable(),
    activePeriod: periodSummarySchema.nullable(),
 });

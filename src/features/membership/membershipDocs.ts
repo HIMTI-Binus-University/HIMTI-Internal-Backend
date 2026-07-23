@@ -115,6 +115,8 @@ export const registerMembershipDocs = (registry: OpenAPIRegistry) => {
       path: '/api/membership/status',
       tags: [membershipTag],
       summary: 'Get the current and available membership periods',
+      description:
+         'Returns currentPosition from the current period membership so registration clients can prefill membershipPosition.',
       security: [protectedEndpoint],
       responses: {
          200: {

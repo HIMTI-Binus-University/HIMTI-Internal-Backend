@@ -27,6 +27,9 @@ export interface SubEventListItem {
    type: SubeventType;
    locationName: string | null;
    locationUrl: string | null;
+   posterUrl: string | null;
+   destinationUrl: string | null;
+   position: number;
    price: number;
    paid: boolean;
    visibility: SubeventVisibility;

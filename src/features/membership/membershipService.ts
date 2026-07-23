@@ -5,11 +5,12 @@ import type {
    CreatePeriodRequest,
    CreateResourceRequest,
    MembershipResources,
+   MembershipStatus,
    UpdateResourceRequest,
 } from './membershipTypes.js';
 
 class MembershipService {
-   async getStatus(userId: string) {
+   async getStatus(userId: string): Promise<MembershipStatus> {
       return await membershipRepository.findStatus(userId);
    }
 

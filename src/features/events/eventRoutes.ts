@@ -6,13 +6,23 @@ import {
    createEvent,
    deleteEvent,
    getEvents,
+   getPublishedEventById,
    getPublishedEvents,
+   reorderSubEvents,
    updateEvent,
 } from './eventController.js';
 
 const router: Router = express.Router();
 
 router.get('/published', requireAuth, getPublishedEvents);
+router.get('/published/:id', requireAuth, getPublishedEventById);
+
+router.put(
+   '/:id/sub-events/order',
+   requireAuth,
+   requirePermission('manage_events'),
+   reorderSubEvents,
+);
 
 router.get(
    '/get-list',

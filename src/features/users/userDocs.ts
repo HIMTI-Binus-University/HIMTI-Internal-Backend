@@ -17,6 +17,7 @@ import {
    UpdateProfileSchema,
    UpdateUserSchema,
 } from './userSchema.js';
+import { MembershipPositionSchema } from '@/features/membership/membershipSchema.js';
 
 const tag = 'Users';
 
@@ -141,9 +142,8 @@ const currentUserSchema = z.object({
    updatedBy: z.string().nullable(),
    roles: z.array(z.string()),
    permissions: z.array(z.string()),
-   membershipPeriod: z
-      .object({ id: z.string(), label: z.string() })
-      .nullable(),
+   membershipPosition: MembershipPositionSchema.nullable(),
+   membershipPeriod: z.object({ id: z.string(), label: z.string() }).nullable(),
    reregistrationPeriod: z
       .object({ id: z.string(), label: z.string() })
       .nullable(),
@@ -449,7 +449,7 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
       tags: [tag],
       summary: 'Complete one-time user onboarding',
       description:
-         'Completes one of the six member/institution paths. BINUS paths require active controlled options and the current verified BINUS Outlook address.',
+         'Completes one of the six member/institution paths and records membershipPosition for the server-selected active period. Omitted membershipPosition defaults to MEMBER. BINUS paths require active controlled options and the current verified BINUS Outlook address.',
       security: [protectedEndpoint],
       request: {
          body: {
@@ -486,7 +486,7 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
       tags: [tag],
       summary: 'Review the profile and join the open active period',
       description:
-         'Uses the onboarding profile shape, preserves prior period history, and requires re-registration to be open.',
+         'Uses the onboarding profile shape, records membershipPosition only for the server-selected open active period, preserves prior period history, and defaults an omitted membershipPosition to MEMBER.',
       security: [protectedEndpoint],
       request: {
          body: {

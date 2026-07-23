@@ -31,7 +31,10 @@ class MembershipRepository {
       const [current, active] = await Promise.all([
          prisma.userMembershipPeriod.findFirst({
             where: { userId, isCurrent: true },
-            select: { period: { select: periodSummarySelect } },
+            select: {
+               position: true,
+               period: { select: periodSummarySelect },
+            },
          }),
          prisma.membershipPeriod.findFirst({
             where: { isActive: true },
@@ -51,6 +54,7 @@ class MembershipRepository {
          : null;
       return {
          currentPeriod: current?.period ?? null,
+         currentPosition: current?.position ?? null,
          activePeriod,
          availablePeriod:
             active?.registrationOpen && !active.memberships.length

@@ -70,8 +70,37 @@ describe('CompleteProfileSchema', () => {
       ];
 
       for (const payload of payloads) {
-         assert.equal(CompleteProfileSchema.safeParse(payload).success, true);
+         const result = CompleteProfileSchema.safeParse(payload);
+         assert.equal(result.success, true);
+         if (result.success) {
+            assert.equal(result.data.membershipPosition, 'MEMBER');
+         }
       }
+   });
+
+   test('accepts membership positions and rejects invalid values', () => {
+      const payload = {
+         ...common,
+         memberType: 'OTHER',
+         institutionType: 'NON_BINUS',
+         universityName: 'Example Organization',
+         affiliation: 'Volunteer',
+      };
+
+      for (const membershipPosition of ['OFFICER', 'STAFF', 'MEMBER']) {
+         assert.equal(
+            CompleteProfileSchema.parse({ ...payload, membershipPosition })
+               .membershipPosition,
+            membershipPosition,
+         );
+      }
+      assert.equal(
+         CompleteProfileSchema.safeParse({
+            ...payload,
+            membershipPosition: 'CHAIRPERSON',
+         }).success,
+         false,
+      );
    });
 
    test('requires fields for the selected path', () => {

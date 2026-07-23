@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MembershipPositionSchema } from '@/features/membership/membershipSchema.js';
 
 export const UpdateUserSchema = z.object({
    // Identity
@@ -53,6 +54,7 @@ export const CompleteProfileSchema = z
       name: requiredText(255),
       phoneNumber: requiredText(20),
       lineId: z.string().trim().max(50).optional(),
+      membershipPosition: MembershipPositionSchema.default('MEMBER'),
       memberType: z.enum(['STUDENT', 'LECTURER', 'OTHER']),
       institutionType: z.enum(['BINUS', 'NON_BINUS']),
       universityId: optionalText(255),
@@ -128,9 +130,7 @@ const relationSchema = z
    })
    .nullable();
 
-const periodSchema = z
-   .object({ id: z.string(), label: z.string() })
-   .nullable();
+const periodSchema = z.object({ id: z.string(), label: z.string() }).nullable();
 
 export const CurrentUserSchema = z.object({
    id: z.string(),
@@ -165,6 +165,7 @@ export const CurrentUserSchema = z.object({
    updatedBy: z.string().nullable(),
    roles: z.array(z.string()),
    permissions: z.array(z.string()),
+   membershipPosition: MembershipPositionSchema.nullable(),
    membershipPeriod: periodSchema,
    reregistrationPeriod: periodSchema,
 });

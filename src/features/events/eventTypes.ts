@@ -31,6 +31,10 @@ export interface EventListItem {
       name: string;
       date: Date;
       type: SubeventType;
+      locationUrl: string | null;
+      posterUrl: string | null;
+      destinationUrl: string | null;
+      position: number;
       visibility: SubeventVisibility;
       status: SubeventStatus;
    }[];

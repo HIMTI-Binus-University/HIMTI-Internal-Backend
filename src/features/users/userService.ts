@@ -275,6 +275,7 @@ class UserService {
          updatedBy: user.updatedBy,
          roles,
          permissions,
+         membershipPosition: membershipStatus.currentPosition,
          membershipPeriod: membershipStatus.currentPeriod,
          reregistrationPeriod: membershipStatus.availablePeriod,
       };
@@ -316,6 +317,7 @@ class UserService {
          id,
          this.registrationProfileData(payload, id),
          activePeriod.id,
+         payload.membershipPosition,
          isBinus ? payload.outlookEmail : undefined,
       );
 
@@ -355,6 +357,7 @@ class UserService {
          id,
          this.registrationProfileData(payload, id, false),
          availablePeriod.id,
+         payload.membershipPosition,
          isBinus ? payload.outlookEmail : undefined,
       );
       if (!result.count) {

@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { MembershipPosition, Prisma } from '@prisma/client';
 import { GetUserSchema, UserFilters } from './userTypes.js';
 import { parseSort } from '@/utils/sort.js';
 import { prisma } from '@/config/prisma.js';
@@ -72,7 +72,7 @@ class UserRepository {
       updatedBy: true,
       university: { select: { id: true, name: true, shortName: true } },
       studyProgram: { select: { id: true, name: true, shortName: true } },
-       region: { select: { id: true, name: true, shortName: true } },
+      region: { select: { id: true, name: true, shortName: true } },
    } satisfies Prisma.UserSelect;
 
    private readonly adminSelect = {
@@ -278,6 +278,7 @@ class UserRepository {
       id: string,
       data: Prisma.UserUncheckedUpdateManyInput,
       periodId: string,
+      membershipPosition: MembershipPosition,
       verifiedOutlookEmail?: string,
    ) {
       return await prisma.$transaction(async (tx) => {
@@ -299,7 +300,12 @@ class UserRepository {
          });
          if (result.count) {
             await tx.userMembershipPeriod.create({
-               data: { userId: id, periodId, isCurrent: true },
+               data: {
+                  userId: id,
+                  periodId,
+                  isCurrent: true,
+                  position: membershipPosition,
+               },
             });
          }
          return result;
@@ -310,6 +316,7 @@ class UserRepository {
       id: string,
       data: Prisma.UserUncheckedUpdateManyInput,
       periodId: string,
+      membershipPosition: MembershipPosition,
       verifiedOutlookEmail?: string,
    ) {
       return await prisma.$transaction(async (tx) => {
@@ -341,7 +348,12 @@ class UserRepository {
             data: { isCurrent: false },
          });
          await tx.userMembershipPeriod.create({
-            data: { userId: id, periodId, isCurrent: true },
+            data: {
+               userId: id,
+               periodId,
+               isCurrent: true,
+               position: membershipPosition,
+            },
          });
          return result;
       });

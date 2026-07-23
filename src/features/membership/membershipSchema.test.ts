@@ -2,9 +2,51 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
    CreateResourceSchema,
+   MembershipPositionSchema,
    MembershipResourceSchema,
+   MembershipStatusSchema,
    UpdateResourceSchema,
 } from './membershipSchema.js';
+
+describe('membership position schemas', () => {
+   test('accepts only supported positions', () => {
+      for (const position of ['OFFICER', 'STAFF', 'MEMBER']) {
+         assert.equal(
+            MembershipPositionSchema.safeParse(position).success,
+            true,
+         );
+      }
+      assert.equal(
+         MembershipPositionSchema.safeParse('CHAIRPERSON').success,
+         false,
+      );
+   });
+
+   test('requires a nullable current position in membership status', () => {
+      const status = {
+         currentPeriod: null,
+         currentPosition: null,
+         availablePeriod: null,
+         activePeriod: null,
+      };
+
+      assert.equal(MembershipStatusSchema.safeParse(status).success, true);
+      assert.equal(
+         MembershipStatusSchema.safeParse({
+            ...status,
+            currentPosition: 'STAFF',
+         }).success,
+         true,
+      );
+      assert.equal(
+         MembershipStatusSchema.safeParse({
+            ...status,
+            currentPosition: 'CHAIRPERSON',
+         }).success,
+         false,
+      );
+   });
+});
 
 const resource = {
    title: 'Member handbook',
