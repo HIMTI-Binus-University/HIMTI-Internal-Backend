@@ -11,6 +11,110 @@ const allowedEventSortFields = [
 ] as const;
 
 class EventRepository {
+   async findPublishedForMembers() {
+      return await prisma.event.findMany({
+         where: {
+            status: 'PUBLISHED',
+            subevents: {
+               some: {
+                  status: 'OPEN',
+                  visibility: { in: ['PUBLIC', 'INTERNAL'] },
+               },
+            },
+         },
+         orderBy: { createdAt: 'desc' },
+         select: {
+            id: true,
+            name: true,
+            publicDescription: true,
+            coverImageUrl: true,
+            subevents: {
+               where: {
+                  status: 'OPEN',
+                  visibility: { in: ['PUBLIC', 'INTERNAL'] },
+               },
+               orderBy: [{ position: 'asc' }, { date: 'asc' }, { id: 'asc' }],
+               select: {
+                  id: true,
+                  name: true,
+                  publicDescription: true,
+                  date: true,
+                  type: true,
+                  locationName: true,
+                  locationUrl: true,
+                  posterUrl: true,
+                  destinationUrl: true,
+                  position: true,
+                  price: true,
+                  maxParticipants: true,
+                  isRegistrationOpen: true,
+               },
+            },
+         },
+      });
+   }
+
+   async findPublishedByIdForMembers(id: string) {
+      return await prisma.event.findFirst({
+         where: {
+            id,
+            status: 'PUBLISHED',
+            subevents: {
+               some: {
+                  status: 'OPEN',
+                  visibility: { in: ['PUBLIC', 'INTERNAL'] },
+               },
+            },
+         },
+         select: {
+            id: true,
+            name: true,
+            publicDescription: true,
+            coverImageUrl: true,
+            subevents: {
+               where: {
+                  status: 'OPEN',
+                  visibility: { in: ['PUBLIC', 'INTERNAL'] },
+               },
+               orderBy: [{ position: 'asc' }, { date: 'asc' }, { id: 'asc' }],
+               select: {
+                  id: true,
+                  name: true,
+                  publicDescription: true,
+                  date: true,
+                  type: true,
+                  locationName: true,
+                  locationUrl: true,
+                  posterUrl: true,
+                  destinationUrl: true,
+                  position: true,
+                  price: true,
+                  maxParticipants: true,
+                  isRegistrationOpen: true,
+               },
+            },
+         },
+      });
+   }
+
+   async findSubEventsForOrder(eventId: string) {
+      return await prisma.subevent.findMany({
+         where: { eventId },
+         orderBy: [{ position: 'asc' }, { date: 'asc' }, { id: 'asc' }],
+         select: { id: true, position: true },
+      });
+   }
+
+   async reorderSubEvents(eventId: string, subEventIds: string[]) {
+      return await prisma.$transaction(
+         subEventIds.map((id, position) =>
+            prisma.subevent.update({
+               where: { id, eventId },
+               data: { position },
+            }),
+         ),
+      );
+   }
    async create(data: Prisma.EventCreateInput): Promise<Event> {
       return await prisma.event.create({ data });
    }
@@ -86,6 +190,12 @@ class EventRepository {
          where.OR = [
             { name: { contains: search, mode: 'insensitive' } },
             {
+               publicDescription: {
+                  contains: search,
+                  mode: 'insensitive',
+               },
+            },
+            {
                subevents: {
                   some: {
                      name: { contains: search, mode: 'insensitive' },
@@ -120,15 +230,21 @@ class EventRepository {
                createdAt: true,
                updatedAt: true,
                subevents: {
-                  orderBy: {
-                     date: 'asc',
-                  },
+                  orderBy: [
+                     { position: 'asc' },
+                     { date: 'asc' },
+                     { id: 'asc' },
+                  ],
                   select: {
                      id: true,
                      eventId: true,
                      name: true,
                      date: true,
                      type: true,
+                     locationUrl: true,
+                     posterUrl: true,
+                     destinationUrl: true,
+                     position: true,
                      visibility: true,
                      status: true,
                   },

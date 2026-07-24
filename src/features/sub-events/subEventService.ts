@@ -101,6 +101,8 @@ class SubEventService {
          type: payload.type,
          locationName: payload.locationName,
          locationUrl: payload.locationUrl,
+         posterUrl: payload.posterUrl,
+         destinationUrl: payload.destinationUrl,
          price: payload.price,
          paid: payload.paid,
          paymentAccountBank: payload.paymentAccountBank || '',
@@ -110,6 +112,7 @@ class SubEventService {
          paymentDesc: payload.paymentDesc || '',
          maxParticipants: payload.maxParticipants,
          maxTicketsPerUser: payload.maxTicketsPerUser,
+         visibility: payload.visibility,
 
          // Build the regist form if exists
          registrationForms:
@@ -146,7 +149,7 @@ class SubEventService {
                  }
                : undefined,
       };
-      return await subEventRepository.create(subEventData);
+      return await subEventRepository.create(payload.eventId, subEventData);
    }
 
    async updateSubEvent(
@@ -186,6 +189,8 @@ class SubEventService {
          type: payload.type,
          locationName: payload.locationName,
          locationUrl: payload.locationUrl,
+         posterUrl: payload.posterUrl,
+         destinationUrl: payload.destinationUrl,
          price: payload.price,
          paid: payload.paid,
          paymentAccountBank: payload.paymentAccountBank,

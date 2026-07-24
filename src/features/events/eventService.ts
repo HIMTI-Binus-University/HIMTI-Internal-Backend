@@ -11,6 +11,44 @@ import { AppError } from '@/utils/appError.js';
 import { eventCommitteeService } from '@/features/event-committee/eventCommitteeService.js';
 
 class EventService {
+   async getPublishedForMembers() {
+      return await eventRepository.findPublishedForMembers();
+   }
+
+   async getPublishedByIdForMembers(id: string) {
+      const event = await eventRepository.findPublishedByIdForMembers(id);
+      if (!event) throw new AppError('Published event not found', 404);
+      return event;
+   }
+
+   async reorderSubEvents(
+      eventId: string,
+      subEventIds: string[],
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const event = await eventRepository.findById(eventId);
+      if (!event) throw new AppError('Event not found', 404);
+
+      await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
+         eventId,
+         user,
+      );
+
+      const current = await eventRepository.findSubEventsForOrder(eventId);
+      if (
+         current.length !== subEventIds.length ||
+         new Set(subEventIds).size !== subEventIds.length ||
+         current.some((subEvent) => !subEventIds.includes(subEvent.id))
+      ) {
+         throw new AppError(
+            'Sub-event order must include every event sub-event once',
+            400,
+         );
+      }
+
+      await eventRepository.reorderSubEvents(eventId, subEventIds);
+      return await eventRepository.findSubEventsForOrder(eventId);
+   }
    async getEvents(
       params: GetEventQuery,
       user: typeof auth.$Infer.Session.user,

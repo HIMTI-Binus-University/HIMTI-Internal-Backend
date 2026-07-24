@@ -11,7 +11,8 @@ import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-// import limiter from './config/rateLimiter.js';
+import limiter from './config/rateLimiter.js';
+import { trustedOrigins } from './config/origins.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,21 +21,11 @@ const app = express();
 const port = process.env.PORT || 8000;
 const shouldEnableApiDocs = process.env.ENABLE_API_DOCS === 'true';
 
-// app.use(limiter);
+app.use(limiter);
 app.use(express.json());
 app.use(
    cors({
-      origin: [
-         'http://localhost:3000',
-         'http://localhost:8000',
-         'https://link.himtibinus.or.id',
-         'https://dev-link.himtibinus.or.id',
-         'https://api.himtibinus.or.id',
-         'https://dev-api.himtibinus.or.id',
-         'https://dev-admin.himtibinus.or.id',
-         'https://admin.himtibinus.or.id',
-         'https://api-tester.himtibinus.or.id',
-      ],
+      origin: trustedOrigins,
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
    }),
@@ -42,12 +33,7 @@ app.use(
 app.use(express.static(path.join(__dirname, '../public')));
 app.all('/api/auth/*splat', toNodeHandler(auth));
 if (shouldEnableApiDocs) {
-   app.use(
-      '/api',
-      requireAuth,
-      requirePermission('manage_permissions'),
-      docsRoutes,
-   );
+   app.use('/api', requireAuth, docsRoutes);
 }
 app.use('/api', routes);
 app.use(globalErrorHandler);

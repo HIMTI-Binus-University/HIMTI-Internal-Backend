@@ -1,4 +1,23 @@
 import { z } from 'zod';
+import { normalizeHttpUrl } from '@/utils/httpUrl.js';
+
+const optionalHttpUrlSchema = z
+   .string()
+   .nullable()
+   .transform((value, context) => {
+      if (value === null || value.trim() === '') return null;
+
+      try {
+         return normalizeHttpUrl(value);
+      } catch {
+         context.addIssue({
+            code: 'custom',
+            message:
+               'Enter a valid web link. Only HTTP and HTTPS links are allowed.',
+         });
+         return z.NEVER;
+      }
+   });
 
 const FormFieldTypeEnum = z.enum([
    'TEXT',
@@ -43,7 +62,15 @@ export const CreateSubEventSchema = z.object({
    date: z.string().datetime(),
    type: SubeventTypeEnum,
    locationName: z.string().optional(),
-   locationUrl: z.string().url().optional(),
+   locationUrl: optionalHttpUrlSchema
+      .optional()
+      .transform((value) => value ?? null),
+   posterUrl: optionalHttpUrlSchema
+      .optional()
+      .transform((value) => value ?? null),
+   destinationUrl: optionalHttpUrlSchema
+      .optional()
+      .transform((value) => value ?? null),
    price: z.number().int().min(0).default(0),
 
    // Payment Info (Optional, default false)
@@ -57,6 +84,7 @@ export const CreateSubEventSchema = z.object({
    // Registration Rules
    maxParticipants: z.number().int().optional(),
    maxTicketsPerUser: z.number().int().optional(),
+   visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).default('PUBLIC'),
 
    // Questions
    questions: z.array(FormQuestionSchema).optional(),
@@ -69,7 +97,9 @@ export const UpdateSubEventSchema = z.object({
    date: z.string().datetime().optional(),
    type: SubeventTypeEnum.optional(),
    locationName: z.string().optional().nullable(),
-   locationUrl: z.string().url().optional().nullable(),
+   locationUrl: optionalHttpUrlSchema.optional(),
+   posterUrl: optionalHttpUrlSchema.optional(),
+   destinationUrl: optionalHttpUrlSchema.optional(),
    price: z.number().int().min(0).optional(),
    paid: z.boolean().optional(),
    paymentAccountBank: z.string().optional(),

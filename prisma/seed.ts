@@ -22,8 +22,21 @@ async function main() {
    // ==========================================
    console.log('⏳ Seeding Study Programs...');
    const studyPrograms = [
-      { name: 'Computer Science Reguler', shortName: 'CS Reguler' },
-      { name: 'Computer Science Global', shortName: 'CS Global' },
+      { name: 'Artificial Intelligence', shortName: 'AI' },
+      { name: 'Computer Science - Global Class', shortName: 'CS Global' },
+      { name: 'Computer Science - Regular Class', shortName: 'CS Regular' },
+      { name: 'Computer Science - Master Track', shortName: 'CS Master' },
+      {
+         name: 'Computer Science - Software Engineering',
+         shortName: 'CS Software Engineering',
+      },
+      { name: 'Cyber Security', shortName: 'Cyber Security' },
+      { name: 'Data Science', shortName: 'Data Science' },
+      { name: 'Digital Psychology', shortName: 'Digital Psychology' },
+      {
+         name: 'Game Application and Technology',
+         shortName: 'GAT',
+      },
    ];
    for (const sp of studyPrograms) {
       await prisma.studyProgram.upsert({
@@ -31,6 +44,32 @@ async function main() {
          update: {},
          create: { name: sp.name, shortName: sp.shortName },
       });
+   }
+
+   // ==========================================
+   // SEED REGIONS
+   // ==========================================
+   console.log('⏳ Seeding Regions...');
+   const regions = [
+      ['alam-sutera', 'Alam Sutera'],
+      ['bandung', 'Bandung'],
+      ['bekasi', 'Bekasi'],
+      ['kemanggisan', 'Kemanggisan'],
+      ['malang', 'Malang'],
+      ['medan', 'Medan'],
+      ['senayan', 'Senayan'],
+      ['semarang', 'Semarang'],
+   ] as const;
+   for (const [id, name] of regions) {
+      const existing = await prisma.region.findUnique({ where: { name } });
+      if (existing) {
+         await prisma.region.update({
+            where: { id: existing.id },
+            data: { id, status: 'ACTIVE' },
+         });
+      } else {
+         await prisma.region.create({ data: { id, name } });
+      }
    }
 
    // ==========================================
@@ -56,8 +95,9 @@ async function main() {
       'manage_urls',
       'manage_permissions',
       'manage_users',
-      'manage_roles',
-      'manage_events',
+       'manage_roles',
+       'manage_events',
+       'manage_batch',
    ];
 
    const permissions: Record<string, { id: string }> = {};
@@ -89,8 +129,11 @@ async function main() {
          },
       });
 
-      // Assign all permissions to each role
+      // Batch configuration is restricted to administrators.
       for (const perm of Object.values(permissions)) {
+         if (perm.id === permissions.manage_batch.id && roleName !== 'Admin') {
+            continue;
+         }
          await prisma.roleHasPermission.upsert({
             where: {
                roleId_permissionId: {
@@ -106,6 +149,22 @@ async function main() {
          });
       }
    }
+
+   // ==========================================
+   // SEED MEMBERSHIP PERIOD
+   // ==========================================
+   console.log('⏳ Seeding Membership Period...');
+   await prisma.$transaction(async (tx) => {
+      await tx.membershipPeriod.updateMany({
+         where: { isActive: true },
+         data: { isActive: false },
+      });
+      await tx.membershipPeriod.upsert({
+         where: { id: '2026-2027' },
+         update: { label: '2026/2027', isActive: true },
+         create: { id: '2026-2027', label: '2026/2027', isActive: true },
+      });
+   });
 
    console.log('✅ Seeding berhasil diselesaikan!');
 }
