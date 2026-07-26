@@ -11,6 +11,11 @@ const shortCodeSchema = z
 
 const statusSchema = z.enum(['ACTIVE', 'INACTIVE']);
 
+const urlCreatorSchema = z.object({
+   id: z.string(),
+   name: z.string(),
+});
+
 const errorResponseSchema = z.object({
    status: z.string().optional(),
    msg: z.string(),
@@ -29,6 +34,7 @@ const urlSchema = z.object({
    createdAt: z.string().datetime(),
    updatedAt: z.string().datetime().nullable().optional(),
    createdBy: z.string(),
+   creator: urlCreatorSchema.optional(),
    updatedBy: z.string().nullable().optional(),
 });
 

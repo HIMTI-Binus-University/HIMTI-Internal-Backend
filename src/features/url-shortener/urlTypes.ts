@@ -23,6 +23,11 @@ export interface GetUrlResponse {
       shortCode: string;
       status: string;
       createdAt: Date;
+      createdBy: string;
+      creator: {
+         id: string;
+         name: string;
+      };
       _count?: {
          urlDetails: number;
       };
