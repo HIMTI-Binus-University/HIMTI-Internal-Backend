@@ -80,6 +80,14 @@ class UrlRepository {
             orderBy,
             skip,
             take: limit,
+            include: {
+               creator: {
+                  select: {
+                     id: true,
+                     name: true,
+                  },
+               },
+            },
          }),
          prisma.url.count({ where }),
       ]);
