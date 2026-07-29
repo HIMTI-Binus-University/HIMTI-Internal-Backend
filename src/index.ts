@@ -4,8 +4,6 @@ import express from 'express';
 import cors from 'cors';
 import docsRoutes from '@/docs/docsRoutes.js';
 import routes from '@/routes/routes.js';
-import { requireAuth } from '@/middleware/authMiddleware.js';
-import { requirePermission } from '@/middleware/permissionMiddleware.js';
 import { globalErrorHandler } from './middleware/errorMiddleware.js';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
@@ -33,7 +31,7 @@ app.use(
 app.use(express.static(path.join(__dirname, '../public')));
 app.all('/api/auth/*splat', toNodeHandler(auth));
 if (shouldEnableApiDocs) {
-   app.use('/api', requireAuth, docsRoutes);
+   app.use('/api', docsRoutes);
 }
 app.use('/api', routes);
 app.use(globalErrorHandler);
