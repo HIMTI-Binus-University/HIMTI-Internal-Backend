@@ -10,6 +10,7 @@ import {
    UpdateRoleSchema,
 } from './roleSchema.js';
 import { roleService } from './roleService.js';
+import { AppError } from '@/utils/appError.js';
 
 export const getRoles = async (req: Request, res: Response) => {
    const query = GetRoleSchema.parse(req.query);
@@ -64,6 +65,9 @@ export const assignRoleToUser = async (req: Request, res: Response) => {
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
    }
+   if (validation.data.userId === res.locals.user.id) {
+      throw new AppError('You cannot change your own roles', 403);
+   }
    const result = await roleService.assignRoleToUser(validation.data);
    res.status(200).json({ msg: 'success', data: result });
 };
@@ -72,6 +76,9 @@ export const removeRoleFromUser = async (req: Request, res: Response) => {
    const validation = RemoveRoleFromUserSchema.safeParse(req.body);
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
+   }
+   if (validation.data.userId === res.locals.user.id) {
+      throw new AppError('You cannot change your own roles', 403);
    }
    await roleService.removeRoleFromUser(validation.data);
    res.status(200).json({ msg: 'success' });

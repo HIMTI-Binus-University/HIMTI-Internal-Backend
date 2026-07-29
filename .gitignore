@@ -1,3 +1,7 @@
+# Claude
+CLAUDE.md
+.claude/
+
 node_modules
 # Keep environment variables out of version control
 .env
@@ -14,3 +18,4 @@ debug-photo/
 AGENTS.md 
 .codex/
 .agents/
+/plan/

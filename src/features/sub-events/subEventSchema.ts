@@ -1,4 +1,23 @@
 import { z } from 'zod';
+import { normalizeHttpUrl } from '@/utils/httpUrl.js';
+
+const optionalHttpUrlSchema = z
+   .string()
+   .nullable()
+   .transform((value, context) => {
+      if (value === null || value.trim() === '') return null;
+
+      try {
+         return normalizeHttpUrl(value);
+      } catch {
+         context.addIssue({
+            code: 'custom',
+            message:
+               'Enter a valid web link. Only HTTP and HTTPS links are allowed.',
+         });
+         return z.NEVER;
+      }
+   });
 
 const FormFieldTypeEnum = z.enum([
    'TEXT',
@@ -43,7 +62,15 @@ export const CreateSubEventSchema = z.object({
    date: z.string().datetime(),
    type: SubeventTypeEnum,
    locationName: z.string().optional(),
-   locationUrl: z.string().url().optional(),
+   locationUrl: optionalHttpUrlSchema
+      .optional()
+      .transform((value) => value ?? null),
+   posterUrl: optionalHttpUrlSchema
+      .optional()
+      .transform((value) => value ?? null),
+   destinationUrl: optionalHttpUrlSchema
+      .optional()
+      .transform((value) => value ?? null),
    price: z.number().int().min(0).default(0),
 
    // Payment Info (Optional, default false)
@@ -57,7 +84,45 @@ export const CreateSubEventSchema = z.object({
    // Registration Rules
    maxParticipants: z.number().int().optional(),
    maxTicketsPerUser: z.number().int().optional(),
+   visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).default('PUBLIC'),
 
    // Questions
    questions: z.array(FormQuestionSchema).optional(),
+});
+
+export const UpdateSubEventSchema = z.object({
+   name: z.string().min(1, 'Sub-event name is required').optional(),
+   publicDescription: z.string().optional().nullable(),
+   privateDescription: z.string().optional().nullable(),
+   date: z.string().datetime().optional(),
+   type: SubeventTypeEnum.optional(),
+   locationName: z.string().optional().nullable(),
+   locationUrl: optionalHttpUrlSchema.optional(),
+   posterUrl: optionalHttpUrlSchema.optional(),
+   destinationUrl: optionalHttpUrlSchema.optional(),
+   price: z.number().int().min(0).optional(),
+   paid: z.boolean().optional(),
+   paymentAccountBank: z.string().optional(),
+   paymentAccountNumber: z.int().optional().nullable(),
+   paymentAccountName: z.string().optional().nullable(),
+   priceModifier: z.number().int().optional().nullable(),
+   paymentDesc: z.string().optional(),
+   maxParticipants: z.number().int().optional().nullable(),
+   maxTicketsPerUser: z.number().int().optional().nullable(),
+   isRegistrationOpen: z.boolean().optional(),
+   autoAcceptRegistration: z.boolean().optional(),
+   visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).optional(),
+   status: z.enum(['DRAFT', 'OPEN', 'CLOSED', 'CANCELLED']).optional(),
+});
+
+export const DeleteSubEventSchema = z.object({});
+
+export const GetSubEventSchema = z.object({
+   page: z.coerce.number().min(1).default(1),
+   limit: z.coerce.number().min(1).max(100).default(10),
+   search: z.string().optional(),
+   sort: z.string().default('date:asc'),
+   status: z.enum(['DRAFT', 'OPEN', 'CLOSED', 'CANCELLED']).optional(),
+   visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).optional(),
+   eventId: z.string().optional(),
 });

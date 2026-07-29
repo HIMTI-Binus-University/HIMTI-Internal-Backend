@@ -15,6 +15,10 @@ export const requireAuth = async (
       return res.status(401).json({ msg: 'Unauthorized' });
    }
 
+   if (session.user.status !== 'ACTIVE') {
+      return res.status(403).json({ msg: 'Account is not active' });
+   }
+
    res.locals.user = session.user;
    res.locals.session = session.session;
 

@@ -3,9 +3,11 @@ import {
    OpenApiGeneratorV3,
 } from '@asteasolutions/zod-to-openapi';
 import { registerHealthDocs } from '@/docs/healthDocs.js';
+import { registerEventCommitteeDocs } from '@/features/event-committee/eventCommitteeDocs.js';
 import { registerEventDocs } from '@/features/events/eventDocs.js';
+import { registerMembershipDocs } from '@/features/membership/membershipDocs.js';
 import { registerPermissionDocs } from '@/features/permissions/permissionDocs.js';
-import { registerRegistrationDocs } from '@/features/registration/registDocs.js';
+import { registerRegistrationFormDocs } from '@/features/registration-forms/registrationFormDocs.js';
 import { registerRoleDocs } from '@/features/roles/roleDocs.js';
 import { registerSubEventDocs } from '@/features/sub-events/subEventDocs.js';
 import { registerUrlShortenerDocs } from '@/features/url-shortener/urlDocs.js';
@@ -22,13 +24,14 @@ registry.registerComponent('securitySchemes', 'sessionCookie', {
 });
 
 registerHealthDocs(registry);
-registerRegistrationDocs(registry);
 registerUserDocs(registry);
 registerRoleDocs(registry);
 registerPermissionDocs(registry);
 registerUrlShortenerDocs(registry);
 registerEventDocs(registry);
+registerMembershipDocs(registry);
 registerSubEventDocs(registry);
+registerRegistrationFormDocs(registry);
 
 export const generateOpenApiDocument = () => {
    const generator = new OpenApiGeneratorV3(registry.definitions);
