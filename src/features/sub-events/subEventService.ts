@@ -10,18 +10,17 @@ import { subEventRepository } from './subEventRepository.js';
 import { generateUniqueFieldKeys } from '@/utils/fieldKey.js';
 import { eventCommitteeService } from '@/features/event-committee/eventCommitteeService.js';
 import { AppError } from '@/utils/appError.js';
-import { isAdminUser } from '@/utils/statusAccess.js';
 
 class SubEventService {
    async getSubEvents(
       params: GetSubEventQuery,
       user: typeof auth.$Infer.Session.user,
    ): Promise<GetSubEventResponse> {
-      const { data, total } = await subEventRepository.findAll(
-         params,
-         user.id,
-         isAdminUser(user),
-      );
+       const { data, total } = await subEventRepository.findAll(
+          params,
+          user.id,
+          true,
+       );
 
       return {
          data: data.map(({ participants, registrationForms, ...subEvent }) => ({
@@ -56,12 +55,6 @@ class SubEventService {
          throw new AppError('Sub-event not found', 404);
       }
 
-      if (!isAdminUser(user)) {
-         await eventCommitteeService.assertEventCommitteeMember(
-            subEvent.eventId,
-            user.id,
-         );
-      }
 
       return subEvent;
    }
