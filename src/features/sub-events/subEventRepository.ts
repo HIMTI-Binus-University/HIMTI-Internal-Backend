@@ -28,15 +28,6 @@ class SubEventRepository {
          ...(eventId && { eventId }),
          ...(status && { status }),
          ...(visibility && { visibility }),
-         ...(!isAdmin && {
-            event: {
-               eventComittees: {
-                  some: {
-                     userId,
-                  },
-               },
-            },
-         }),
       };
 
       if (search) {

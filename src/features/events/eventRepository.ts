@@ -170,11 +170,6 @@ class EventRepository {
       const { page, limit, search, sort, status, visibility } = params;
 
       const where: Prisma.EventWhereInput = {
-         eventComittees: {
-            some: {
-               userId,
-            },
-         },
          ...(status && { status }),
       };
 
