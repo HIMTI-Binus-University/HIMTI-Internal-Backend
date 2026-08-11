@@ -33,6 +33,12 @@ export const globalErrorHandler = (
             msg: 'Record not found',
          });
       }
+      if (err.code === 'P2034') {
+         return res.status(409).json({
+            status: 'fail',
+            msg: 'The operation conflicted with another update. Please retry.',
+         });
+      }
    }
 
    if (err instanceof AppError) {

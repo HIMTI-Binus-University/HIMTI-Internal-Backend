@@ -29,9 +29,18 @@ class UrlRepository {
       });
    }
 
-   async findByCode(shortCode: string): Promise<Url | null> {
+   async findPersonalById(id: string): Promise<Url | null> {
+      return await prisma.url.findFirst({
+         where: { id, workspaceLink: null },
+      });
+   }
+
+   async findByCode(shortCode: string) {
       return await prisma.url.findUnique({
          where: { shortCode },
+         include: {
+            workspaceLink: { select: { status: true } },
+         },
       });
    }
 
@@ -40,6 +49,7 @@ class UrlRepository {
 
       const where: Prisma.UrlWhereInput = {
          ...(status && { status }),
+         workspaceLink: null,
       };
 
       const adminRole = await prisma.userHasRole.findFirst({

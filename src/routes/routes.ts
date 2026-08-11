@@ -9,6 +9,7 @@ import permissionRoutes from '@/features/permissions/permissionRoutes.js';
 import userRoutes from '@/features/users/userRoutes.js';
 import roleRoutes from '@/features/roles/roleRoutes.js';
 import membershipRoutes from '@/features/membership/membershipRoutes.js';
+import linkWorkspaceRoutes from '@/features/link-workspaces/linkWorkspaceRoutes.js';
 
 const router: Router = express.Router();
 
@@ -21,6 +22,7 @@ router.get('/health', (_req: Request, res: Response) => {
 });
 
 router.use('/url', urlRoutes);
+router.use('/link-workspaces', linkWorkspaceRoutes);
 router.use('/membership', membershipRoutes);
 router.use('/event', eventRoutes);
 router.use('/event-committee', eventCommitteeRoutes);
