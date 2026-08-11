@@ -138,6 +138,17 @@ enum RegistrationFormStatus {
   CLOSED
 }
 
+enum LinkWorkspaceRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum LinkWorkspaceStatus {
+  ACTIVE
+  ARCHIVED
+}
+
 // ==========================================
 // ACADEMIC & INSTITUTION
 // ==========================================
@@ -251,6 +262,11 @@ model User {
   membershipPeriods     UserMembershipPeriod[]
   createdUrls           Url[]                  @relation("UrlCreator")
   updatedUrls           Url[]                  @relation("UrlUpdater")
+  createdLinkWorkspaces LinkWorkspace[]        @relation("LinkWorkspaceCreator")
+  updatedLinkWorkspaces LinkWorkspace[]        @relation("LinkWorkspaceUpdater")
+  linkWorkspaceMembers  LinkWorkspaceMember[]
+  createdWorkspaceLinks LinkWorkspaceLink[]    @relation("LinkWorkspaceLinkCreator")
+  updatedWorkspaceLinks LinkWorkspaceLink[]    @relation("LinkWorkspaceLinkUpdater")
   createdRoles          Role[]                 @relation("RoleCreator")
   updatedRoles          Role[]                 @relation("RoleUpdater")
   createdPermissions    Permission[]           @relation("PermissionCreator")
@@ -660,9 +676,63 @@ model Url {
   creator User  @relation("UrlCreator", fields: [createdBy], references: [id])
   updater User? @relation("UrlUpdater", fields: [updatedBy], references: [id])
 
-  urlDetails UrlDetail[]
+  urlDetails    UrlDetail[]
+  workspaceLink LinkWorkspaceLink?
 
   @@map("urls")
+}
+
+model LinkWorkspace {
+  id          String              @id @default(nanoid())
+  name        String              @db.VarChar(255)
+  description String?             @db.Text
+  status      LinkWorkspaceStatus @default(ACTIVE)
+  createdAt   DateTime            @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime?           @updatedAt
+  createdBy   String              @db.VarChar(100)
+  updatedBy   String?             @db.VarChar(100)
+
+  creator User                  @relation("LinkWorkspaceCreator", fields: [createdBy], references: [id])
+  updater User?                 @relation("LinkWorkspaceUpdater", fields: [updatedBy], references: [id])
+  members LinkWorkspaceMember[]
+  links   LinkWorkspaceLink[]
+
+  @@index([status, createdAt])
+  @@map("link_workspaces")
+}
+
+model LinkWorkspaceMember {
+  workspaceId String
+  userId      String
+  role        LinkWorkspaceRole
+  createdAt   DateTime          @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime?         @updatedAt
+
+  workspace LinkWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([workspaceId, userId])
+  @@index([userId, role])
+  @@map("link_workspace_members")
+}
+
+model LinkWorkspaceLink {
+  id          String    @id @default(nanoid())
+  workspaceId String
+  urlId       String    @unique
+  status      Status    @default(ACTIVE)
+  createdAt   DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime? @updatedAt
+  createdBy   String    @db.VarChar(100)
+  updatedBy   String?   @db.VarChar(100)
+
+  workspace LinkWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  url       Url           @relation(fields: [urlId], references: [id], onDelete: Restrict)
+  creator   User          @relation("LinkWorkspaceLinkCreator", fields: [createdBy], references: [id])
+  updater   User?         @relation("LinkWorkspaceLinkUpdater", fields: [updatedBy], references: [id])
+
+  @@index([workspaceId, status, createdAt])
+  @@map("link_workspace_links")
 }
 
 model UrlDetail {
