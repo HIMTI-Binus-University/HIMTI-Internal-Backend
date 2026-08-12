@@ -36,3 +36,47 @@ export const requirePermission = (permissionName: string) => {
       next();
    };
 };
+
+export const requirePermissionOrRole = (
+   permissionName: string,
+   roleName: string,
+) => {
+   return async (_req: Request, res: Response, next: NextFunction) => {
+      const user = res.locals.user;
+      const authorizedUser = await prisma.user.findFirst({
+         where: {
+            id: user.id,
+            status: 'ACTIVE',
+            userHasRoles: {
+               some: {
+                  role: {
+                     status: 'ACTIVE',
+                     OR: [
+                        { roleName },
+                        {
+                           roleHasPermissions: {
+                              some: {
+                                 permission: {
+                                    name: permissionName,
+                                    status: 'ACTIVE',
+                                 },
+                              },
+                           },
+                        },
+                     ],
+                  },
+               },
+            },
+         },
+      });
+
+      if (!authorizedUser) {
+         return res.status(403).json({
+            success: false,
+            message: 'You do not have permission to access this feature.',
+         });
+      }
+
+      next();
+   };
+};
