@@ -135,6 +135,12 @@ jobs:
 
                  docker compose --profile "${{ needs.build-and-push.outputs.profile }}" pull "${{ needs.build-and-push.outputs.service }}"
 
+                 # Reconcile the failed index migration across databases that
+                 # already received the owner index through the prior migration.
+                 docker compose --profile "${{ needs.build-and-push.outputs.profile }}" run --rm \
+                   "${{ needs.build-and-push.outputs.service }}" \
+                   npx prisma migrate resolve --applied 20260812000000_add_unique_link_workspace_name || true
+
                  docker compose --profile "${{ needs.build-and-push.outputs.profile }}" run --rm \
                    "${{ needs.build-and-push.outputs.service }}" \
                    npx prisma migrate deploy
