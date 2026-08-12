@@ -37,7 +37,6 @@ CREATE TABLE "link_workspace_links" (
 
 CREATE INDEX "link_workspaces_status_createdAt_idx" ON "link_workspaces"("status", "createdAt");
 CREATE INDEX "link_workspace_members_userId_role_idx" ON "link_workspace_members"("userId", "role");
-CREATE UNIQUE INDEX "link_workspace_members_one_owner_idx" ON "link_workspace_members"("workspaceId") WHERE "role" = 'OWNER';
 CREATE UNIQUE INDEX "link_workspace_links_urlId_key" ON "link_workspace_links"("urlId");
 CREATE INDEX "link_workspace_links_workspaceId_status_createdAt_idx" ON "link_workspace_links"("workspaceId", "status", "createdAt");
 

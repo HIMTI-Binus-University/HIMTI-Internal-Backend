@@ -3,6 +3,11 @@ import { readFile } from 'node:fs/promises';
 import { describe, it } from 'node:test';
 
 const migrationPath = new URL(
+   '../../../prisma/migrations/20260812000000_add_unique_link_workspace_name/migration.sql',
+   import.meta.url,
+);
+
+const baseMigrationPath = new URL(
    '../../../prisma/migrations/20260811000000_add_link_workspaces/migration.sql',
    import.meta.url,
 );
@@ -18,10 +23,19 @@ describe('link workspace ownership database rules', () => {
    });
 
    it('keeps the deferred at-least-one-owner constraint triggers', async () => {
-      const migration = await readFile(migrationPath, 'utf8');
+      const migration = await readFile(baseMigrationPath, 'utf8');
 
       assert.match(migration, /DEFERRABLE INITIALLY DEFERRED/);
       assert.match(migration, /"link_workspaces_require_owner"/);
       assert.match(migration, /"link_workspace_members_preserve_owner"/);
+   });
+
+   it('enforces case-insensitive workspace name uniqueness', async () => {
+      const migration = await readFile(migrationPath, 'utf8');
+
+      assert.match(
+         migration,
+         /CREATE UNIQUE INDEX "link_workspaces_name_ci_key"\s+ON "link_workspaces"\(LOWER\("name"\)\)/,
+      );
    });
 });

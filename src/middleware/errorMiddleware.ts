@@ -21,9 +21,14 @@ export const globalErrorHandler = (
    if (err instanceof Prisma.PrismaClientKnownRequestError) {
       // P2002: Unique Constraint (Data kembar)
       if (err.code === 'P2002') {
+         const target = Array.isArray(err.meta?.target)
+            ? err.meta.target.join(',')
+            : String(err.meta?.target ?? '');
          return res.status(409).json({
             status: 'fail',
-            msg: 'Duplicate field value: Data already exists',
+            msg: target.includes('link_workspaces_name_ci_key')
+               ? 'A workspace with this name already exists'
+               : 'Duplicate field value: Data already exists',
          });
       }
       // P2025: Record not found (jika pakai findUniqueOrThrow)

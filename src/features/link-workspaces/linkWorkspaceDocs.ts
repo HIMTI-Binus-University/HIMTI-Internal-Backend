@@ -92,12 +92,12 @@ const commonErrors = {
    401: { description: 'Authentication required.' },
    403: {
       description:
-         'Missing manage_urls permission, insufficient workspace role, or a prohibited self role change.',
+         'Missing manage_urls permission or Admin role, insufficient workspace role, or a prohibited self role change.',
    },
    404: { description: 'Workspace, member, URL, or link not found.' },
    409: {
       description:
-         'Conflict, duplicate, archived workspace, or an attempted direct owner demotion.',
+         'Conflict, duplicate workspace name, archived workspace, or an attempted direct owner demotion.',
    },
 };
 

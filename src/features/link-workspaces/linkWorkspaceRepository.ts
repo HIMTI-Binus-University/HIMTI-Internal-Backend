@@ -37,6 +37,23 @@ const workspaceLinkInclude = {
 } satisfies Prisma.LinkWorkspaceLinkInclude;
 
 class LinkWorkspaceRepository {
+   private async assertNameAvailable(
+      tx: Prisma.TransactionClient,
+      name: string,
+      excludeId?: string,
+   ) {
+      const duplicate = await tx.$queryRaw<Array<{ id: string }>>`
+         SELECT "id"
+         FROM "link_workspaces"
+         WHERE LOWER("name") = LOWER(${name})
+         ${excludeId ? Prisma.sql`AND "id" <> ${excludeId}` : Prisma.empty}
+         LIMIT 1
+      `;
+      if (duplicate.length) {
+         throw new AppError('A workspace with this name already exists', 409);
+      }
+   }
+
    private async authorizeMutation(
       tx: Prisma.TransactionClient,
       workspaceId: string,
@@ -78,6 +95,7 @@ class LinkWorkspaceRepository {
       userId: string,
    ) {
       return prisma.$transaction(async (tx) => {
+         await this.assertNameAvailable(tx, name);
          return tx.linkWorkspace.create({
             data: {
                name,
@@ -141,6 +159,9 @@ class LinkWorkspaceRepository {
       return prisma.$transaction(
          async (tx) => {
             await this.authorizeMutation(tx, id, userId, isAdmin, ['OWNER']);
+            if (data.name !== undefined) {
+               await this.assertNameAvailable(tx, data.name, id);
+            }
             return tx.linkWorkspace.update({
                where: { id },
                data: { ...data, updatedBy: userId },

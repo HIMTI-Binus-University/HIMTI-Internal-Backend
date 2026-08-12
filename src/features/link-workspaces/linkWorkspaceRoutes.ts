@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Router } from 'express';
 import { requireAuth } from '@/middleware/authMiddleware.js';
-import { requirePermission } from '@/middleware/permissionMiddleware.js';
+import { requirePermissionOrRole } from '@/middleware/permissionMiddleware.js';
 import {
    addLinkWorkspaceMember,
    archiveLinkWorkspace,
@@ -21,7 +21,7 @@ import {
 
 const router: Router = express.Router();
 
-router.use(requireAuth, requirePermission('manage_urls'));
+router.use(requireAuth, requirePermissionOrRole('manage_urls', 'Admin'));
 router.get('/', listLinkWorkspaces);
 router.post('/', createLinkWorkspace);
 router.get('/:workspaceId', getLinkWorkspace);
