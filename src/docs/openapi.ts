@@ -12,6 +12,7 @@ import { registerRoleDocs } from '@/features/roles/roleDocs.js';
 import { registerSubEventDocs } from '@/features/sub-events/subEventDocs.js';
 import { registerUrlShortenerDocs } from '@/features/url-shortener/urlDocs.js';
 import { registerUserDocs } from '@/features/users/userDocs.js';
+import { registerLinkWorkspaceDocs } from '@/features/link-workspaces/linkWorkspaceDocs.js';
 
 const registry = new OpenAPIRegistry();
 
@@ -28,6 +29,7 @@ registerUserDocs(registry);
 registerRoleDocs(registry);
 registerPermissionDocs(registry);
 registerUrlShortenerDocs(registry);
+registerLinkWorkspaceDocs(registry);
 registerEventDocs(registry);
 registerMembershipDocs(registry);
 registerSubEventDocs(registry);

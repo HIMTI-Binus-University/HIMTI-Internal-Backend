@@ -15,8 +15,7 @@ export const auth = betterAuth({
          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
          accessType: 'offline',
 
-         // ntar di prod gausah
-         prompt: 'consent',
+         prompt: 'select_account',
       },
    },
 

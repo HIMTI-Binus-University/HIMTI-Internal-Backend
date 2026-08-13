@@ -11,6 +11,8 @@ import { urlRepository } from './urlRepository.js';
 import { AppError } from '@/utils/appError.js';
 import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
 import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
+import { isAdminUser } from '@/utils/statusAccess.js';
+import { canResolveWorkspaceLink } from '@/features/link-workspaces/linkWorkspacePolicy.js';
 
 class UrlService {
    async createUrl(
@@ -35,6 +37,10 @@ class UrlService {
       id: string,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Url> {
+      const url = await urlRepository.findById(id);
+      if (!url || !(await this.canManagePersonalUrl(url, user))) {
+         throw new AppError('Url not found', 404);
+      }
       const updateData: Prisma.UrlUpdateInput = {
          originalUrl: payload.originalUrl,
          shortCode: payload.shortCode,
@@ -55,7 +61,7 @@ class UrlService {
    ): Promise<Url> {
       const url = await urlRepository.findById(id);
 
-      if (!url) {
+      if (!url || !(await this.canManagePersonalUrl(url, user))) {
          throw new AppError('Url not found', 404);
       }
 
@@ -72,11 +78,15 @@ class UrlService {
    }
 
    async getUrlByCode(shortCode: string) {
-      return await urlRepository.findByCode(shortCode);
+      const url = await urlRepository.findByCode(shortCode);
+      if (!url || !canResolveWorkspaceLink(url.workspaceLink)) return null;
+      return url;
    }
 
-   async getUrlById(id: string) {
-      return await urlRepository.findById(id);
+   async getUrlById(id: string, user: typeof auth.$Infer.Session.user) {
+      const url = await urlRepository.findById(id);
+      if (!url || !(await this.canManagePersonalUrl(url, user))) return null;
+      return url;
    }
 
    async getUrls(
@@ -116,6 +126,15 @@ class UrlService {
          isp: payload.isp,
          timezone: payload.timezone,
       });
+   }
+
+   private async canManagePersonalUrl(
+      url: Url,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const personalUrl = await urlRepository.findPersonalById(url.id);
+      if (!personalUrl) return false;
+      return isAdminUser(user) || personalUrl.createdBy === user.id;
    }
 }
 
