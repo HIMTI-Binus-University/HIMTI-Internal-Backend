@@ -14,6 +14,37 @@ const allowedSubEventSortFields = [
    'position',
 ] as const;
 
+export const buildSubEventCommitteeWhere = (
+   params: GetSubEventQuery,
+   userId: string,
+   isAdmin: boolean,
+): Prisma.SubeventWhereInput => {
+   const { search, status, visibility, eventId } = params;
+   const where: Prisma.SubeventWhereInput = {
+      ...(eventId && { eventId }),
+      ...(status && { status }),
+      ...(visibility && { visibility }),
+      ...(!isAdmin && {
+         event: {
+            OR: [
+               { createdBy: userId },
+               { eventComittees: { some: { userId } } },
+            ],
+         },
+      }),
+   };
+
+   if (search) {
+      where.OR = [
+         { name: { contains: search, mode: 'insensitive' } },
+         { publicDescription: { contains: search, mode: 'insensitive' } },
+         { privateDescription: { contains: search, mode: 'insensitive' } },
+      ];
+   }
+
+   return where;
+};
+
 class SubEventRepository {
    async findById(id: string): Promise<Subevent | null> {
       return await prisma.subevent.findUnique({
@@ -22,21 +53,8 @@ class SubEventRepository {
    }
 
    async findAll(params: GetSubEventQuery, userId: string, isAdmin: boolean) {
-      const { page, limit, search, sort, status, visibility, eventId } = params;
-
-      const where: Prisma.SubeventWhereInput = {
-         ...(eventId && { eventId }),
-         ...(status && { status }),
-         ...(visibility && { visibility }),
-      };
-
-      if (search) {
-         where.OR = [
-            { name: { contains: search, mode: 'insensitive' } },
-            { publicDescription: { contains: search, mode: 'insensitive' } },
-            { privateDescription: { contains: search, mode: 'insensitive' } },
-         ];
-      }
+      const { page, limit, sort } = params;
+      const where = buildSubEventCommitteeWhere(params, userId, isAdmin);
 
       const sortOption = parseSort(sort, allowedSubEventSortFields, {
          field: 'date',
@@ -121,23 +139,6 @@ class SubEventRepository {
                   },
                },
             },
-            participants: {
-               include: {
-                  user: {
-                     select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        image: true,
-                     },
-                  },
-                  registrationResponses: {
-                     include: {
-                        answers: true,
-                     },
-                  },
-               },
-            },
          },
       });
    }
@@ -146,18 +147,37 @@ class SubEventRepository {
       id: string,
       data: Prisma.SubeventUpdateInput,
    ): Promise<Subevent> {
-      return await prisma.subevent.update({
-         where: { id },
-         data,
-         include: {
-            registrationForms: {
-               include: {
-                  questions: {
-                     include: { options: true },
-                  },
+      return await prisma.$transaction(async (tx) => {
+         const updated = await tx.subevent.update({
+            where: { id },
+            data,
+            include: {
+               registrationForms: {
+                  include: { questions: { include: { options: true } } },
                },
             },
-         },
+         });
+         if (updated.registrationMode === 'INTERNAL') {
+            await tx.ticketPackage.upsert({
+               where: {
+                  subEventId_code: { subEventId: id, code: 'FREE-INDIVIDUAL' },
+               },
+               create: {
+                  id: `free-default-${id}`,
+                  eventId: updated.eventId,
+                  subEventId: id,
+                  code: 'FREE-INDIVIDUAL',
+                  name: 'Free individual registration',
+                  description: 'Default one-seat free registration package',
+                  status: 'ACTIVE',
+                  seatCount: 1,
+                  currency: 'IDR',
+                  priceMinor: 0,
+               },
+               update: {},
+            });
+         }
+         return updated;
       });
    }
 
@@ -187,39 +207,92 @@ class SubEventRepository {
    }
 
    async cancelSubEvent(id: string, userId: string): Promise<Subevent> {
-      return await prisma.$transaction(async (tx) => {
-         await tx.registrationForm.updateMany({
-            where: {
-               subEventId: id,
-            },
-            data: {
-               status: 'CLOSED',
-               updatedBy: userId,
-            },
-         });
-
-         return await tx.subevent.update({
-            where: { id },
-            data: {
-               status: 'CANCELLED',
-               isRegistrationOpen: false,
-               updater: {
-                  connect: {
-                     id: userId,
-                  },
+      return await prisma.$transaction(
+         async (tx) => {
+            await tx.$queryRaw`SELECT "id" FROM "subevents" WHERE "id" = ${id} FOR UPDATE`;
+            await tx.registrationForm.updateMany({
+               where: {
+                  subEventId: id,
                },
-            },
-            include: {
-               registrationForms: {
-                  include: {
-                     questions: {
-                        include: { options: true },
+               data: {
+                  status: 'CLOSED',
+                  updatedBy: userId,
+               },
+            });
+
+            const now = new Date();
+            const activeOrders = await tx.registrationOrder.findMany({
+               where: {
+                  subEventId: id,
+                  status: { notIn: ['REJECTED', 'EXPIRED', 'CANCELLED'] },
+               },
+               select: { id: true, status: true },
+            });
+            await tx.registrationCapacityHold.updateMany({
+               where: {
+                  subEventId: id,
+                  status: { in: ['ACTIVE', 'CONSUMED'] },
+               },
+               data: { status: 'RELEASED', releasedAt: now },
+            });
+            await tx.registrationOrderMember.updateMany({
+               where: { subEventId: id, status: { not: 'CANCELLED' } },
+               data: { status: 'CANCELLED' },
+            });
+            await tx.registrationTicket.updateMany({
+               where: {
+                  subEventId: id,
+                  status: { in: ['PENDING', 'ACTIVE'] },
+               },
+               data: { status: 'REVOKED', revokedAt: now },
+            });
+            for (const order of activeOrders) {
+               await tx.registrationStatusHistory.create({
+                  data: {
+                     registrationOrderId: order.id,
+                     entityType: 'ORDER',
+                     entityId: order.id,
+                     fromStatus: order.status,
+                     toStatus: 'CANCELLED',
+                     actorUserId: userId,
+                     reason: 'Sub-event cancelled',
+                  },
+               });
+            }
+            await tx.registrationOrder.updateMany({
+               where: { id: { in: activeOrders.map((order) => order.id) } },
+               data: {
+                  status: 'CANCELLED',
+                  revision: { increment: 1 },
+                  cancelledAt: now,
+                  cancellationReason: 'Sub-event cancelled',
+               },
+            });
+
+            return await tx.subevent.update({
+               where: { id },
+               data: {
+                  status: 'CANCELLED',
+                  isRegistrationOpen: false,
+                  updater: {
+                     connect: {
+                        id: userId,
                      },
                   },
                },
-            },
-         });
-      });
+               include: {
+                  registrationForms: {
+                     include: {
+                        questions: {
+                           include: { options: true },
+                        },
+                     },
+                  },
+               },
+            });
+         },
+         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
    }
 }
 

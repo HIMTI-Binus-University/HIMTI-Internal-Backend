@@ -10,6 +10,49 @@ const allowedEventSortFields = [
    'status',
 ] as const;
 
+export const buildEventCommitteeWhere = (
+   params: GetEventQuery,
+   userId: string,
+   isAdmin: boolean,
+): Prisma.EventWhereInput => {
+   const { search, status, visibility } = params;
+   const where: Prisma.EventWhereInput = {
+      ...(status && { status }),
+      ...(!isAdmin && {
+         OR: [{ createdBy: userId }, { eventComittees: { some: { userId } } }],
+      }),
+   };
+
+   if (visibility) {
+      where.subevents = { some: { visibility } };
+   }
+
+   if (search) {
+      where.AND = [
+         {
+            OR: [
+               { name: { contains: search, mode: 'insensitive' } },
+               {
+                  publicDescription: {
+                     contains: search,
+                     mode: 'insensitive',
+                  },
+               },
+               {
+                  subevents: {
+                     some: {
+                        name: { contains: search, mode: 'insensitive' },
+                     },
+                  },
+               },
+            ],
+         },
+      ];
+   }
+
+   return where;
+};
+
 class EventRepository {
    async findPublishedForMembers() {
       return await prisma.event.findMany({
@@ -128,77 +171,115 @@ class EventRepository {
    }
 
    async cancelEvent(id: string, userId: string): Promise<Event> {
-      return await prisma.$transaction(async (tx) => {
-         await tx.registrationForm.updateMany({
-            where: {
-               subEvent: {
+      return await prisma.$transaction(
+         async (tx) => {
+            const subEvents = await tx.subevent.findMany({
+               where: { eventId: id },
+               orderBy: { id: 'asc' },
+               select: { id: true },
+            });
+            const subEventIds = subEvents.map((subEvent) => subEvent.id);
+            if (subEventIds.length > 0) {
+               await tx.$queryRaw`SELECT "id" FROM "subevents" WHERE "id" IN (${Prisma.join(subEventIds)}) ORDER BY "id" FOR UPDATE`;
+            }
+            await tx.registrationForm.updateMany({
+               where: {
+                  subEvent: {
+                     eventId: id,
+                  },
+               },
+               data: {
+                  status: 'CLOSED',
+                  updatedBy: userId,
+               },
+            });
+
+            await tx.subevent.updateMany({
+               where: {
                   eventId: id,
                },
-            },
-            data: {
-               status: 'CLOSED',
-               updatedBy: userId,
-            },
-         });
+               data: {
+                  status: 'CANCELLED',
+                  isRegistrationOpen: false,
+                  updatedBy: userId,
+               },
+            });
 
-         await tx.subevent.updateMany({
-            where: {
-               eventId: id,
-            },
-            data: {
-               status: 'CANCELLED',
-               isRegistrationOpen: false,
-               updatedBy: userId,
-            },
-         });
+            const now = new Date();
+            const activeOrders = await tx.registrationOrder.findMany({
+               where: {
+                  eventId: id,
+                  status: { notIn: ['REJECTED', 'EXPIRED', 'CANCELLED'] },
+               },
+               select: { id: true, status: true },
+            });
+            await tx.registrationCapacityHold.updateMany({
+               where: {
+                  order: { eventId: id },
+                  status: { in: ['ACTIVE', 'CONSUMED'] },
+               },
+               data: { status: 'RELEASED', releasedAt: now },
+            });
+            await tx.registrationOrderMember.updateMany({
+               where: {
+                  order: { eventId: id },
+                  status: { not: 'CANCELLED' },
+               },
+               data: { status: 'CANCELLED' },
+            });
+            await tx.registrationTicket.updateMany({
+               where: {
+                  subEventId: { in: subEventIds },
+                  status: { in: ['PENDING', 'ACTIVE'] },
+               },
+               data: { status: 'REVOKED', revokedAt: now },
+            });
+            for (const order of activeOrders) {
+               await tx.registrationStatusHistory.create({
+                  data: {
+                     registrationOrderId: order.id,
+                     entityType: 'ORDER',
+                     entityId: order.id,
+                     fromStatus: order.status,
+                     toStatus: 'CANCELLED',
+                     actorUserId: userId,
+                     reason: 'Event cancelled',
+                  },
+               });
+            }
+            await tx.registrationOrder.updateMany({
+               where: { id: { in: activeOrders.map((order) => order.id) } },
+               data: {
+                  status: 'CANCELLED',
+                  revision: { increment: 1 },
+                  cancelledAt: now,
+                  cancellationReason: 'Event cancelled',
+               },
+            });
 
-         return await tx.event.update({
-            where: { id },
-            data: {
-               status: 'CANCELLED',
-               updater: {
-                  connect: {
-                     id: userId,
+            return await tx.event.update({
+               where: { id },
+               data: {
+                  status: 'CANCELLED',
+                  updater: {
+                     connect: {
+                        id: userId,
+                     },
                   },
                },
-            },
-         });
-      });
+            });
+         },
+         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
    }
 
-   async findAllForCommitteeUser(params: GetEventQuery, userId: string) {
-      const { page, limit, search, sort, status, visibility } = params;
-
-      const where: Prisma.EventWhereInput = {
-         ...(status && { status }),
-      };
-
-      if (visibility) {
-         where.subevents = {
-            some: {
-               visibility,
-            },
-         };
-      }
-
-      if (search) {
-         where.OR = [
-            { name: { contains: search, mode: 'insensitive' } },
-            {
-               publicDescription: {
-                  contains: search,
-                  mode: 'insensitive',
-               },
-            },
-            {
-               subevents: {
-                  some: {
-                     name: { contains: search, mode: 'insensitive' },
-                  },
-               },
-            },
-         ];
-      }
+   async findAllForCommitteeUser(
+      params: GetEventQuery,
+      userId: string,
+      isAdmin: boolean,
+   ) {
+      const { page, limit, sort } = params;
+      const where = buildEventCommitteeWhere(params, userId, isAdmin);
 
       const sortOption = parseSort(sort, allowedEventSortFields, {
          field: 'createdAt',

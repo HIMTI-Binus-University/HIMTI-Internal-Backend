@@ -17,24 +17,6 @@ import {
 
 const tag = 'Sub-events';
 
-const registrationStatusSchema = z.enum([
-   'PENDING',
-   'APPROVED',
-   'REJECTED',
-   'CANCELLED',
-]);
-const paymentStatusSchema = z.enum([
-   'UNPAID',
-   'SUBMITTED',
-   'VERIFIED',
-   'REJECTED',
-]);
-const registrationResponseStatusSchema = z.enum([
-   'DRAFT',
-   'SUBMITTED',
-   'LOCKED',
-]);
-
 const getSubEventQuerySchema = z.object({
    page: z.coerce.number().min(1).optional(),
    limit: z.coerce.number().min(1).max(100).optional(),
@@ -79,6 +61,12 @@ const createSubEventRequestSchema = z.object({
    maxParticipants: z.number().int().optional(),
    maxTicketsPerUser: z.number().int().optional(),
    visibility: subeventVisibilitySchema.optional(),
+   isRegistrationOpen: z.boolean().optional(),
+   registrationMode: z.enum(['INTERNAL', 'EXTERNAL', 'DISABLED']).optional(),
+   approvalMode: z.enum(['AUTO_APPROVE', 'MANUAL_REVIEW']).optional(),
+   registrationOpensAt: z.string().datetime().nullable().optional(),
+   registrationClosesAt: z.string().datetime().nullable().optional(),
+   cancellationClosesAt: z.string().datetime().nullable().optional(),
    questions: z.array(formQuestionRequestSchema).optional(),
 });
 
@@ -103,6 +91,11 @@ const updateSubEventRequestSchema = z.object({
    maxTicketsPerUser: z.number().int().nullable().optional(),
    isRegistrationOpen: z.boolean().optional(),
    autoAcceptRegistration: z.boolean().optional(),
+   registrationMode: z.enum(['INTERNAL', 'EXTERNAL', 'DISABLED']).optional(),
+   approvalMode: z.enum(['AUTO_APPROVE', 'MANUAL_REVIEW']).optional(),
+   registrationOpensAt: z.string().datetime().nullable().optional(),
+   registrationClosesAt: z.string().datetime().nullable().optional(),
+   cancellationClosesAt: z.string().datetime().nullable().optional(),
    visibility: subeventVisibilitySchema.optional(),
    status: subeventStatusSchema.optional(),
 });
@@ -172,6 +165,11 @@ const subEventSchema = z.object({
    isRegistrationOpen: z.boolean(),
    autoAcceptRegistration: z.boolean(),
    checkOutToken: z.string().nullable(),
+   registrationMode: z.enum(['INTERNAL', 'EXTERNAL', 'DISABLED']),
+   approvalMode: z.enum(['AUTO_APPROVE', 'MANUAL_REVIEW']),
+   registrationOpensAt: z.string().datetime().nullable(),
+   registrationClosesAt: z.string().datetime().nullable(),
+   cancellationClosesAt: z.string().datetime().nullable(),
    visibility: subeventVisibilitySchema,
    status: subeventStatusSchema,
    createdAt: z.string().datetime(),
@@ -213,59 +211,6 @@ const subEventListItemSchema = z.object({
    submittedResponseCount: z.number(),
 });
 
-const formAnswerSchema = z.object({
-   id: z.string(),
-   registrationResponseId: z.string(),
-   formQuestionId: z.string(),
-   value: z.string().nullable(),
-   selectedOptionValue: z.string().nullable(),
-   fileUrl: z.string().nullable(),
-   createdAt: z.string().datetime(),
-   updatedAt: z.string().datetime().nullable(),
-});
-
-const registrationResponseSchema = z.object({
-   id: z.string(),
-   eventHasParticipantId: z.string(),
-   registrationFormId: z.string(),
-   userId: z.string(),
-   status: registrationResponseStatusSchema,
-   submittedAt: z.string().datetime().nullable(),
-   createdAt: z.string().datetime(),
-   updatedAt: z.string().datetime().nullable(),
-   answers: z.array(formAnswerSchema),
-});
-
-const participantUserSchema = z.object({
-   id: z.string(),
-   name: z.string(),
-   email: z.string().email(),
-   image: z.string().nullable(),
-});
-
-const participantSchema = z.object({
-   id: z.string(),
-   eventId: z.string(),
-   eventModeId: z.string(),
-   userId: z.string(),
-   registrationStatus: registrationStatusSchema,
-   approvedAt: z.string().datetime().nullable(),
-   approvedBy: z.string().nullable(),
-   paymentStatus: paymentStatusSchema,
-   paymentProofUrl: z.string().nullable(),
-   paymentSubmittedAt: z.string().datetime().nullable(),
-   paymentVerifiedAt: z.string().datetime().nullable(),
-   paymentVerifiedBy: z.string().nullable(),
-   createdAt: z.string().datetime(),
-   updatedAt: z.string().datetime().nullable(),
-   user: participantUserSchema,
-   registrationResponses: z.array(registrationResponseSchema),
-});
-
-const subEventDetailSchema = subEventSchema.extend({
-   participants: z.array(participantSchema),
-});
-
 const subEventListResponseSchema = z.object({
    msg: z.literal('success'),
    data: z.array(subEventListItemSchema),
@@ -274,7 +219,7 @@ const subEventListResponseSchema = z.object({
 
 const subEventDetailResponseSchema = z.object({
    msg: z.literal('success'),
-   data: subEventDetailSchema,
+   data: subEventSchema,
 });
 
 const subEventMutationResponseSchema = z.object({
@@ -346,8 +291,8 @@ export const registerSubEventDocs = (registry: OpenAPIRegistry) => {
       summary: 'Get sub-event detail',
       description:
          'Requires authentication, manage_events permission, and either Admin ' +
-         'role or parent event committee membership. Includes forms, questions, ' +
-         'options, participants, registration responses, and form answers.',
+         'role or parent event committee membership. Includes form definitions ' +
+         'but excludes participant identities, payment data, responses, and answers.',
       security: [protectedEndpoint],
       request: {
          params: idParamSchema,

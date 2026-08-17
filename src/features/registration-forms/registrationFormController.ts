@@ -7,8 +7,129 @@ import {
    ReorderFormQuestionsSchema,
    UpdateFormQuestionOptionSchema,
    UpdateFormQuestionSchema,
+   CloneRegistrationFormV1Schema,
+   CreateRegistrationFormV1Schema,
+   PublishedRegistrationFormParamsSchema,
+   RegistrationFormIdParamsSchema,
+   RegistrationFormListQuerySchema,
+   RegistrationFormLifecycleV1Schema,
+   SaveRegistrationFormDraftV1Schema,
 } from './registrationFormSchema.js';
 import { registrationFormService } from './registrationFormService.js';
+
+export const listRegistrationFormsV1 = async (req: Request, res: Response) => {
+   const query = RegistrationFormListQuerySchema.parse(req.query);
+   const data = await registrationFormService.listV1(
+      query.subEventId,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const getRegistrationFormV1 = async (req: Request, res: Response) => {
+   const { id } = RegistrationFormIdParamsSchema.parse(req.params);
+   const data = await registrationFormService.getV1(id, res.locals.user);
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const createRegistrationFormV1 = async (req: Request, res: Response) => {
+   const payload = CreateRegistrationFormV1Schema.parse(req.body);
+   const data = await registrationFormService.createV1(
+      payload,
+      res.locals.user,
+   );
+   res.status(201).json({ msg: 'success', data });
+};
+
+export const saveRegistrationFormDraftV1 = async (
+   req: Request,
+   res: Response,
+) => {
+   const { id } = RegistrationFormIdParamsSchema.parse(req.params);
+   const payload = SaveRegistrationFormDraftV1Schema.parse(req.body);
+   const data = await registrationFormService.saveDraftV1(
+      id,
+      payload,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const validateRegistrationFormV1 = async (
+   req: Request,
+   res: Response,
+) => {
+   const { id } = RegistrationFormIdParamsSchema.parse(req.params);
+   const payload = SaveRegistrationFormDraftV1Schema.parse(req.body);
+   const data = await registrationFormService.validateV1(
+      id,
+      payload,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const previewRegistrationFormV1 = async (
+   req: Request,
+   res: Response,
+) => {
+   const { id } = RegistrationFormIdParamsSchema.parse(req.params);
+   const payload = SaveRegistrationFormDraftV1Schema.parse(req.body);
+   const data = await registrationFormService.previewV1(
+      id,
+      payload,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const cloneRegistrationFormV1 = async (req: Request, res: Response) => {
+   const { id } = RegistrationFormIdParamsSchema.parse(req.params);
+   const payload = CloneRegistrationFormV1Schema.parse(req.body ?? {});
+   const data = await registrationFormService.cloneV1(
+      id,
+      payload,
+      res.locals.user,
+   );
+   res.status(201).json({ msg: 'success', data });
+};
+
+export const publishRegistrationFormV1 = async (
+   req: Request,
+   res: Response,
+) => {
+   const { id } = RegistrationFormIdParamsSchema.parse(req.params);
+   const payload = RegistrationFormLifecycleV1Schema.parse(req.body);
+   const data = await registrationFormService.publishV1(
+      id,
+      payload,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const closeRegistrationFormV1 = async (req: Request, res: Response) => {
+   const { id } = RegistrationFormIdParamsSchema.parse(req.params);
+   const payload = RegistrationFormLifecycleV1Schema.parse(req.body);
+   const data = await registrationFormService.closeV1(
+      id,
+      payload,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const getPublishedRegistrationFormV1 = async (
+   req: Request,
+   res: Response,
+) => {
+   const params = PublishedRegistrationFormParamsSchema.parse(req.params);
+   const data = await registrationFormService.getPublishedV1(
+      params.subEventId,
+      params.logicalKey,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
 
 export const createFormQuestion = async (req: Request, res: Response) => {
    const data = req.body;

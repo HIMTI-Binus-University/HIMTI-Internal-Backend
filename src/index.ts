@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import docsRoutes from '@/docs/docsRoutes.js';
 import routes from '@/routes/routes.js';
+import v1Routes from '@/routes/v1Routes.js';
 import { globalErrorHandler } from './middleware/errorMiddleware.js';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
@@ -24,7 +25,7 @@ app.use(express.json());
 app.use(
    cors({
       origin: trustedOrigins,
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
       credentials: true,
    }),
 );
@@ -33,6 +34,7 @@ app.all('/api/auth/*splat', toNodeHandler(auth));
 if (shouldEnableApiDocs) {
    app.use('/api', docsRoutes);
 }
+app.use('/api/v1', v1Routes);
 app.use('/api', routes);
 app.use(globalErrorHandler);
 

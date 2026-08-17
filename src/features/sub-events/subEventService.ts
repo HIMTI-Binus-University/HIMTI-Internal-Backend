@@ -10,17 +10,18 @@ import { subEventRepository } from './subEventRepository.js';
 import { generateUniqueFieldKeys } from '@/utils/fieldKey.js';
 import { eventCommitteeService } from '@/features/event-committee/eventCommitteeService.js';
 import { AppError } from '@/utils/appError.js';
+import { isAdminUser } from '@/utils/statusAccess.js';
 
 class SubEventService {
    async getSubEvents(
       params: GetSubEventQuery,
       user: typeof auth.$Infer.Session.user,
    ): Promise<GetSubEventResponse> {
-       const { data, total } = await subEventRepository.findAll(
-          params,
-          user.id,
-          true,
-       );
+      const { data, total } = await subEventRepository.findAll(
+         params,
+         user.id,
+         isAdminUser(user),
+      );
 
       return {
          data: data.map(({ participants, registrationForms, ...subEvent }) => ({
@@ -49,23 +50,27 @@ class SubEventService {
    }
 
    async getSubEventById(id: string, user: typeof auth.$Infer.Session.user) {
-      const subEvent = await subEventRepository.findDetailById(id);
+      const subEvent = await subEventRepository.findById(id);
 
       if (!subEvent) {
          throw new AppError('Sub-event not found', 404);
       }
 
+      await eventCommitteeService.assertEventCommitteeMemberOrAdmin(
+         subEvent.eventId,
+         user,
+      );
 
-      return subEvent;
+      return await subEventRepository.findDetailById(id);
    }
 
    async createSubEvent(
       payload: CreateSubEventRequest,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Subevent> {
-      await eventCommitteeService.assertEventCommitteeMember(
+      await eventCommitteeService.assertEventCommitteeMemberOrAdmin(
          payload.eventId,
-         user.id,
+         user,
       );
 
       const questions = payload.questions ?? [];
@@ -105,6 +110,18 @@ class SubEventService {
          paymentDesc: payload.paymentDesc || '',
          maxParticipants: payload.maxParticipants,
          maxTicketsPerUser: payload.maxTicketsPerUser,
+         isRegistrationOpen: payload.isRegistrationOpen,
+         registrationMode: payload.registrationMode,
+         approvalMode: payload.approvalMode,
+         registrationOpensAt: payload.registrationOpensAt
+            ? new Date(payload.registrationOpensAt)
+            : null,
+         registrationClosesAt: payload.registrationClosesAt
+            ? new Date(payload.registrationClosesAt)
+            : null,
+         cancellationClosesAt: payload.cancellationClosesAt
+            ? new Date(payload.cancellationClosesAt)
+            : null,
          visibility: payload.visibility,
 
          // Build the regist form if exists
@@ -156,6 +173,14 @@ class SubEventService {
          throw new AppError('Sub-event not found', 404);
       }
 
+      if (subEvent.status === 'CANCELLED' && payload.status !== 'CANCELLED') {
+         throw new AppError(
+            'Cancelled sub-events cannot transition to another status',
+            409,
+            'SUB_EVENT_CANCELLED_TERMINAL',
+         );
+      }
+
       await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
          subEvent.eventId,
          user,
@@ -198,6 +223,26 @@ class SubEventService {
                ? false
                : payload.isRegistrationOpen,
          autoAcceptRegistration: payload.autoAcceptRegistration,
+         registrationMode: payload.registrationMode,
+         approvalMode: payload.approvalMode,
+         registrationOpensAt:
+            payload.registrationOpensAt === null
+               ? null
+               : payload.registrationOpensAt
+                 ? new Date(payload.registrationOpensAt)
+                 : undefined,
+         registrationClosesAt:
+            payload.registrationClosesAt === null
+               ? null
+               : payload.registrationClosesAt
+                 ? new Date(payload.registrationClosesAt)
+                 : undefined,
+         cancellationClosesAt:
+            payload.cancellationClosesAt === null
+               ? null
+               : payload.cancellationClosesAt
+                 ? new Date(payload.cancellationClosesAt)
+                 : undefined,
          visibility: payload.visibility,
          status: payload.status,
          updater: {

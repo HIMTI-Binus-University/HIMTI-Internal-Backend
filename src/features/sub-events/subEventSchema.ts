@@ -82,8 +82,18 @@ export const CreateSubEventSchema = z.object({
    paymentDesc: z.string().optional(),
 
    // Registration Rules
-   maxParticipants: z.number().int().optional(),
+   maxParticipants: z.number().int().positive().optional().nullable(),
    maxTicketsPerUser: z.number().int().optional(),
+   isRegistrationOpen: z.boolean().default(false),
+   registrationMode: z
+      .enum(['INTERNAL', 'EXTERNAL', 'DISABLED'])
+      .default('DISABLED'),
+   approvalMode: z
+      .enum(['AUTO_APPROVE', 'MANUAL_REVIEW'])
+      .default('MANUAL_REVIEW'),
+   registrationOpensAt: z.string().datetime().optional().nullable(),
+   registrationClosesAt: z.string().datetime().optional().nullable(),
+   cancellationClosesAt: z.string().datetime().optional().nullable(),
    visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).default('PUBLIC'),
 
    // Questions
@@ -107,10 +117,15 @@ export const UpdateSubEventSchema = z.object({
    paymentAccountName: z.string().optional().nullable(),
    priceModifier: z.number().int().optional().nullable(),
    paymentDesc: z.string().optional(),
-   maxParticipants: z.number().int().optional().nullable(),
+   maxParticipants: z.number().int().positive().optional().nullable(),
    maxTicketsPerUser: z.number().int().optional().nullable(),
    isRegistrationOpen: z.boolean().optional(),
    autoAcceptRegistration: z.boolean().optional(),
+   registrationMode: z.enum(['INTERNAL', 'EXTERNAL', 'DISABLED']).optional(),
+   approvalMode: z.enum(['AUTO_APPROVE', 'MANUAL_REVIEW']).optional(),
+   registrationOpensAt: z.string().datetime().optional().nullable(),
+   registrationClosesAt: z.string().datetime().optional().nullable(),
+   cancellationClosesAt: z.string().datetime().optional().nullable(),
    visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).optional(),
    status: z.enum(['DRAFT', 'OPEN', 'CLOSED', 'CANCELLED']).optional(),
 });

@@ -27,9 +27,13 @@ export const requirePermission = (permissionName: string) => {
       });
 
       if (!userWithPermission) {
+         const message = 'You do not have permission to access this feature.';
          return res.status(403).json({
             success: false,
-            message: `You do not have the permission to access this feature.`,
+            status: 'fail',
+            code: 'PERMISSION_DENIED',
+            message,
+            msg: message,
          });
       }
 
@@ -71,9 +75,13 @@ export const requirePermissionOrRole = (
       });
 
       if (!authorizedUser) {
+         const message = 'You do not have permission to access this feature.';
          return res.status(403).json({
             success: false,
-            message: 'You do not have permission to access this feature.',
+            status: 'fail',
+            code: 'PERMISSION_DENIED',
+            message,
+            msg: message,
          });
       }
 

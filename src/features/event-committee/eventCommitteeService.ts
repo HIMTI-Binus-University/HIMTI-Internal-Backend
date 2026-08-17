@@ -1,5 +1,6 @@
 import type { CommitteeRole } from '@prisma/client';
 import { AppError } from '@/utils/appError.js';
+import { isAdminUser } from '@/utils/statusAccess.js';
 import { eventCommitteeRepository } from './eventCommitteeRepository.js';
 import type {
    AssignEventCommitteeRequest,
@@ -29,18 +30,50 @@ class EventCommitteeService {
    }
 
    async assertEventCommitteeMember(eventId: string, userId: string) {
-      return null;
+      const event = await this.assertEventExists(eventId);
+      const membership = await this.getMembership(eventId, userId);
+
+      if (!membership && event.createdBy !== userId) {
+         throw new AppError('You are not allowed to access this event', 403);
+      }
+
+      return membership;
    }
 
    async assertEventSteeringCommitteeMember(eventId: string, userId: string) {
-      return null;
+      const event = await this.assertEventExists(eventId);
+      const membership = await this.getMembership(eventId, userId);
+
+      if (
+         event.createdBy !== userId &&
+         (!membership || !this.isSteeringCommitteeRole(membership.role))
+      ) {
+         throw new AppError('You are not allowed to manage this event', 403);
+      }
+
+      return membership;
+   }
+
+   async assertEventCommitteeMemberOrAdmin(
+      eventId: string,
+      user: SessionUserWithRoles,
+   ) {
+      if (isAdminUser(user)) {
+         await this.assertEventExists(eventId);
+         return null;
+      }
+      return await this.assertEventCommitteeMember(eventId, user.id);
    }
 
    async assertEventSteeringCommitteeMemberOrAdmin(
       eventId: string,
       user: SessionUserWithRoles,
    ) {
-      return null;
+      if (isAdminUser(user)) {
+         await this.assertEventExists(eventId);
+         return null;
+      }
+      return await this.assertEventSteeringCommitteeMember(eventId, user.id);
    }
 
    private async assertEventExists(eventId: string) {
@@ -73,12 +106,16 @@ class EventCommitteeService {
    private async assertCanViewCommittee(
       eventId: string,
       user: SessionUserWithRoles,
-   ) {}
+   ) {
+      await this.assertEventCommitteeMemberOrAdmin(eventId, user);
+   }
 
    private async assertCanManageCommittee(
       eventId: string,
       user: SessionUserWithRoles,
-   ) {}
+   ) {
+      await this.assertEventSteeringCommitteeMemberOrAdmin(eventId, user);
+   }
 
    private async assertMembershipExists(eventId: string, userId: string) {
       const membership = await this.getMembership(eventId, userId);

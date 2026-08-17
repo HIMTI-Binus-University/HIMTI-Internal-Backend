@@ -6,10 +6,6 @@ import {
 } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
 import { AppError } from '@/utils/appError.js';
-import {
-   getMemberRoleChangeAction,
-   getPersonalUrlAttachmentError,
-} from './linkWorkspacePolicy.js';
 import type {
    CreateWorkspaceLinkRequest,
    ListLinkWorkspacesQuery,
@@ -35,6 +31,31 @@ const workspaceLinkInclude = {
    url: true,
    creator: { select: { id: true, name: true } },
 } satisfies Prisma.LinkWorkspaceLinkInclude;
+
+const getMemberRoleChangeAction = (
+   currentRole: LinkWorkspaceRole,
+   nextRole: LinkWorkspaceRole,
+   isSelfChange: boolean,
+) => {
+   if (isSelfChange) return 'SELF_ROLE_CHANGE' as const;
+   if (currentRole === 'OWNER' && nextRole !== 'OWNER') {
+      return 'LAST_OWNER' as const;
+   }
+   if (currentRole !== 'OWNER' && nextRole === 'OWNER') {
+      return 'TRANSFER_OWNERSHIP' as const;
+   }
+   return 'UPDATE_ROLE' as const;
+};
+
+const getPersonalUrlAttachmentError = (
+   url: { status: Status; createdBy: string },
+   actorId: string,
+   isAdmin: boolean,
+) => {
+   if (url.status !== 'ACTIVE') return 'INACTIVE' as const;
+   if (!isAdmin && url.createdBy !== actorId) return 'FORBIDDEN' as const;
+   return null;
+};
 
 class LinkWorkspaceRepository {
    private async assertNameAvailable(

@@ -16,6 +16,14 @@ import type {
    UpdateFormQuestionRequest,
 } from './registrationFormTypes.js';
 import { generateUniqueFieldKey } from '@/utils/fieldKey.js';
+import { randomUUID } from 'node:crypto';
+import type {
+   CloneRegistrationFormV1Request,
+   CreateRegistrationFormV1Request,
+   FormValidationIssue,
+   SaveRegistrationFormDraftV1Request,
+   RegistrationFormLifecycleV1Request,
+} from './registrationFormTypes.js';
 
 const optionFieldTypes: readonly FormFieldType[] = [
    'SELECT',
@@ -23,8 +31,559 @@ const optionFieldTypes: readonly FormFieldType[] = [
    'CHECKBOX',
 ];
 
+export const validateRegistrationFormDraft = (
+   payload: SaveRegistrationFormDraftV1Request,
+): FormValidationIssue[] => {
+   const issues: FormValidationIssue[] = [];
+   const fieldKeys = new Set<string>();
+   const optionTypes = new Set<FormFieldType>(optionFieldTypes);
+   const add = (code: string, path: string, message: string) =>
+      issues.push({ code, path, message });
+
+   if (!payload.sections.length)
+      add(
+         'FORM_EMPTY',
+         'sections',
+         'A publishable form must contain at least one active section',
+      );
+
+   payload.sections.forEach((section, sectionIndex) => {
+      if (!section.questions.length)
+         add(
+            'SECTION_EMPTY',
+            `sections.${sectionIndex}.questions`,
+            'Every active section must contain a question',
+         );
+      section.questions.forEach((question, questionIndex) => {
+         const path = `sections.${sectionIndex}.questions.${questionIndex}`;
+         if (question.fieldKey) {
+            if (fieldKeys.has(question.fieldKey))
+               add(
+                  'FIELD_KEY_DUPLICATE',
+                  `${path}.fieldKey`,
+                  'Field keys must be unique',
+               );
+            fieldKeys.add(question.fieldKey);
+         }
+         const values = new Set<string>();
+         question.options.forEach((option, optionIndex) => {
+            if (values.has(option.value))
+               add(
+                  'OPTION_VALUE_DUPLICATE',
+                  `${path}.options.${optionIndex}.value`,
+                  'Active option values must be unique within a question',
+               );
+            values.add(option.value);
+         });
+         if (optionTypes.has(question.fieldType) && question.options.length < 2)
+            add(
+               'OPTIONS_REQUIRED',
+               `${path}.options`,
+               'Option questions require at least two options',
+            );
+         if (!optionTypes.has(question.fieldType) && question.options.length)
+            add(
+               'OPTIONS_NOT_ALLOWED',
+               `${path}.options`,
+               'This field type cannot have options',
+            );
+         if (
+            question.fieldType === 'CHECKBOX' &&
+            question.validation.maxSelections !== undefined &&
+            question.validation.maxSelections > question.options.length
+         )
+            add(
+               'SELECTION_LIMIT_EXCEEDS_OPTIONS',
+               `${path}.validation.maxSelections`,
+               'maxSelections must not exceed the number of active options',
+            );
+
+         const validationKeys = Object.keys(question.validation);
+         const allowed =
+            question.fieldType === 'NUMBER'
+               ? new Set(['min', 'max'])
+               : question.fieldType === 'CHECKBOX'
+                 ? new Set(['minSelections', 'maxSelections'])
+                 : question.fieldType === 'FILE'
+                   ? new Set(['allowedFileTypes', 'maxFileSizeMb', 'maxFiles'])
+                   : question.fieldType === 'DATE'
+                     ? new Set(['minDate', 'maxDate'])
+                     : question.fieldType === 'TEXT' ||
+                         question.fieldType === 'TEXTAREA'
+                       ? new Set(['minLength', 'maxLength'])
+                       : new Set<string>();
+         validationKeys.forEach((key) => {
+            if (!allowed.has(key))
+               add(
+                  'VALIDATION_NOT_APPLICABLE',
+                  `${path}.validation.${key}`,
+                  `${key} is not valid for ${question.fieldType}`,
+               );
+         });
+      });
+   });
+   return issues;
+};
+
+type DraftScope = {
+   sectionIds: Set<string>;
+   questionIds: Set<string>;
+   optionQuestionIds: Map<string, string>;
+};
+
+export const getDraftScopeIssue = (
+   payload: SaveRegistrationFormDraftV1Request,
+   scope: DraftScope,
+): { code: string; message: string } | null => {
+   const seenSectionIds = new Set<string>();
+   const seenQuestionIds = new Set<string>();
+   const seenOptionIds = new Set<string>();
+   for (const section of payload.sections) {
+      if (section.id) {
+         if (!scope.sectionIds.has(section.id))
+            return {
+               code: 'INVALID_SECTION_ID',
+               message: 'Section does not belong to this form',
+            };
+         if (seenSectionIds.has(section.id))
+            return {
+               code: 'DUPLICATE_SECTION_ID',
+               message: 'Section ids must be unique',
+            };
+         seenSectionIds.add(section.id);
+      }
+      for (const question of section.questions) {
+         if (question.id) {
+            if (!scope.questionIds.has(question.id))
+               return {
+                  code: 'INVALID_QUESTION_ID',
+                  message: 'Question does not belong to this form',
+               };
+            if (seenQuestionIds.has(question.id))
+               return {
+                  code: 'DUPLICATE_QUESTION_ID',
+                  message: 'Question ids must be unique',
+               };
+            seenQuestionIds.add(question.id);
+         }
+         for (const option of question.options) {
+            if (!option.id) continue;
+            const parentQuestionId = scope.optionQuestionIds.get(option.id);
+            if (!parentQuestionId)
+               return {
+                  code: 'INVALID_OPTION_ID',
+                  message: 'Option does not belong to this form',
+               };
+            if (!question.id || parentQuestionId !== question.id)
+               return {
+                  code: 'INVALID_OPTION_PARENT',
+                  message: 'Option does not belong to the submitted question',
+               };
+            if (seenOptionIds.has(option.id))
+               return {
+                  code: 'DUPLICATE_OPTION_ID',
+                  message: 'Option ids must be unique',
+               };
+            seenOptionIds.add(option.id);
+         }
+      }
+   }
+   return null;
+};
+
+export const assignDraftFieldKeys = (
+   payload: SaveRegistrationFormDraftV1Request,
+) => {
+   const usedKeys = payload.sections.flatMap((section) =>
+      section.questions.flatMap((question) =>
+         question.fieldKey ? [question.fieldKey] : [],
+      ),
+   );
+   return payload.sections.map((section) => ({
+      ...section,
+      questions: section.questions.map((question) => {
+         const fieldKey =
+            question.fieldKey ??
+            generateUniqueFieldKey(question.label, usedKeys);
+         usedKeys.push(fieldKey);
+         return {
+            ...question,
+            fieldKey,
+            validation: question.validation as Prisma.InputJsonValue,
+         };
+      }),
+   }));
+};
+
 class RegistrationFormService {
-   private async assertFormCanBeEdited(formId: string, status: string) {
+   private getScope(
+      form: Awaited<
+         ReturnType<typeof registrationFormRepository.findBuilderFormById>
+      >,
+   ) {
+      if (!form)
+         throw new AppError(
+            'Registration form not found',
+            404,
+            'FORM_NOT_FOUND',
+         );
+      return {
+         sectionIds: new Set(form.sections.map((section) => section.id)),
+         questionIds: new Set(
+            form.sections.flatMap((section) =>
+               section.questions.map((question) => question.id),
+            ),
+         ),
+         optionQuestionIds: new Map(
+            form.sections.flatMap((section) =>
+               section.questions.flatMap((question) =>
+                  question.options.map((option) => [option.id, question.id]),
+               ),
+            ),
+         ),
+      };
+   }
+
+   private assertPayloadScope(
+      payload: SaveRegistrationFormDraftV1Request,
+      form: NonNullable<
+         Awaited<
+            ReturnType<typeof registrationFormRepository.findBuilderFormById>
+         >
+      >,
+   ) {
+      const scopeIssue = getDraftScopeIssue(payload, this.getScope(form));
+      if (scopeIssue)
+         throw new AppError(scopeIssue.message, 400, scopeIssue.code);
+   }
+   private async getAuthorizedBuilderForm(
+      id: string,
+      user: typeof auth.$Infer.Session.user,
+      mutate: boolean,
+   ) {
+      const form = await registrationFormRepository.findBuilderFormById(id);
+      if (!form)
+         throw new AppError(
+            'Registration form not found',
+            404,
+            'FORM_NOT_FOUND',
+         );
+      if (mutate)
+         await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
+            form.subEvent.eventId,
+            user,
+         );
+      else
+         await eventCommitteeService.assertEventCommitteeMemberOrAdmin(
+            form.subEvent.eventId,
+            user,
+         );
+      return form;
+   }
+
+   async listV1(subEventId: string, user: typeof auth.$Infer.Session.user) {
+      const subEvent =
+         await registrationFormRepository.findSubEventForForm(subEventId);
+      if (!subEvent)
+         throw new AppError('Sub-event not found', 404, 'SUB_EVENT_NOT_FOUND');
+      await eventCommitteeService.assertEventCommitteeMemberOrAdmin(
+         subEvent.eventId,
+         user,
+      );
+      return await registrationFormRepository.findFormsBySubEventId(subEventId);
+   }
+
+   async getV1(id: string, user: typeof auth.$Infer.Session.user) {
+      return await this.getAuthorizedBuilderForm(id, user, false);
+   }
+
+   async createV1(
+      payload: CreateRegistrationFormV1Request,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const subEvent = await registrationFormRepository.findSubEventForForm(
+         payload.subEventId,
+      );
+      if (!subEvent)
+         throw new AppError('Sub-event not found', 404, 'SUB_EVENT_NOT_FOUND');
+      await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
+         subEvent.eventId,
+         user,
+      );
+      return await registrationFormRepository.createBuilderForm({
+         subEventId: payload.subEventId,
+         logicalKey: randomUUID(),
+         name: payload.name,
+         description: payload.description,
+         stage: payload.stage,
+         createdBy: user.id,
+      });
+   }
+
+   async validateV1(
+      id: string,
+      payload: SaveRegistrationFormDraftV1Request,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const form = await this.getAuthorizedBuilderForm(id, user, false);
+      this.assertPayloadScope(payload, form);
+      const issues = validateRegistrationFormDraft(payload);
+      return { valid: issues.length === 0, revision: form.revision, issues };
+   }
+
+   async previewV1(
+      id: string,
+      payload: SaveRegistrationFormDraftV1Request,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const form = await this.getAuthorizedBuilderForm(id, user, false);
+      this.assertPayloadScope(payload, form);
+      const issues = validateRegistrationFormDraft(payload);
+      return {
+         ...payload,
+         validation: {
+            valid: issues.length === 0,
+            issues,
+         },
+      };
+   }
+
+   async saveDraftV1(
+      id: string,
+      payload: SaveRegistrationFormDraftV1Request,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const form = await this.getAuthorizedBuilderForm(id, user, true);
+      if (form.status !== 'DRAFT')
+         throw new AppError(
+            'Only draft forms can be edited',
+            409,
+            'FORM_NOT_DRAFT',
+         );
+      const issues = validateRegistrationFormDraft(payload);
+      if (issues.length)
+         throw new AppError(
+            'Draft contains invalid form rules',
+            400,
+            'FORM_VALIDATION_FAILED',
+            { issues },
+         );
+
+      this.assertPayloadScope(payload, form);
+
+      const sections = assignDraftFieldKeys(payload);
+      const saved = await registrationFormRepository.saveCompleteDraft(
+         id,
+         payload.revision,
+         user.id,
+         {
+            name: payload.name,
+            description: payload.description,
+            stage: payload.stage,
+         },
+         sections,
+      );
+      if (!saved) {
+         const current = await registrationFormRepository.findFormRevision(id);
+         throw new AppError(
+            'The draft changed since it was loaded',
+            409,
+            'REVISION_CONFLICT',
+            {
+               expectedRevision: payload.revision,
+               currentRevision: current?.revision,
+               currentStatus: current?.status,
+            },
+         );
+      }
+      return saved;
+   }
+
+   async cloneV1(
+      id: string,
+      payload: CloneRegistrationFormV1Request,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const form = await this.getAuthorizedBuilderForm(id, user, true);
+      if (!form.logicalKey)
+         throw new AppError(
+            'Legacy form must be migrated before cloning',
+            409,
+            'FORM_NOT_VERSIONED',
+         );
+      return await registrationFormRepository.cloneAsNextVersion(
+         form,
+         payload.name ?? form.name,
+         user.id,
+      );
+   }
+
+   async publishV1(
+      id: string,
+      payload: RegistrationFormLifecycleV1Request,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const form = await this.getAuthorizedBuilderForm(id, user, true);
+      if (form.status !== 'DRAFT')
+         throw new AppError(
+            'Only draft forms can be published',
+            409,
+            'FORM_NOT_DRAFT',
+         );
+      const issues = validateRegistrationFormDraft({
+         revision: form.revision,
+         name: form.name,
+         description: form.description,
+         stage: form.stage,
+         sections: form.sections
+            .filter((s) => s.status === 'ACTIVE')
+            .map((s) => ({
+               id: s.id,
+               title: s.title,
+               description: s.description,
+               questions: s.questions
+                  .filter((q) => q.status === 'ACTIVE')
+                  .map((q) => ({
+                     id: q.id,
+                     label: q.label,
+                     fieldKey: q.fieldKey,
+                     fieldType: q.fieldType,
+                     isRequired: q.isRequired,
+                     helpText: q.helpText,
+                     validation: q.validation as Record<string, never>,
+                     options: q.options
+                        .filter((o) => o.isActive)
+                        .map((o) => ({
+                           id: o.id,
+                           label: o.label,
+                           value: o.value,
+                        })),
+                  })),
+            })),
+      });
+      if (issues.length)
+         throw new AppError(
+            'Form is not publishable',
+            400,
+            'FORM_VALIDATION_FAILED',
+            { issues },
+         );
+      try {
+         return await registrationFormRepository.updateLifecycle(
+            id,
+            'DRAFT',
+            payload.revision,
+            'PUBLISHED',
+            user.id,
+         );
+      } catch (error) {
+         if (error instanceof AppError && error.code === 'LIFECYCLE_CONFLICT') {
+            const current =
+               await registrationFormRepository.findFormRevision(id);
+            error.details = {
+               expectedRevision: payload.revision,
+               currentRevision: current?.revision,
+               currentStatus: current?.status,
+            };
+         }
+         throw error;
+      }
+   }
+
+   async closeV1(
+      id: string,
+      payload: RegistrationFormLifecycleV1Request,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const form = await this.getAuthorizedBuilderForm(id, user, true);
+      if (form.status !== 'PUBLISHED')
+         throw new AppError(
+            'Only published forms can be closed',
+            409,
+            'FORM_NOT_PUBLISHED',
+         );
+      try {
+         return await registrationFormRepository.updateLifecycle(
+            id,
+            'PUBLISHED',
+            payload.revision,
+            'CLOSED',
+            user.id,
+         );
+      } catch (error) {
+         if (error instanceof AppError && error.code === 'LIFECYCLE_CONFLICT') {
+            const current =
+               await registrationFormRepository.findFormRevision(id);
+            error.details = {
+               expectedRevision: payload.revision,
+               currentRevision: current?.revision,
+               currentStatus: current?.status,
+            };
+         }
+         throw error;
+      }
+   }
+
+   async getPublishedV1(subEventId: string, logicalKey: string) {
+      const form = await registrationFormRepository.findPublishedVersion(
+         subEventId,
+         logicalKey,
+      );
+      if (!form)
+         throw new AppError(
+            'Published registration form not found',
+            404,
+            'FORM_NOT_FOUND',
+         );
+      return {
+         id: form.id,
+         logicalKey: form.logicalKey,
+         version: form.version,
+         name: form.name,
+         description: form.description,
+         stage: form.stage,
+         publishedAt: form.publishedAt,
+         sections: form.sections
+            .filter((s) => s.status === 'ACTIVE')
+            .map((s) => ({
+               id: s.id,
+               title: s.title,
+               description: s.description,
+               orderIndex: s.orderIndex,
+               questions: s.questions
+                  .filter((q) => q.status === 'ACTIVE')
+                  .map((q) => ({
+                     id: q.id,
+                     label: q.label,
+                     fieldKey: q.fieldKey,
+                     fieldType: q.fieldType,
+                     isRequired: q.isRequired,
+                     helpText: q.helpText,
+                     validation: q.validation,
+                     orderIndex: q.orderIndex,
+                     options: q.options
+                        .filter((o) => o.isActive)
+                        .map((o) => ({
+                           id: o.id,
+                           label: o.label,
+                           value: o.value,
+                           orderIndex: o.orderIndex,
+                        })),
+                  })),
+            })),
+      };
+   }
+   private async assertFormCanBeEdited(
+      formId: string,
+      status: string,
+      logicalKey: string | null,
+   ) {
+      if (logicalKey !== null)
+         throw new AppError(
+            'Versioned forms must be edited through the V1 draft API',
+            409,
+            'VERSIONED_FORM_REQUIRES_V1',
+         );
       if (status !== 'DRAFT') {
          throw new AppError('Only draft forms can be edited', 400);
       }
@@ -47,7 +606,11 @@ class RegistrationFormService {
          throw new AppError('Form question not found', 404);
       }
 
-      await this.assertFormCanBeEdited(question.form.id, question.form.status);
+      await this.assertFormCanBeEdited(
+         question.form.id,
+         question.form.status,
+         question.form.logicalKey,
+      );
 
       return question;
    }
@@ -62,6 +625,7 @@ class RegistrationFormService {
       await this.assertFormCanBeEdited(
          option.question.form.id,
          option.question.form.status,
+         option.question.form.logicalKey,
       );
 
       return option;
@@ -93,7 +657,7 @@ class RegistrationFormService {
          throw new AppError('Registration form not found', 404);
       }
 
-      await this.assertFormCanBeEdited(form.id, form.status);
+      await this.assertFormCanBeEdited(form.id, form.status, form.logicalKey);
 
       await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
          form.subEvent.eventId,
@@ -163,7 +727,7 @@ class RegistrationFormService {
          throw new AppError('Registration form not found', 404);
       }
 
-      await this.assertFormCanBeEdited(form.id, form.status);
+      await this.assertFormCanBeEdited(form.id, form.status, form.logicalKey);
 
       await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
          form.subEvent.eventId,

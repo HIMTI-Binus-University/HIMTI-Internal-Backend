@@ -12,7 +12,7 @@ class EventCommitteeRepository {
    async findEventById(eventId: string) {
       return await prisma.event.findUnique({
          where: { id: eventId },
-         select: { id: true },
+         select: { id: true, createdBy: true },
       });
    }
 

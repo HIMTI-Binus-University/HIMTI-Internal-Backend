@@ -9,6 +9,7 @@ import { auth } from '@/utils/auth.js';
 import { eventRepository } from './eventRepository.js';
 import { AppError } from '@/utils/appError.js';
 import { eventCommitteeService } from '@/features/event-committee/eventCommitteeService.js';
+import { isAdminUser } from '@/utils/statusAccess.js';
 
 class EventService {
    async getPublishedForMembers() {
@@ -56,6 +57,7 @@ class EventService {
       const { data, total } = await eventRepository.findAllForCommitteeUser(
          params,
          user.id,
+         isAdminUser(user),
       );
 
       return {
@@ -85,6 +87,7 @@ class EventService {
          },
          eventComittees: {
             create: {
+               role: 'CHAIRPERSON',
                user: {
                   connect: {
                      id: user.id,
@@ -105,6 +108,14 @@ class EventService {
 
       if (!event) {
          throw new AppError('Event not found', 404);
+      }
+
+      if (event.status === 'CANCELLED' && payload.status !== 'CANCELLED') {
+         throw new AppError(
+            'Cancelled events cannot transition to another status',
+            409,
+            'EVENT_CANCELLED_TERMINAL',
+         );
       }
 
       await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
