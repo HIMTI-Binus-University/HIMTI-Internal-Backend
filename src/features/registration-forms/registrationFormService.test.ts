@@ -233,6 +233,22 @@ describe('registration form Phase 4 concurrency invariants', () => {
       assert.match(repositorySource, /LIFECYCLE_CONFLICT/);
    });
 
+   it('publishes registration defaults and clones assignment snapshots atomically', () => {
+      assert.match(repositorySource, /form\.stage === 'REGISTRATION'/);
+      assert.match(repositorySource, /audience: 'EACH_ATTENDEE'/);
+      assert.match(repositorySource, /assignmentCount === 0/);
+      assert.match(
+         repositorySource,
+         /assignments: \{[\s\S]*source\.assignments\.map/,
+      );
+      assert.match(
+         repositorySource,
+         /ticketPackageId:\s*assignment\.ticketPackageId/,
+      );
+      assert.match(repositorySource, /opensAt: assignment\.opensAt/);
+      assert.match(repositorySource, /closesAt: assignment\.closesAt/);
+   });
+
    it('revalidates child scope inside the complete-save transaction', () => {
       assert.match(repositorySource, /Draft child scope changed during save/);
       assert.match(

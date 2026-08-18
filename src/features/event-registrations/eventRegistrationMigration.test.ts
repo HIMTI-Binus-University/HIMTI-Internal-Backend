@@ -39,6 +39,15 @@ const phase6Sql = readFileSync(
    ),
    'utf8',
 );
+const assignmentSnapshotSql = readFileSync(
+   fileURLToPath(
+      new URL(
+         '../../../prisma/migrations/20260818010000_snapshot_registration_form_assignments/migration.sql',
+         import.meta.url,
+      ),
+   ),
+   'utf8',
+);
 
 describe('free registration MVP migration', () => {
    it('restores drifted indexes and adds an active-hold guard', () => {
@@ -88,5 +97,45 @@ describe('free registration MVP migration', () => {
       assert.match(phase6Sql, /view_event_answers/);
       assert.match(phase6Sql, /"roleName" = 'Admin'/);
       assert.doesNotMatch(phase6Sql, /DROP\s/i);
+   });
+
+   it('additively backfills immutable assignment metadata', () => {
+      assert.match(assignmentSnapshotSql, /ADD COLUMN "assignmentAudience"/);
+      assert.match(assignmentSnapshotSql, /ROW_NUMBER\(\) OVER/);
+      assert.match(
+         assignmentSnapshotSql,
+         /"orderMemberId" IS NULL THEN 'BUYER'/,
+      );
+      assert.match(
+         assignmentSnapshotSql,
+         /COALESCE\(matched\."isRequired", TRUE\)/,
+      );
+      assert.match(assignmentSnapshotSql, /SET NOT NULL/);
+      assert.match(assignmentSnapshotSql, /assignment_order_check/);
+      assert.doesNotMatch(assignmentSnapshotSql, /DROP\s/i);
+   });
+
+   it('repairs published forms and only empty active draft submissions', () => {
+      assert.match(
+         assignmentSnapshotSql,
+         /INSERT INTO "registration_form_assignments"[\s\S]*form\."status" = 'PUBLISHED'[\s\S]*form\."stage" = 'REGISTRATION'/,
+      );
+      assert.match(assignmentSnapshotSql, /'repair-default-' \|\| form\."id"/);
+      assert.match(assignmentSnapshotSql, /ON CONFLICT DO NOTHING/);
+      assert.match(
+         assignmentSnapshotSql,
+         /orders\."status" = 'DRAFT'[\s\S]*NOT EXISTS[\s\S]*"registration_form_submissions"/,
+      );
+      assert.match(
+         assignmentSnapshotSql,
+         /package_override\."ticketPackageId" = draft\.package_id/,
+      );
+      assert.match(assignmentSnapshotSql, /assignment\."opensAt"/);
+      assert.match(assignmentSnapshotSql, /assignment\."closesAt"/);
+      assert.match(assignmentSnapshotSql, /md5\(applicable\.order_id/);
+      assert.match(
+         assignmentSnapshotSql,
+         /CASE WHEN applicable\."audience" = 'BUYER' THEN NULL ELSE applicable\.buyer_member_id END/,
+      );
    });
 });

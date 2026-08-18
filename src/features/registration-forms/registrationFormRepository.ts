@@ -23,6 +23,9 @@ class RegistrationFormRepository {
             },
          },
       },
+      assignments: {
+         orderBy: [{ orderIndex: 'asc' as const }, { id: 'asc' as const }],
+      },
    };
 
    async findFormById(id: string) {
@@ -356,6 +359,24 @@ class RegistrationFormRepository {
                   where: { id },
                });
                if (!form) return null;
+               if (status === 'PUBLISHED' && form.stage === 'REGISTRATION') {
+                  const assignmentCount =
+                     await tx.registrationFormAssignment.count({
+                        where: { registrationFormId: id },
+                     });
+                  if (assignmentCount === 0)
+                     await tx.registrationFormAssignment.create({
+                        data: {
+                           registrationFormId: id,
+                           ticketPackageId: null,
+                           audience: 'EACH_ATTENDEE',
+                           isRequired: true,
+                           orderIndex: 0,
+                           opensAt: null,
+                           closesAt: null,
+                        },
+                     });
+               }
                if (status === 'PUBLISHED' && form.logicalKey) {
                   await tx.registrationForm.updateMany({
                      where: {
@@ -477,6 +498,16 @@ class RegistrationFormRepository {
                                        })),
                                  },
                               })),
+                        },
+                        assignments: {
+                           create: source.assignments.map((assignment) => ({
+                              ticketPackageId: assignment.ticketPackageId,
+                              audience: assignment.audience,
+                              isRequired: assignment.isRequired,
+                              orderIndex: assignment.orderIndex,
+                              opensAt: assignment.opensAt,
+                              closesAt: assignment.closesAt,
+                           })),
                         },
                      })),
                },

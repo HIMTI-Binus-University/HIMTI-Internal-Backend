@@ -990,16 +990,19 @@ model RegistrationFormAssignment {
 }
 
 model RegistrationFormSubmission {
-  id                  String               @id @default(nanoid())
-  registrationFormId  String
-  registrationOrderId String
-  orderMemberId       String?
-  status              FormSubmissionStatus @default(DRAFT)
-  revision            Int                  @default(1)
-  submittedAt         DateTime?
-  lockedAt            DateTime?
-  createdAt           DateTime             @default(now()) @db.Timestamp(0)
-  updatedAt           DateTime?            @updatedAt
+  id                   String                   @id @default(nanoid())
+  registrationFormId   String
+  registrationOrderId  String
+  orderMemberId        String?
+  assignmentAudience   RegistrationFormAudience
+  assignmentRequired   Boolean                  @default(true)
+  assignmentOrderIndex Int                      @default(0)
+  status               FormSubmissionStatus     @default(DRAFT)
+  revision             Int                      @default(1)
+  submittedAt          DateTime?
+  lockedAt             DateTime?
+  createdAt            DateTime                 @default(now()) @db.Timestamp(0)
+  updatedAt            DateTime?                @updatedAt
 
   form        RegistrationForm                   @relation(fields: [registrationFormId], references: [id], onDelete: Restrict)
   order       RegistrationOrder                  @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
@@ -1008,6 +1011,7 @@ model RegistrationFormSubmission {
 
   @@index([registrationOrderId, status])
   @@index([orderMemberId, status])
+  @@index([registrationOrderId, assignmentOrderIndex])
   @@map("registration_form_submissions")
 }
 

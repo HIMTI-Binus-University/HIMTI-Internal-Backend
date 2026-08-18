@@ -82,6 +82,37 @@ type DetailOrder = NonNullable<
    Awaited<ReturnType<typeof eventRegistrationRepository.findOwned>>
 >;
 
+const mapSubmissionForms = (submissions: DetailOrder['submissions']) =>
+   submissions
+      .map((submission) => ({
+         id: submission.form.id,
+         name: submission.form.name,
+         description: submission.form.description,
+         audience: submission.assignmentAudience,
+         isRequired: submission.assignmentRequired,
+         orderIndex: submission.assignmentOrderIndex,
+         questions: submission.form.questions.map((question) => ({
+            id: question.id,
+            label: question.label,
+            fieldKey: question.fieldKey,
+            fieldType: question.fieldType,
+            isRequired: question.isRequired,
+            helpText: question.helpText,
+            validation: question.validation,
+            orderIndex: question.orderIndex,
+            options: question.options.map((option) => ({
+               id: option.id,
+               label: option.label,
+               value: option.value,
+            })),
+         })),
+      }))
+      .sort(
+         (left, right) =>
+            left.orderIndex - right.orderIndex ||
+            left.id.localeCompare(right.id),
+      );
+
 const mapAnswer = (
    answer: DetailOrder['submissions'][number]['answers'][number],
 ) => {
@@ -192,10 +223,6 @@ const mapInternalSummary = (
 };
 
 const mapDetail = async (order: DetailOrder, viewerUserId?: string) => {
-   const assignments = await eventRegistrationRepository.getAssignedForms(
-      order.subEventId,
-      order.ticketPackageId,
-   );
    const ownMemberIds = new Set(
       order.members
          .filter((member) => member.userId === viewerUserId)
@@ -210,14 +237,9 @@ const mapDetail = async (order: DetailOrder, viewerUserId?: string) => {
                  ownMemberIds.has(submission.orderMemberId)),
         )
       : order.submissions;
-   const visibleFormIds = new Set(
-      visibleSubmissions.map((submission) => submission.registrationFormId),
-   );
    return {
       ...mapSummary(order),
-      forms: mapForms(assignments).filter((form) =>
-         visibleFormIds.has(form.id),
-      ),
+      forms: mapSubmissionForms(visibleSubmissions),
       submissions: visibleSubmissions.map((submission) => ({
          id: submission.id,
          formId: submission.registrationFormId,
@@ -631,14 +653,11 @@ class EventRegistrationService {
             source.ticketPackages.find(
                (item) => item.id === registration.ticketPackageId,
             ) ?? null;
-         const forms = registrationPackage
-            ? mapForms(
-                 await eventRegistrationRepository.getAssignedForms(
-                    subEventId,
-                    registrationPackage.id,
-                 ),
-              )
-            : [];
+         const draft = await eventRegistrationRepository.findOwned(
+            registration.id,
+            user.id,
+         );
+         const forms = draft ? mapSubmissionForms(draft.submissions) : [];
          return {
             action: 'RESUME' as const,
             code: 'DRAFT_EXISTS',

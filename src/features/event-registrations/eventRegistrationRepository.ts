@@ -653,7 +653,100 @@ class EventRegistrationRepository {
                         eligibilityCode: 'INVITATION_INVALID',
                      } as const;
                }
-               return existing;
+               if (existing.submissions.length > 0) return existing;
+
+               const now = new Date();
+               const assignments = await tx.registrationFormAssignment.findMany(
+                  {
+                     where: {
+                        form: {
+                           subEventId,
+                           status: 'PUBLISHED',
+                           stage: 'REGISTRATION',
+                        },
+                        OR: [
+                           { ticketPackageId: existing.ticketPackageId },
+                           {
+                              ticketPackageId: null,
+                              form: {
+                                 assignments: {
+                                    none: {
+                                       ticketPackageId:
+                                          existing.ticketPackageId,
+                                    },
+                                 },
+                              },
+                           },
+                        ],
+                        AND: [
+                           {
+                              OR: [
+                                 { opensAt: null },
+                                 { opensAt: { lte: now } },
+                              ],
+                           },
+                           {
+                              OR: [
+                                 { closesAt: null },
+                                 { closesAt: { gt: now } },
+                              ],
+                           },
+                        ],
+                     },
+                     select: {
+                        registrationFormId: true,
+                        audience: true,
+                        isRequired: true,
+                        orderIndex: true,
+                        form: {
+                           select: {
+                              questions: {
+                                 where: { status: 'ACTIVE' },
+                                 select: { fieldType: true },
+                              },
+                           },
+                        },
+                     },
+                  },
+               );
+               if (
+                  assignments.some((assignment) =>
+                     assignment.form.questions.some(
+                        (question) => question.fieldType === 'FILE',
+                     ),
+                  )
+               )
+                  return {
+                     unsupportedCode: 'UNSUPPORTED_FILE_QUESTION',
+                  } as const;
+               const buyerMemberId = existing.members[0]?.id;
+               if (!buyerMemberId) return existing;
+               const uniqueAssignments = [
+                  ...new Map(
+                     assignments.map((assignment) => [
+                        `${assignment.registrationFormId}:${assignment.audience}`,
+                        assignment,
+                     ]),
+                  ).values(),
+               ];
+               if (uniqueAssignments.length > 0)
+                  await tx.registrationFormSubmission.createMany({
+                     data: uniqueAssignments.map((assignment) => ({
+                        registrationFormId: assignment.registrationFormId,
+                        registrationOrderId: existing.id,
+                        orderMemberId:
+                           assignment.audience === 'BUYER'
+                              ? null
+                              : buyerMemberId,
+                        assignmentAudience: assignment.audience,
+                        assignmentRequired: assignment.isRequired,
+                        assignmentOrderIndex: assignment.orderIndex,
+                     })),
+                  });
+               return await tx.registrationOrder.findUniqueOrThrow({
+                  where: { id: existing.id },
+                  include: detailInclude,
+               });
             }
 
             if (subEvent.registrationMode === 'INTERNAL') {
@@ -729,6 +822,8 @@ class EventRegistrationRepository {
                select: {
                   registrationFormId: true,
                   audience: true,
+                  isRequired: true,
+                  orderIndex: true,
                   form: {
                      select: {
                         questions: {
@@ -803,6 +898,9 @@ class EventRegistrationRepository {
                   submissions: {
                      create: uniqueAssignments.map((assignment) => ({
                         registrationFormId: assignment.registrationFormId,
+                        assignmentAudience: assignment.audience,
+                        assignmentRequired: assignment.isRequired,
+                        assignmentOrderIndex: assignment.orderIndex,
                         orderMemberId:
                            assignment.audience === 'BUYER' ? null : memberId,
                      })),
@@ -997,7 +1095,7 @@ class EventRegistrationRepository {
                const validationErrors = validateFreshSubmission(
                   submission.form.questions,
                   freshAnswers,
-                  true,
+                  submission.assignmentRequired,
                );
                if (contractErrors.length > 0 || validationErrors.length > 0)
                   throw new ResponseValidationFailure([
@@ -1221,70 +1319,12 @@ class EventRegistrationRepository {
             }
 
             const now = new Date();
-            const assignments = await tx.registrationFormAssignment.findMany({
-               where: {
-                  form: {
-                     subEventId: order.subEventId,
-                     status: 'PUBLISHED',
-                     stage: 'REGISTRATION',
-                  },
-                  OR: [
-                     { ticketPackageId: order.ticketPackageId },
-                     {
-                        ticketPackageId: null,
-                        form: {
-                           assignments: {
-                              none: { ticketPackageId: order.ticketPackageId },
-                           },
-                        },
-                     },
-                  ],
-                  AND: isCorrection
-                     ? []
-                     : [
-                          {
-                             OR: [{ opensAt: null }, { opensAt: { lte: now } }],
-                          },
-                          {
-                             OR: [
-                                { closesAt: null },
-                                { closesAt: { gt: now } },
-                             ],
-                          },
-                       ],
-               },
-               select: {
-                  registrationFormId: true,
-                  audience: true,
-                  isRequired: true,
-               },
-            });
-            const expected = new Map(
-               assignments.map((assignment) => [
-                  `${assignment.registrationFormId}:${assignment.audience === 'BUYER' ? 'BUYER' : 'ATTENDEE'}`,
-                  assignment,
-               ]),
-            );
-            const actual = new Map(
-               order.submissions.map((submission) => [
-                  `${submission.registrationFormId}:${submission.orderMemberId === null ? 'BUYER' : 'ATTENDEE'}`,
-                  submission,
-               ]),
-            );
-            if (
-               expected.size !== actual.size ||
-               [...expected.keys()].some((key) => !actual.has(key))
-            )
-               return { assignmentsMismatch: true } as const;
-            const answerErrors = [...expected.entries()].flatMap(
-               ([key, assignment]) => {
-                  const submission = actual.get(key)!;
-                  return validateFreshSubmission(
-                     submission.form.questions,
-                     submission.answers,
-                     assignment.isRequired,
-                  );
-               },
+            const answerErrors = order.submissions.flatMap((submission) =>
+               validateFreshSubmission(
+                  submission.form.questions,
+                  submission.answers,
+                  submission.assignmentRequired,
+               ),
             );
             if (answerErrors.length > 0)
                return { validationErrors: answerErrors } as const;

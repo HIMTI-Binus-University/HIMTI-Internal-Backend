@@ -103,7 +103,32 @@ describe('free registration source invariants', () => {
       );
       assert.match(repositorySource, /validateFreshSubmission/);
       assert.match(repositorySource, /claimedBy: userId/);
-      assert.match(repositorySource, /assignmentsMismatch/);
+      assert.match(repositorySource, /submission\.assignmentRequired/);
+   });
+
+   it('renders and submits the exact draft form snapshot without current assignments', () => {
+      assert.match(serviceSource, /mapSubmissionForms\(visibleSubmissions\)/);
+      assert.match(serviceSource, /submission\.assignmentAudience/);
+      const submitSource = repositorySource.slice(
+         repositorySource.indexOf('async submit('),
+         repositorySource.indexOf('async cancel('),
+      );
+      assert.doesNotMatch(submitSource, /registrationFormAssignment\.findMany/);
+      assert.match(submitSource, /order\.submissions\.flatMap/);
+   });
+
+   it('self-heals only zero-submission drafts from current applicable assignments', () => {
+      assert.match(repositorySource, /existing\.submissions\.length > 0/);
+      assert.match(repositorySource, /registrationFormSubmission\.createMany/);
+      assert.match(
+         repositorySource,
+         /assignmentAudience: assignment\.audience/,
+      );
+      assert.match(repositorySource, /UNSUPPORTED_FILE_QUESTION/);
+      assert.match(
+         repositorySource,
+         /none:\s*\{[\s\S]*ticketPackageId:[\s\S]*existing\.ticketPackageId/,
+      );
    });
 
    it('filters anonymous events and authorizes external destinations first', () => {
