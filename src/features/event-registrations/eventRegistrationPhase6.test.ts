@@ -130,7 +130,7 @@ describe('phase 6 registration operations', () => {
       assert.doesNotMatch(source('./eventRegistrationService.ts'), /fileUrl:/);
       assert.match(
          source('./eventRegistrationRepository.ts'),
-         /\['DRAFT', 'NEEDS_CORRECTION'\]/,
+         /'DRAFT',[\s\S]*'AWAITING_MEMBERS',[\s\S]*'HOLDING',[\s\S]*'NEEDS_CORRECTION'/,
       );
       assert.match(
          source('./eventRegistrationRepository.ts'),

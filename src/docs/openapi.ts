@@ -16,6 +16,7 @@ import { registerLinkWorkspaceDocs } from '@/features/link-workspaces/linkWorksp
 import { registerEventRegistrationDocs } from '@/features/event-registrations/eventRegistrationDocs.js';
 import { registerEventPaymentDocs } from '@/features/event-payments/eventPaymentDocs.js';
 import { registerPostRegistrationFormDocs } from '@/features/post-registration-forms/postRegistrationFormDocs.js';
+import { registerEventPackageDocs } from '@/features/event-packages/eventPackageDocs.js';
 import {
    canonicalErrorResponseSchema,
    canonicalValidationErrorResponseSchema,
@@ -48,6 +49,7 @@ registerRegistrationFormDocs(registry);
 registerEventRegistrationDocs(registry);
 registerEventPaymentDocs(registry);
 registerPostRegistrationFormDocs(registry);
+registerEventPackageDocs(registry);
 
 export const generateOpenApiDocument = () => {
    const generator = new OpenApiGeneratorV3(registry.definitions);

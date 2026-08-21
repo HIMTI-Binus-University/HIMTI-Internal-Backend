@@ -85,7 +85,9 @@ export const registerEventPaymentDocs = (registry: OpenAPIRegistry) => {
       path: '/api/v1/internal/sub-events/{subEventId}/payment-settings',
       operationId: 'updateSubEventPaymentSettingsV1',
       tags: ['Event Payments'],
-      summary: 'Update payment settings and the default one-seat package',
+      summary: 'Update payment settings',
+      description:
+         'Package terms remain controlled by the package API. For backward compatibility, an unreferenced one-seat DEFAULT-INDIVIDUAL package is created or has only its price/currency synchronized; referenced or non-one-seat packages are not mutated.',
       security,
       request: {
          params: subEventParams,

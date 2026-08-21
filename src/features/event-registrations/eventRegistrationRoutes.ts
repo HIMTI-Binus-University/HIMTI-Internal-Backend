@@ -22,6 +22,12 @@ import {
    bulkApproveInternalRegistrations,
    bulkRejectInternalRegistrations,
    bulkCancelInternalRegistrations,
+   getInvitationContext,
+   acceptInvitation,
+   declineInvitation,
+   createOrderInvitation,
+   resendOrderInvitation,
+   revokeOrderInvitation,
 } from './eventRegistrationController.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
 
@@ -37,6 +43,17 @@ router.post(
    '/sub-events/:subEventId/registrations',
    requireAuth,
    createRegistration,
+);
+router.post(
+   '/registration-invitations/context',
+   requireAuth,
+   getInvitationContext,
+);
+router.post('/registration-invitations/accept', requireAuth, acceptInvitation);
+router.post(
+   '/registration-invitations/decline',
+   requireAuth,
+   declineInvitation,
 );
 
 const reviewMiddleware = [
@@ -67,6 +84,21 @@ router.post(
    '/internal/event-registrations/:registrationId/approve',
    ...reviewMiddleware,
    approveInternalRegistration,
+);
+router.post(
+   '/me/event-registrations/:registrationId/invitations',
+   requireAuth,
+   createOrderInvitation,
+);
+router.post(
+   '/me/event-registrations/:registrationId/invitations/:invitationId/resend',
+   requireAuth,
+   resendOrderInvitation,
+);
+router.post(
+   '/me/event-registrations/:registrationId/invitations/:invitationId/revoke',
+   requireAuth,
+   revokeOrderInvitation,
 );
 router.post(
    '/internal/event-registrations/:registrationId/reject',

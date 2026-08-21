@@ -24,6 +24,11 @@ import {
    internalCapacitySchema,
    internalQueueNeighborsSchema,
    internalReviewResultSchema,
+   invitationTokenSchema,
+   createOrderInvitationSchema,
+   resendOrderInvitationSchema,
+   invitationMutationSchema,
+   invitationContextSchema,
 } from './eventRegistrationSchema.js';
 import {
    errorResponseSchema,
@@ -54,7 +59,7 @@ const errors = {
    },
    422: {
       description:
-         'Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported.',
+         'Generic FILE-question registration responses remain unsupported.',
       content: { 'application/json': { schema: errorResponseSchema } },
    },
 };
@@ -343,7 +348,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
       tags: [tag],
       summary: 'Resolve registration context',
       description:
-         'Session is optional. Anonymous native registration returns SIGN_IN rather than HTTP 401.',
+         'Session is optional. Anonymous native registration returns SIGN_IN rather than HTTP 401. Legacy invite-only admission may still supply inviteToken here; order-slot invitation tokens are accepted only in POST bodies.',
       request: {
          params: subEventParams,
          query: registrationContextQuerySchema,
@@ -367,6 +372,8 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
       operationId: 'createEventRegistrationV1',
       tags: [tag],
       summary: 'Create or resume a draft registration',
+      description:
+         'Resumes DRAFT, AWAITING_MEMBERS, HOLDING, or an eligible correction order instead of creating a duplicate. Returned invitationPath values place the one-time token in the URL fragment so it is not sent in HTTP requests.',
       security,
       request: {
          params: subEventParams,
@@ -454,6 +461,8 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
       operationId: 'submitEventRegistrationV1',
       tags: [tag],
       summary: 'Submit or resubmit a one-seat registration',
+      description:
+         'Buyer-only whole-order submit. Requires every fixed package seat to be claimed and every required response to be valid.',
       security,
       request: {
          params: idParams,
@@ -499,4 +508,115 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
          409: errors[409],
       },
    });
+   const InvitationMutation = successSchema(invitationMutationSchema);
+   const InvitationContext = successSchema(invitationContextSchema);
+   const invitationTokenBody = {
+      required: true,
+      content: { 'application/json': { schema: invitationTokenSchema } },
+   } as const;
+   registry.registerPath({
+      method: 'post',
+      path: '/api/v1/registration-invitations/context',
+      operationId: 'getRegistrationInvitationContextV1',
+      tags: [tag],
+      security,
+      request: { body: invitationTokenBody },
+      responses: {
+         200: {
+            description:
+               'Safe invitation and order context. Read the token from the invitationPath URL fragment and submit it in this POST body; tokens are never accepted in a URL query for this operation.',
+            content: { 'application/json': { schema: InvitationContext } },
+         },
+         401: { description: 'Authentication required.' },
+         403: forbiddenResponse,
+         404: notFoundResponse,
+         409: errors[409],
+      },
+   });
+   for (const action of ['accept', 'decline'] as const) {
+      registry.registerPath({
+         method: 'post',
+         path: `/api/v1/registration-invitations/${action}`,
+         operationId: `${action}RegistrationInvitationV1`,
+         tags: [tag],
+         security,
+         request: { body: invitationTokenBody },
+         responses: {
+            200: {
+               description: `Invitation ${action}ed.`,
+               content: {
+                  'application/json': {
+                     schema: action === 'accept' ? Detail : InvitationMutation,
+                  },
+               },
+            },
+            401: { description: 'Authentication required.' },
+            403: forbiddenResponse,
+            404: notFoundResponse,
+            409: errors[409],
+         },
+      });
+   }
+   registry.registerPath({
+      method: 'post',
+      path: '/api/v1/me/event-registrations/{registrationId}/invitations',
+      operationId: 'createRegistrationInvitationV1',
+      tags: [tag],
+      security,
+      request: {
+         params: idParams,
+         body: {
+            required: true,
+            content: {
+               'application/json': { schema: createOrderInvitationSchema },
+            },
+         },
+      },
+      responses: {
+         201: {
+            description: 'Invitation created; raw token returned once.',
+            content: { 'application/json': { schema: InvitationMutation } },
+         },
+         401: { description: 'Authentication required.' },
+         404: notFoundResponse,
+         409: errors[409],
+      },
+   });
+   for (const action of ['resend', 'revoke'] as const) {
+      registry.registerPath({
+         method: 'post',
+         path: `/api/v1/me/event-registrations/{registrationId}/invitations/{invitationId}/${action}`,
+         operationId: `${action}RegistrationInvitationV1`,
+         tags: [tag],
+         security,
+         request: {
+            params: z.object({
+               registrationId: z.string(),
+               invitationId: z.string(),
+            }),
+            ...(action === 'resend' && {
+               body: {
+                  required: false,
+                  content: {
+                     'application/json': {
+                        schema: resendOrderInvitationSchema,
+                     },
+                  },
+               },
+            }),
+         },
+         responses: {
+            200: {
+               description:
+                  action === 'resend'
+                     ? 'Token rotated and returned once.'
+                     : 'Invitation revoked.',
+               content: { 'application/json': { schema: InvitationMutation } },
+            },
+            401: { description: 'Authentication required.' },
+            404: notFoundResponse,
+            409: errors[409],
+         },
+      });
+   }
 };

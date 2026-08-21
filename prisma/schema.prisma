@@ -863,16 +863,17 @@ model TicketPackage {
   seatCount    Int
   currency     String              @default("IDR") @db.Char(3)
   priceMinor   BigInt
+  revision     Int                 @default(1)
   salesStartAt DateTime?
   salesEndAt   DateTime?
   createdAt    DateTime            @default(now()) @db.Timestamp(0)
   updatedAt    DateTime?           @updatedAt
 
-  event                       Event                            @relation(fields: [eventId], references: [id], onDelete: Restrict)
-  subEvent                    Subevent                         @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-  orders                      RegistrationOrder[]
-  formAssignments             RegistrationFormAssignment[]
-  waitlistEntries             RegistrationWaitlistEntry[]
+  event           Event                        @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  subEvent        Subevent                     @relation(fields: [subEventId], references: [id], onDelete: Restrict)
+  orders          RegistrationOrder[]
+  formAssignments RegistrationFormAssignment[]
+  waitlistEntries RegistrationWaitlistEntry[]
 
   @@unique([id, eventId, subEventId], map: "ticket_packages_id_eventId_subEventId_key")
   @@unique([subEventId, code])
@@ -918,6 +919,7 @@ model RegistrationOrder {
   history                     RegistrationStatusHistory[]
   waitlistEntry               RegistrationWaitlistEntry?
   postRegistrationAssignments PostRegistrationFormAssignment[]
+  invitations                 RegistrationInvitation[]
 
   @@unique([id, eventId, subEventId], map: "registration_orders_id_eventId_subEventId_key")
   @@unique([id, subEventId], map: "registration_orders_id_subEventId_key")
@@ -1065,11 +1067,11 @@ model PostRegistrationFormAssignment {
   reopenedAt          DateTime?
   reopenedBy          String?
 
-  order           RegistrationOrder           @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
-  form            RegistrationForm            @relation(fields: [registrationFormId], references: [id], onDelete: Restrict)
-  orderMember     RegistrationOrderMember?    @relation(fields: [orderMemberId], references: [id], onDelete: Cascade)
-  response        RegistrationFormSubmission? @relation(fields: [responseId], references: [id], onDelete: SetNull)
-  reopener        User?                       @relation("PostRegistrationAssignmentReopener", fields: [reopenedBy], references: [id], onDelete: SetNull)
+  order       RegistrationOrder           @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
+  form        RegistrationForm            @relation(fields: [registrationFormId], references: [id], onDelete: Restrict)
+  orderMember RegistrationOrderMember?    @relation(fields: [orderMemberId], references: [id], onDelete: Cascade)
+  response    RegistrationFormSubmission? @relation(fields: [responseId], references: [id], onDelete: SetNull)
+  reopener    User?                       @relation("PostRegistrationAssignmentReopener", fields: [reopenedBy], references: [id], onDelete: SetNull)
 
   @@index([registrationOrderId, orderIndex])
   @@index([orderMemberId, blocksCheckIn])
@@ -1216,28 +1218,33 @@ model RegistrationRefund {
 }
 
 model RegistrationInvitation {
-  id            String                       @id @default(nanoid())
-  eventId       String
-  subEventId    String
-  email         String                       @db.VarChar(255)
-  tokenHash     String                       @unique @db.VarChar(128)
-  status        RegistrationInvitationStatus @default(PENDING)
-  sentBy        String
-  claimedBy     String?
-  orderMemberId String?                      @unique
-  expiresAt     DateTime
-  acceptedAt    DateTime?
-  createdAt     DateTime                     @default(now()) @db.Timestamp(0)
-  updatedAt     DateTime?                    @updatedAt
+  id                  String                       @id @default(nanoid())
+  eventId             String
+  subEventId          String
+  email               String                       @db.VarChar(255)
+  tokenHash           String                       @unique @db.VarChar(128)
+  status              RegistrationInvitationStatus @default(PENDING)
+  sentBy              String
+  claimedBy           String?
+  orderMemberId       String?                      @unique
+  registrationOrderId String?
+  slotPosition        Int?
+  expiresAt           DateTime
+  acceptedAt          DateTime?
+  createdAt           DateTime                     @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime?                    @updatedAt
 
   event       Event                    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   subEvent    Subevent                 @relation(fields: [subEventId], references: [id], onDelete: Cascade)
   sender      User                     @relation("RegistrationInvitationSender", fields: [sentBy], references: [id], onDelete: Restrict)
   claimant    User?                    @relation("RegistrationInvitationClaimant", fields: [claimedBy], references: [id], onDelete: SetNull)
   orderMember RegistrationOrderMember? @relation("RegistrationInvitationMember", fields: [orderMemberId], references: [id], onDelete: SetNull)
+  order       RegistrationOrder?       @relation(fields: [registrationOrderId, eventId, subEventId], references: [id, eventId, subEventId], onDelete: Cascade, map: "registration_invitations_order_scope_fkey")
 
+  @@unique([registrationOrderId, slotPosition])
   @@index([eventId, email, status])
   @@index([subEventId, status, expiresAt])
+  @@index([registrationOrderId, status])
   @@map("registration_invitations")
 }
 

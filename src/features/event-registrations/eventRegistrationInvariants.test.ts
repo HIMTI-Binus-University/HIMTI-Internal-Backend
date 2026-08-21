@@ -165,7 +165,7 @@ describe('free registration source invariants', () => {
       assert.ok(
          submitSource.indexOf('FOR UPDATE') <
             submitSource.indexOf(
-               "if (!['DRAFT', 'NEEDS_CORRECTION'].includes(order.status))",
+               'await this.expireAssemblyOrders(tx, { id: registrationId })',
             ),
       );
       assert.match(submitSource, /ticketPackage\.status !== 'ACTIVE'/);

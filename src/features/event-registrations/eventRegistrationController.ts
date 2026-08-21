@@ -20,7 +20,73 @@ import {
    registrationReasonDecisionSchema,
    bulkRegistrationDecisionSchema,
    bulkRegistrationReasonDecisionSchema,
+   invitationTokenSchema,
+   createOrderInvitationSchema,
+   invitationIdParamsSchema,
+   resendOrderInvitationSchema,
 } from './eventRegistrationSchema.js';
+
+export const getInvitationContext = async (req: Request, res: Response) => {
+   const { token } = invitationTokenSchema.parse(req.body);
+   const data = await eventRegistrationService.invitationContext(
+      token,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const acceptInvitation = async (req: Request, res: Response) => {
+   const { token } = invitationTokenSchema.parse(req.body);
+   const data = await eventRegistrationService.acceptInvitation(
+      token,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const declineInvitation = async (req: Request, res: Response) => {
+   const { token } = invitationTokenSchema.parse(req.body);
+   const data = await eventRegistrationService.declineInvitation(
+      token,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const createOrderInvitation = async (req: Request, res: Response) => {
+   const { registrationId } = registrationIdParamsSchema.parse(req.params);
+   const data = await eventRegistrationService.createInvitation(
+      registrationId,
+      res.locals.user,
+      createOrderInvitationSchema.parse(req.body),
+   );
+   res.status(201).json({ msg: 'success', data });
+};
+
+export const resendOrderInvitation = async (req: Request, res: Response) => {
+   const { registrationId, invitationId } = invitationIdParamsSchema.parse(
+      req.params,
+   );
+   const data = await eventRegistrationService.resendInvitation(
+      registrationId,
+      invitationId,
+      res.locals.user,
+      resendOrderInvitationSchema.parse(req.body ?? {}),
+   );
+   res.status(200).json({ msg: 'success', data });
+};
+
+export const revokeOrderInvitation = async (req: Request, res: Response) => {
+   const { registrationId, invitationId } = invitationIdParamsSchema.parse(
+      req.params,
+   );
+   const data = await eventRegistrationService.revokeInvitation(
+      registrationId,
+      invitationId,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
+};
 
 export const listInternalRegistrations = async (
    req: Request,

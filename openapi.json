@@ -177,6 +177,15 @@
          },
          "CreateEventRegistrationV1": {
             "properties": {
+               "invitationEmails": {
+                  "items": {
+                     "format": "email",
+                     "maxLength": 255,
+                     "type": "string"
+                  },
+                  "maxItems": 999,
+                  "type": "array"
+               },
                "inviteToken": {
                   "maxLength": 512,
                   "minLength": 1,
@@ -1545,6 +1554,37 @@
                         "format": "date-time",
                         "type": "string"
                      },
+                     "createdInvitations": {
+                        "items": {
+                           "properties": {
+                              "email": {
+                                 "format": "email",
+                                 "type": "string"
+                              },
+                              "invitationPath": {
+                                 "type": "string"
+                              },
+                              "position": {
+                                 "type": "integer"
+                              },
+                              "registrationId": {
+                                 "type": "string"
+                              },
+                              "token": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "registrationId",
+                              "position",
+                              "email",
+                              "token",
+                              "invitationPath"
+                           ],
+                           "type": "object"
+                        },
+                        "type": "array"
+                     },
                      "event": {
                         "properties": {
                            "id": {
@@ -1730,6 +1770,11 @@
                      "id": {
                         "type": "string"
                      },
+                     "memberDeadlineAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     },
                      "orderNumber": {
                         "type": "string"
                      },
@@ -1750,6 +1795,9 @@
                            "priceMinor": {
                               "type": "string"
                            },
+                           "revision": {
+                              "type": "integer"
+                           },
                            "seatCount": {
                               "type": "integer"
                            }
@@ -1763,6 +1811,102 @@
                            "priceMinor"
                         ],
                         "type": "object"
+                     },
+                     "readiness": {
+                        "properties": {
+                           "activeMemberCount": {
+                              "type": "integer"
+                           },
+                           "blockerCodes": {
+                              "items": {
+                                 "type": "string"
+                              },
+                              "type": "array"
+                           },
+                           "claimedSeatCount": {
+                              "type": "integer"
+                           },
+                           "complete": {
+                              "type": "boolean"
+                           },
+                           "completedResponseCount": {
+                              "type": "integer"
+                           },
+                           "pendingSlotCount": {
+                              "type": "integer"
+                           },
+                           "readyMemberCount": {
+                              "type": "integer"
+                           },
+                           "requiredResponseCount": {
+                              "type": "integer"
+                           },
+                           "responsesComplete": {
+                              "type": "boolean"
+                           },
+                           "seatCount": {
+                              "type": "integer"
+                           },
+                           "submittable": {
+                              "type": "boolean"
+                           }
+                        },
+                        "required": [
+                           "seatCount",
+                           "claimedSeatCount",
+                           "activeMemberCount",
+                           "pendingSlotCount",
+                           "readyMemberCount",
+                           "requiredResponseCount",
+                           "completedResponseCount",
+                           "responsesComplete",
+                           "submittable",
+                           "blockerCodes",
+                           "complete"
+                        ],
+                        "type": "object"
+                     },
+                     "roster": {
+                        "items": {
+                           "properties": {
+                              "email": {
+                                 "format": "email",
+                                 "nullable": true,
+                                 "type": "string"
+                              },
+                              "invitationId": {
+                                 "nullable": true,
+                                 "type": "string"
+                              },
+                              "isBuyer": {
+                                 "type": "boolean"
+                              },
+                              "isSelf": {
+                                 "type": "boolean"
+                              },
+                              "name": {
+                                 "nullable": true,
+                                 "type": "string"
+                              },
+                              "position": {
+                                 "type": "integer"
+                              },
+                              "status": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "position",
+                              "status",
+                              "isBuyer",
+                              "isSelf",
+                              "name",
+                              "email",
+                              "invitationId"
+                           ],
+                           "type": "object"
+                        },
+                        "type": "array"
                      },
                      "status": {
                         "enum": [
@@ -1837,10 +1981,17 @@
                                  },
                                  "type": "array"
                               },
+                              "audience": {
+                                 "type": "string"
+                              },
                               "formId": {
                                  "type": "string"
                               },
                               "id": {
+                                 "type": "string"
+                              },
+                              "orderMemberId": {
+                                 "nullable": true,
                                  "type": "string"
                               },
                               "revision": {
@@ -1862,6 +2013,8 @@
                               "formId",
                               "status",
                               "revision",
+                              "audience",
+                              "orderMemberId",
                               "answers"
                            ],
                            "type": "object"
@@ -1872,6 +2025,28 @@
                         "format": "date-time",
                         "nullable": true,
                         "type": "string"
+                     },
+                     "viewer": {
+                        "properties": {
+                           "capabilities": {
+                              "items": {
+                                 "type": "string"
+                              },
+                              "type": "array"
+                           },
+                           "role": {
+                              "enum": [
+                                 "BUYER",
+                                 "MEMBER"
+                              ],
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "role",
+                           "capabilities"
+                        ],
+                        "type": "object"
                      }
                   },
                   "required": [
@@ -1887,7 +2062,11 @@
                      "correctionReason",
                      "correctionDeadlineAt",
                      "forms",
-                     "submissions"
+                     "submissions",
+                     "viewer",
+                     "memberDeadlineAt",
+                     "roster",
+                     "readiness"
                   ],
                   "type": "object"
                },
@@ -1955,6 +2134,9 @@
                               },
                               "priceMinor": {
                                  "type": "string"
+                              },
+                              "revision": {
+                                 "type": "integer"
                               },
                               "seatCount": {
                                  "type": "integer"
@@ -3465,6 +3647,9 @@
                      "id": {
                         "type": "string"
                      },
+                     "liveHeldSeats": {
+                        "type": "integer"
+                     },
                      "maxParticipants": {
                         "nullable": true,
                         "type": "integer"
@@ -3478,6 +3663,9 @@
                      "remaining": {
                         "nullable": true,
                         "type": "integer"
+                     },
+                     "reserved": {
+                        "type": "integer"
                      }
                   },
                   "required": [
@@ -3485,6 +3673,8 @@
                      "name",
                      "maxParticipants",
                      "occupied",
+                     "liveHeldSeats",
+                     "reserved",
                      "remaining",
                      "byStatus"
                   ],
@@ -3574,6 +3764,40 @@
                      "orderNumber": {
                         "type": "string"
                      },
+                     "package": {
+                        "properties": {
+                           "code": {
+                              "type": "string"
+                           },
+                           "currency": {
+                              "type": "string"
+                           },
+                           "id": {
+                              "type": "string"
+                           },
+                           "name": {
+                              "type": "string"
+                           },
+                           "priceMinor": {
+                              "type": "string"
+                           },
+                           "revision": {
+                              "type": "integer"
+                           },
+                           "seatCount": {
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "id",
+                           "code",
+                           "name",
+                           "seatCount",
+                           "currency",
+                           "priceMinor"
+                        ],
+                        "type": "object"
+                     },
                      "participant": {
                         "properties": {
                            "email": {
@@ -3603,6 +3827,40 @@
                         "nullable": true,
                         "type": "string"
                      },
+                     "readiness": {
+                        "properties": {
+                           "blockerCodes": {
+                              "items": {
+                                 "type": "string"
+                              },
+                              "type": "array"
+                           },
+                           "claimedSeatCount": {
+                              "type": "integer"
+                           },
+                           "completedResponseCount": {
+                              "type": "integer"
+                           },
+                           "requiredResponseCount": {
+                              "type": "integer"
+                           },
+                           "responsesComplete": {
+                              "type": "boolean"
+                           },
+                           "submittable": {
+                              "type": "boolean"
+                           }
+                        },
+                        "required": [
+                           "claimedSeatCount",
+                           "requiredResponseCount",
+                           "completedResponseCount",
+                           "responsesComplete",
+                           "submittable",
+                           "blockerCodes"
+                        ],
+                        "type": "object"
+                     },
                      "responseStatus": {
                         "enum": [
                            "DRAFT",
@@ -3630,6 +3888,25 @@
                      },
                      "revision": {
                         "type": "integer"
+                     },
+                     "rosterSummary": {
+                        "properties": {
+                           "activeMemberCount": {
+                              "type": "integer"
+                           },
+                           "pendingInvitationCount": {
+                              "type": "integer"
+                           },
+                           "pendingSlotCount": {
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "activeMemberCount",
+                           "pendingSlotCount",
+                           "pendingInvitationCount"
+                        ],
+                        "type": "object"
                      },
                      "seatCount": {
                         "type": "integer"
@@ -3776,6 +4053,9 @@
                      "responseStatuses",
                      "paymentStatus",
                      "seatCount",
+                     "package",
+                     "rosterSummary",
+                     "readiness",
                      "participant",
                      "subEvent",
                      "createdAt",
@@ -3870,6 +4150,40 @@
                         "orderNumber": {
                            "type": "string"
                         },
+                        "package": {
+                           "properties": {
+                              "code": {
+                                 "type": "string"
+                              },
+                              "currency": {
+                                 "type": "string"
+                              },
+                              "id": {
+                                 "type": "string"
+                              },
+                              "name": {
+                                 "type": "string"
+                              },
+                              "priceMinor": {
+                                 "type": "string"
+                              },
+                              "revision": {
+                                 "type": "integer"
+                              },
+                              "seatCount": {
+                                 "type": "integer"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "code",
+                              "name",
+                              "seatCount",
+                              "currency",
+                              "priceMinor"
+                           ],
+                           "type": "object"
+                        },
                         "participant": {
                            "properties": {
                               "email": {
@@ -3899,6 +4213,40 @@
                            "nullable": true,
                            "type": "string"
                         },
+                        "readiness": {
+                           "properties": {
+                              "blockerCodes": {
+                                 "items": {
+                                    "type": "string"
+                                 },
+                                 "type": "array"
+                              },
+                              "claimedSeatCount": {
+                                 "type": "integer"
+                              },
+                              "completedResponseCount": {
+                                 "type": "integer"
+                              },
+                              "requiredResponseCount": {
+                                 "type": "integer"
+                              },
+                              "responsesComplete": {
+                                 "type": "boolean"
+                              },
+                              "submittable": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "claimedSeatCount",
+                              "requiredResponseCount",
+                              "completedResponseCount",
+                              "responsesComplete",
+                              "submittable",
+                              "blockerCodes"
+                           ],
+                           "type": "object"
+                        },
                         "responseStatus": {
                            "enum": [
                               "DRAFT",
@@ -3926,6 +4274,25 @@
                         },
                         "revision": {
                            "type": "integer"
+                        },
+                        "rosterSummary": {
+                           "properties": {
+                              "activeMemberCount": {
+                                 "type": "integer"
+                              },
+                              "pendingInvitationCount": {
+                                 "type": "integer"
+                              },
+                              "pendingSlotCount": {
+                                 "type": "integer"
+                              }
+                           },
+                           "required": [
+                              "activeMemberCount",
+                              "pendingSlotCount",
+                              "pendingInvitationCount"
+                           ],
+                           "type": "object"
                         },
                         "seatCount": {
                            "type": "integer"
@@ -3983,6 +4350,9 @@
                         "responseStatuses",
                         "paymentStatus",
                         "seatCount",
+                        "package",
+                        "rosterSummary",
+                        "readiness",
                         "participant",
                         "subEvent",
                         "createdAt",
@@ -7237,6 +7607,9 @@
                            "priceMinor": {
                               "type": "string"
                            },
+                           "revision": {
+                              "type": "integer"
+                           },
                            "seatCount": {
                               "type": "integer"
                            }
@@ -7251,6 +7624,43 @@
                         ],
                         "type": "object"
                      },
+                     "packages": {
+                        "items": {
+                           "properties": {
+                              "code": {
+                                 "type": "string"
+                              },
+                              "currency": {
+                                 "type": "string"
+                              },
+                              "id": {
+                                 "type": "string"
+                              },
+                              "name": {
+                                 "type": "string"
+                              },
+                              "priceMinor": {
+                                 "type": "string"
+                              },
+                              "revision": {
+                                 "type": "integer"
+                              },
+                              "seatCount": {
+                                 "type": "integer"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "code",
+                              "name",
+                              "seatCount",
+                              "currency",
+                              "priceMinor"
+                           ],
+                           "type": "object"
+                        },
+                        "type": "array"
+                     },
                      "registrationId": {
                         "nullable": true,
                         "type": "string"
@@ -7261,6 +7671,7 @@
                      "code",
                      "destinationUrl",
                      "package",
+                     "packages",
                      "registrationId",
                      "forms"
                   ],
@@ -25218,6 +25629,349 @@
             ]
          }
       },
+      "/api/v1/internal/event-packages/{packageId}": {
+         "put": {
+            "operationId": "updateEventPackageV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "packageId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "code": {
+                              "maxLength": 100,
+                              "minLength": 1,
+                              "type": "string"
+                           },
+                           "currency": {
+                              "maxLength": 3,
+                              "minLength": 3,
+                              "type": "string"
+                           },
+                           "description": {
+                              "maxLength": 10000,
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "name": {
+                              "maxLength": 255,
+                              "minLength": 1,
+                              "type": "string"
+                           },
+                           "priceMinor": {
+                              "pattern": "^\\d+$",
+                              "type": "string"
+                           },
+                           "revision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           },
+                           "salesEndAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "salesStartAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "seatCount": {
+                              "maximum": 1000,
+                              "minimum": 1,
+                              "type": "integer"
+                           },
+                           "status": {
+                              "default": "DRAFT",
+                              "enum": [
+                                 "DRAFT",
+                                 "ACTIVE",
+                                 "INACTIVE"
+                              ],
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "revision"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "createdAt": {
+                                       "format": "date-time",
+                                       "type": "string"
+                                    },
+                                    "currency": {
+                                       "type": "string"
+                                    },
+                                    "dependentOrderCount": {
+                                       "type": "integer"
+                                    },
+                                    "description": {
+                                       "nullable": true,
+                                       "type": "string"
+                                    },
+                                    "editable": {
+                                       "type": "boolean"
+                                    },
+                                    "eventId": {
+                                       "type": "string"
+                                    },
+                                    "id": {
+                                       "type": "string"
+                                    },
+                                    "name": {
+                                       "type": "string"
+                                    },
+                                    "priceMinor": {
+                                       "type": "string"
+                                    },
+                                    "revision": {
+                                       "type": "integer"
+                                    },
+                                    "salesEndAt": {
+                                       "format": "date-time",
+                                       "nullable": true,
+                                       "type": "string"
+                                    },
+                                    "salesStartAt": {
+                                       "format": "date-time",
+                                       "nullable": true,
+                                       "type": "string"
+                                    },
+                                    "seatCount": {
+                                       "type": "integer"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "DRAFT",
+                                          "ACTIVE",
+                                          "INACTIVE"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "subEventId": {
+                                       "type": "string"
+                                    },
+                                    "updatedAt": {
+                                       "format": "date-time",
+                                       "nullable": true,
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "id",
+                                    "eventId",
+                                    "subEventId",
+                                    "code",
+                                    "name",
+                                    "description",
+                                    "status",
+                                    "seatCount",
+                                    "currency",
+                                    "priceMinor",
+                                    "salesStartAt",
+                                    "salesEndAt",
+                                    "revision",
+                                    "dependentOrderCount",
+                                    "editable",
+                                    "createdAt",
+                                    "updatedAt"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Package updated using revision CAS."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_events and event object scope required."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Code, revision, or immutability conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event packages V1"
+            ]
+         }
+      },
       "/api/v1/internal/event-payments/{id}": {
          "get": {
             "operationId": "getInternalEventPaymentDetailV1",
@@ -27445,6 +28199,624 @@
             ]
          }
       },
+      "/api/v1/internal/sub-events/{subEventId}/packages": {
+         "get": {
+            "operationId": "listEventPackagesV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "properties": {
+                                       "code": {
+                                          "type": "string"
+                                       },
+                                       "createdAt": {
+                                          "format": "date-time",
+                                          "type": "string"
+                                       },
+                                       "currency": {
+                                          "type": "string"
+                                       },
+                                       "dependentOrderCount": {
+                                          "type": "integer"
+                                       },
+                                       "description": {
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "editable": {
+                                          "type": "boolean"
+                                       },
+                                       "eventId": {
+                                          "type": "string"
+                                       },
+                                       "id": {
+                                          "type": "string"
+                                       },
+                                       "name": {
+                                          "type": "string"
+                                       },
+                                       "priceMinor": {
+                                          "type": "string"
+                                       },
+                                       "revision": {
+                                          "type": "integer"
+                                       },
+                                       "salesEndAt": {
+                                          "format": "date-time",
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "salesStartAt": {
+                                          "format": "date-time",
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "seatCount": {
+                                          "type": "integer"
+                                       },
+                                       "status": {
+                                          "enum": [
+                                             "DRAFT",
+                                             "ACTIVE",
+                                             "INACTIVE"
+                                          ],
+                                          "type": "string"
+                                       },
+                                       "subEventId": {
+                                          "type": "string"
+                                       },
+                                       "updatedAt": {
+                                          "format": "date-time",
+                                          "nullable": true,
+                                          "type": "string"
+                                       }
+                                    },
+                                    "required": [
+                                       "id",
+                                       "eventId",
+                                       "subEventId",
+                                       "code",
+                                       "name",
+                                       "description",
+                                       "status",
+                                       "seatCount",
+                                       "currency",
+                                       "priceMinor",
+                                       "salesStartAt",
+                                       "salesEndAt",
+                                       "revision",
+                                       "dependentOrderCount",
+                                       "editable",
+                                       "createdAt",
+                                       "updatedAt"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Packages with editability metadata."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_events and event object scope required."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Code, revision, or immutability conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event packages V1"
+            ]
+         },
+         "post": {
+            "operationId": "createEventPackageV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "code": {
+                              "maxLength": 100,
+                              "minLength": 1,
+                              "type": "string"
+                           },
+                           "currency": {
+                              "maxLength": 3,
+                              "minLength": 3,
+                              "type": "string"
+                           },
+                           "description": {
+                              "maxLength": 10000,
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "name": {
+                              "maxLength": 255,
+                              "minLength": 1,
+                              "type": "string"
+                           },
+                           "priceMinor": {
+                              "pattern": "^\\d+$",
+                              "type": "string"
+                           },
+                           "salesEndAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "salesStartAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "seatCount": {
+                              "maximum": 1000,
+                              "minimum": 1,
+                              "type": "integer"
+                           },
+                           "status": {
+                              "default": "DRAFT",
+                              "enum": [
+                                 "DRAFT",
+                                 "ACTIVE",
+                                 "INACTIVE"
+                              ],
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "code",
+                           "name",
+                           "seatCount",
+                           "currency",
+                           "priceMinor"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "createdAt": {
+                                       "format": "date-time",
+                                       "type": "string"
+                                    },
+                                    "currency": {
+                                       "type": "string"
+                                    },
+                                    "dependentOrderCount": {
+                                       "type": "integer"
+                                    },
+                                    "description": {
+                                       "nullable": true,
+                                       "type": "string"
+                                    },
+                                    "editable": {
+                                       "type": "boolean"
+                                    },
+                                    "eventId": {
+                                       "type": "string"
+                                    },
+                                    "id": {
+                                       "type": "string"
+                                    },
+                                    "name": {
+                                       "type": "string"
+                                    },
+                                    "priceMinor": {
+                                       "type": "string"
+                                    },
+                                    "revision": {
+                                       "type": "integer"
+                                    },
+                                    "salesEndAt": {
+                                       "format": "date-time",
+                                       "nullable": true,
+                                       "type": "string"
+                                    },
+                                    "salesStartAt": {
+                                       "format": "date-time",
+                                       "nullable": true,
+                                       "type": "string"
+                                    },
+                                    "seatCount": {
+                                       "type": "integer"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "DRAFT",
+                                          "ACTIVE",
+                                          "INACTIVE"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "subEventId": {
+                                       "type": "string"
+                                    },
+                                    "updatedAt": {
+                                       "format": "date-time",
+                                       "nullable": true,
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "id",
+                                    "eventId",
+                                    "subEventId",
+                                    "code",
+                                    "name",
+                                    "description",
+                                    "status",
+                                    "seatCount",
+                                    "currency",
+                                    "priceMinor",
+                                    "salesStartAt",
+                                    "salesEndAt",
+                                    "revision",
+                                    "dependentOrderCount",
+                                    "editable",
+                                    "createdAt",
+                                    "updatedAt"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Package created."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_events and event object scope required."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Code, revision, or immutability conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event packages V1"
+            ]
+         }
+      },
       "/api/v1/internal/sub-events/{subEventId}/payment-settings": {
          "get": {
             "operationId": "getSubEventPaymentSettingsV1",
@@ -27546,6 +28918,7 @@
             ]
          },
          "put": {
+            "description": "Package terms remain controlled by the package API. For backward compatibility, an unreferenced one-seat DEFAULT-INDIVIDUAL package is created or has only its price/currency synchronized; referenced or non-one-seat packages are not mutated.",
             "operationId": "updateSubEventPaymentSettingsV1",
             "parameters": [
                {
@@ -27717,7 +29090,7 @@
                   "sessionCookie": []
                }
             ],
-            "summary": "Update payment settings and the default one-seat package",
+            "summary": "Update payment settings",
             "tags": [
                "Event Payments"
             ]
@@ -30472,6 +31845,735 @@
             ]
          }
       },
+      "/api/v1/me/event-registrations/{registrationId}/invitations": {
+         "post": {
+            "operationId": "createRegistrationInvitationV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "registrationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "email": {
+                              "format": "email",
+                              "maxLength": 255,
+                              "type": "string"
+                           },
+                           "position": {
+                              "exclusiveMinimum": true,
+                              "maximum": 1000,
+                              "minimum": 0,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "email",
+                           "position"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "email": {
+                                       "format": "email",
+                                       "type": "string"
+                                    },
+                                    "expiresAt": {
+                                       "format": "date-time",
+                                       "type": "string"
+                                    },
+                                    "id": {
+                                       "type": "string"
+                                    },
+                                    "invitationPath": {
+                                       "type": "string"
+                                    },
+                                    "position": {
+                                       "type": "integer"
+                                    },
+                                    "registrationId": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "token": {
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "id",
+                                    "registrationId",
+                                    "position",
+                                    "email",
+                                    "status",
+                                    "expiresAt"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Invitation created; raw token returned once."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found, including unauthorized private access."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Capacity, revision, duplicate, idempotency, or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event registrations V1"
+            ]
+         }
+      },
+      "/api/v1/me/event-registrations/{registrationId}/invitations/{invitationId}/resend": {
+         "post": {
+            "operationId": "resendRegistrationInvitationV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "registrationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "invitationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "email": {
+                              "format": "email",
+                              "maxLength": 255,
+                              "type": "string"
+                           }
+                        },
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": false
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "email": {
+                                       "format": "email",
+                                       "type": "string"
+                                    },
+                                    "expiresAt": {
+                                       "format": "date-time",
+                                       "type": "string"
+                                    },
+                                    "id": {
+                                       "type": "string"
+                                    },
+                                    "invitationPath": {
+                                       "type": "string"
+                                    },
+                                    "position": {
+                                       "type": "integer"
+                                    },
+                                    "registrationId": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "token": {
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "id",
+                                    "registrationId",
+                                    "position",
+                                    "email",
+                                    "status",
+                                    "expiresAt"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Token rotated and returned once."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found, including unauthorized private access."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Capacity, revision, duplicate, idempotency, or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event registrations V1"
+            ]
+         }
+      },
+      "/api/v1/me/event-registrations/{registrationId}/invitations/{invitationId}/revoke": {
+         "post": {
+            "operationId": "revokeRegistrationInvitationV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "registrationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "invitationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "email": {
+                                       "format": "email",
+                                       "type": "string"
+                                    },
+                                    "expiresAt": {
+                                       "format": "date-time",
+                                       "type": "string"
+                                    },
+                                    "id": {
+                                       "type": "string"
+                                    },
+                                    "invitationPath": {
+                                       "type": "string"
+                                    },
+                                    "position": {
+                                       "type": "integer"
+                                    },
+                                    "registrationId": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "token": {
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "id",
+                                    "registrationId",
+                                    "position",
+                                    "email",
+                                    "status",
+                                    "expiresAt"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Invitation revoked."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found, including unauthorized private access."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Capacity, revision, duplicate, idempotency, or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event registrations V1"
+            ]
+         }
+      },
       "/api/v1/me/event-registrations/{registrationId}/payment": {
          "get": {
             "operationId": "getMyEventPaymentV1",
@@ -31420,7 +33522,7 @@
                         }
                      }
                   },
-                  "description": "Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported."
+                  "description": "Generic FILE-question registration responses remain unsupported."
                }
             },
             "security": [
@@ -31436,6 +33538,7 @@
       },
       "/api/v1/me/event-registrations/{registrationId}/submit": {
          "post": {
+            "description": "Buyer-only whole-order submit. Requires every fixed package seat to be claimed and every required response to be valid.",
             "operationId": "submitEventRegistrationV1",
             "parameters": [
                {
@@ -31851,7 +33954,7 @@
                         }
                      }
                   },
-                  "description": "Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported."
+                  "description": "Generic FILE-question registration responses remain unsupported."
                }
             },
             "security": [
@@ -33641,9 +35744,982 @@
             ]
          }
       },
+      "/api/v1/registration-invitations/accept": {
+         "post": {
+            "operationId": "acceptRegistrationInvitationV1",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "token": {
+                              "maxLength": 512,
+                              "minLength": 32,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "token"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventRegistrationDetailV1"
+                        }
+                     }
+                  },
+                  "description": "Invitation accepted."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Account or registration eligibility failed."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found, including unauthorized private access."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Capacity, revision, duplicate, idempotency, or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event registrations V1"
+            ]
+         }
+      },
+      "/api/v1/registration-invitations/context": {
+         "post": {
+            "operationId": "getRegistrationInvitationContextV1",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "token": {
+                              "maxLength": 512,
+                              "minLength": 32,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "token"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "invitation": {
+                                       "properties": {
+                                          "email": {
+                                             "format": "email",
+                                             "type": "string"
+                                          },
+                                          "expiresAt": {
+                                             "format": "date-time",
+                                             "type": "string"
+                                          },
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "invitationPath": {
+                                             "type": "string"
+                                          },
+                                          "position": {
+                                             "type": "integer"
+                                          },
+                                          "registrationId": {
+                                             "type": "string"
+                                          },
+                                          "status": {
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "registrationId",
+                                          "position",
+                                          "email",
+                                          "status",
+                                          "expiresAt"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "order": {
+                                       "properties": {
+                                          "buyer": {
+                                             "properties": {
+                                                "name": {
+                                                   "type": "string"
+                                                }
+                                             },
+                                             "required": [
+                                                "name"
+                                             ],
+                                             "type": "object"
+                                          },
+                                          "event": {
+                                             "properties": {
+                                                "id": {
+                                                   "type": "string"
+                                                },
+                                                "name": {
+                                                   "type": "string"
+                                                }
+                                             },
+                                             "required": [
+                                                "id",
+                                                "name"
+                                             ],
+                                             "type": "object"
+                                          },
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "orderNumber": {
+                                             "type": "string"
+                                          },
+                                          "package": {
+                                             "properties": {
+                                                "code": {
+                                                   "type": "string"
+                                                },
+                                                "currency": {
+                                                   "type": "string"
+                                                },
+                                                "id": {
+                                                   "type": "string"
+                                                },
+                                                "name": {
+                                                   "type": "string"
+                                                },
+                                                "priceMinor": {
+                                                   "type": "string"
+                                                },
+                                                "revision": {
+                                                   "type": "integer"
+                                                },
+                                                "seatCount": {
+                                                   "type": "integer"
+                                                }
+                                             },
+                                             "required": [
+                                                "id",
+                                                "code",
+                                                "name",
+                                                "seatCount",
+                                                "currency",
+                                                "priceMinor"
+                                             ],
+                                             "type": "object"
+                                          },
+                                          "status": {
+                                             "enum": [
+                                                "DRAFT",
+                                                "AWAITING_MEMBERS",
+                                                "HOLDING",
+                                                "SUBMITTED",
+                                                "PENDING_PAYMENT",
+                                                "PAYMENT_REVIEW",
+                                                "PENDING_APPROVAL",
+                                                "APPROVED",
+                                                "NEEDS_CORRECTION",
+                                                "WAITLISTED",
+                                                "REJECTED",
+                                                "EXPIRED",
+                                                "CANCELLED"
+                                             ],
+                                             "type": "string"
+                                          },
+                                          "subEvent": {
+                                             "properties": {
+                                                "date": {
+                                                   "format": "date-time",
+                                                   "type": "string"
+                                                },
+                                                "id": {
+                                                   "type": "string"
+                                                },
+                                                "name": {
+                                                   "type": "string"
+                                                }
+                                             },
+                                             "required": [
+                                                "id",
+                                                "name",
+                                                "date"
+                                             ],
+                                             "type": "object"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "orderNumber",
+                                          "status",
+                                          "event",
+                                          "subEvent",
+                                          "package",
+                                          "buyer"
+                                       ],
+                                       "type": "object"
+                                    }
+                                 },
+                                 "required": [
+                                    "invitation",
+                                    "order"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Safe invitation and order context. Read the token from the invitationPath URL fragment and submit it in this POST body; tokens are never accepted in a URL query for this operation."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Account or registration eligibility failed."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found, including unauthorized private access."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Capacity, revision, duplicate, idempotency, or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event registrations V1"
+            ]
+         }
+      },
+      "/api/v1/registration-invitations/decline": {
+         "post": {
+            "operationId": "declineRegistrationInvitationV1",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "token": {
+                              "maxLength": 512,
+                              "minLength": 32,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "token"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "email": {
+                                       "format": "email",
+                                       "type": "string"
+                                    },
+                                    "expiresAt": {
+                                       "format": "date-time",
+                                       "type": "string"
+                                    },
+                                    "id": {
+                                       "type": "string"
+                                    },
+                                    "invitationPath": {
+                                       "type": "string"
+                                    },
+                                    "position": {
+                                       "type": "integer"
+                                    },
+                                    "registrationId": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "token": {
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "id",
+                                    "registrationId",
+                                    "position",
+                                    "email",
+                                    "status",
+                                    "expiresAt"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Invitation declineed."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Account or registration eligibility failed."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found, including unauthorized private access."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Capacity, revision, duplicate, idempotency, or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event registrations V1"
+            ]
+         }
+      },
       "/api/v1/sub-events/{subEventId}/registration-context": {
          "get": {
-            "description": "Session is optional. Anonymous native registration returns SIGN_IN rather than HTTP 401.",
+            "description": "Session is optional. Anonymous native registration returns SIGN_IN rather than HTTP 401. Legacy invite-only admission may still supply inviteToken here; order-slot invitation tokens are accepted only in POST bodies.",
             "operationId": "getRegistrationContextV1",
             "parameters": [
                {
@@ -33875,7 +36951,7 @@
                         }
                      }
                   },
-                  "description": "Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported."
+                  "description": "Generic FILE-question registration responses remain unsupported."
                }
             },
             "summary": "Resolve registration context",
@@ -33886,6 +36962,7 @@
       },
       "/api/v1/sub-events/{subEventId}/registrations": {
          "post": {
+            "description": "Resumes DRAFT, AWAITING_MEMBERS, HOLDING, or an eligible correction order instead of creating a duplicate. Returned invitationPath values place the one-time token in the URL fragment so it is not sent in HTTP requests.",
             "operationId": "createEventRegistrationV1",
             "parameters": [
                {
@@ -34301,7 +37378,7 @@
                         }
                      }
                   },
-                  "description": "Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported."
+                  "description": "Generic FILE-question registration responses remain unsupported."
                }
             },
             "security": [

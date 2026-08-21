@@ -18,6 +18,7 @@ import {
    ResponseCorrectionDeadlinePassed,
    ResponseRevisionConflict,
    ResponseValidationFailure,
+   validateFreshSubmission,
 } from './eventRegistrationTypes.js';
 
 const unsupported = (code: string, message: string) =>
@@ -33,6 +34,7 @@ const mapPackage = (value: {
    seatCount: number;
    currency: string;
    priceMinor: bigint;
+   revision?: number;
 }) => ({
    id: value.id,
    code: value.code,
@@ -40,6 +42,7 @@ const mapPackage = (value: {
    seatCount: value.seatCount,
    currency: value.currency,
    priceMinor: value.priceMinor.toString(),
+   ...(value.revision !== undefined && { revision: value.revision }),
 });
 
 type Assignment = Awaited<
@@ -204,6 +207,39 @@ const mapInternalSummary = (
       responseStatuses.find((status) => status === 'LOCKED') ??
       responseStatuses.find((status) => status === 'SUPERSEDED') ??
       null;
+   const requiredSubmissions = order.submissions.filter(
+      (submission) => submission.assignmentRequired,
+   );
+   const completedResponseCount = requiredSubmissions.filter(
+      (submission) =>
+         validateFreshSubmission(
+            submission.form.questions,
+            submission.answers,
+            true,
+         ).length === 0,
+   ).length;
+   const claimedSeatCount = order.members.filter(
+      (member) => member.status !== 'CANCELLED',
+   ).length;
+   const readinessBlockerCodes = [
+      ...(claimedSeatCount !== order.seatCount ? ['SEATS_UNCLAIMED'] : []),
+      ...(completedResponseCount !== requiredSubmissions.length
+         ? ['REQUIRED_RESPONSES_INCOMPLETE']
+         : []),
+      ...(order.invitations.some(
+         (invitation) => invitation.status === 'PENDING',
+      )
+         ? ['INVITATIONS_PENDING']
+         : []),
+      ...(![
+         'DRAFT',
+         'AWAITING_MEMBERS',
+         'HOLDING',
+         'NEEDS_CORRECTION',
+      ].includes(order.status)
+         ? ['ORDER_NOT_SUBMITTABLE']
+         : []),
+   ];
    return {
       id: order.id,
       orderNumber: order.orderNumber,
@@ -216,6 +252,30 @@ const mapInternalSummary = (
             ? ('NOT_REQUIRED' as const)
             : (order.payment?.status ?? null),
       seatCount: order.seatCount,
+      package: mapPackage(order.ticketPackage),
+      rosterSummary: {
+         activeMemberCount: order.members.filter(
+            (member) => member.status !== 'CANCELLED',
+         ).length,
+         pendingSlotCount: Math.max(
+            0,
+            order.seatCount -
+               order.members.filter((member) => member.status !== 'CANCELLED')
+                  .length,
+         ),
+         pendingInvitationCount: order.invitations.filter(
+            (invitation) => invitation.status === 'PENDING',
+         ).length,
+      },
+      readiness: {
+         claimedSeatCount,
+         requiredResponseCount: requiredSubmissions.length,
+         completedResponseCount,
+         responsesComplete:
+            completedResponseCount === requiredSubmissions.length,
+         submittable: readinessBlockerCodes.length === 0,
+         blockerCodes: readinessBlockerCodes,
+      },
       participant: order.buyer,
       subEvent: { ...order.subEvent, date: order.subEvent.date.toISOString() },
       createdAt: order.createdAt.toISOString(),
@@ -230,6 +290,15 @@ const mapDetail = async (order: DetailOrder, viewerUserId?: string) => {
          .map((member) => member.id),
    );
    const isBuyer = !viewerUserId || order.buyerUserId === viewerUserId;
+   const activeMembers = order.members.filter(
+      (member) => member.status !== 'CANCELLED',
+   );
+   const invitationByPosition = new Map(
+      order.invitations.map((invitation) => [
+         invitation.slotPosition,
+         invitation,
+      ]),
+   );
    const visibleSubmissions = viewerUserId
       ? order.submissions.filter(
            (submission) =>
@@ -254,8 +323,53 @@ const mapDetail = async (order: DetailOrder, viewerUserId?: string) => {
          formId: submission.registrationFormId,
          status: submission.status,
          revision: submission.revision,
+         audience: submission.assignmentAudience,
+         orderMemberId: submission.orderMemberId,
          answers: submission.answers.map(mapAnswer),
       })),
+      viewer: {
+         role: isBuyer ? ('BUYER' as const) : ('MEMBER' as const),
+         capabilities: isBuyer
+            ? [
+                 'SAVE_BUYER',
+                 'SAVE_OWN_MEMBER',
+                 'MANAGE_INVITATIONS',
+                 'SUBMIT',
+                 'CANCEL',
+              ]
+            : ['SAVE_OWN_MEMBER'],
+      },
+      memberDeadlineAt: toIso(order.memberDeadlineAt),
+      roster: Array.from({ length: order.seatCount }, (_, position) => {
+         const member = activeMembers.find(
+            (item) => item.position === position,
+         );
+         const invitation = invitationByPosition.get(position);
+         const isSelf = member?.userId === viewerUserId;
+         return {
+            position,
+            status: member?.status ?? invitation?.status ?? 'UNCLAIMED',
+            isBuyer: position === 0,
+            isSelf,
+            name: member && (isBuyer || isSelf) ? member.user.name : null,
+            email:
+               member && (isBuyer || isSelf)
+                  ? member.user.email
+                  : isBuyer && invitation
+                    ? invitation.email
+                    : null,
+            invitationId: isBuyer ? (invitation?.id ?? null) : null,
+         };
+      }),
+      readiness: {
+         seatCount: order.seatCount,
+         activeMemberCount: activeMembers.length,
+         pendingSlotCount: Math.max(0, order.seatCount - activeMembers.length),
+         readyMemberCount: activeMembers.filter(
+            (item) => item.status === 'READY',
+         ).length,
+         complete: activeMembers.length === order.seatCount,
+      },
    };
 };
 
@@ -358,7 +472,7 @@ class EventRegistrationService {
       const row = await eventRegistrationRepository.capacitySummary(subEventId);
       if (!row)
          throw new AppError('Sub-event not found', 404, 'SUB_EVENT_NOT_FOUND');
-      const { registrationOrders, ...subEvent } = row;
+      const { registrationOrders, capacityHolds, ...subEvent } = row;
       const byStatus = Object.fromEntries(
          capacityConsumingStatuses.map((status) => [
             status,
@@ -371,13 +485,20 @@ class EventRegistrationService {
          (sum, count) => sum + count,
          0,
       );
+      const liveHeldSeats = capacityHolds.reduce(
+         (sum, hold) => sum + hold.quantity,
+         0,
+      );
+      const reserved = occupied + liveHeldSeats;
       return {
          ...subEvent,
          occupied,
+         liveHeldSeats,
+         reserved,
          remaining:
             subEvent.maxParticipants === null
                ? null
-               : Math.max(0, subEvent.maxParticipants - occupied),
+               : Math.max(0, subEvent.maxParticipants - reserved),
          byStatus,
       };
    }
@@ -561,6 +682,15 @@ class EventRegistrationService {
          subEventId,
          user?.id,
       );
+      const now = new Date();
+      const eligiblePackages =
+         source?.ticketPackages.filter(
+            (item) =>
+               item.status === 'ACTIVE' &&
+               (!item.salesStartAt || item.salesStartAt <= now) &&
+               (!item.salesEndAt || item.salesEndAt > now),
+         ) ?? [];
+      const packages = eligiblePackages.map(mapPackage);
       if (!source || source.event.status !== 'PUBLISHED') {
          throw new AppError('Sub-event not found', 404, 'SUB_EVENT_NOT_FOUND');
       }
@@ -570,6 +700,7 @@ class EventRegistrationService {
             code: 'REGISTRATION_DISABLED',
             destinationUrl: null,
             package: null,
+            packages,
             registrationId: null,
             forms: [],
          };
@@ -580,6 +711,7 @@ class EventRegistrationService {
             code: 'SIGN_IN_REQUIRED',
             destinationUrl: null,
             package: null,
+            packages,
             registrationId: null,
             forms: [],
          };
@@ -643,15 +775,17 @@ class EventRegistrationService {
             code: 'EXTERNAL_REGISTRATION',
             destinationUrl: source.destinationUrl,
             package: null,
+            packages,
             registrationId: null,
             forms: [],
          };
       }
-      const now = new Date();
       const registration = source.registrationOrders[0];
       if (
          registration &&
-         ['DRAFT', 'NEEDS_CORRECTION'].includes(registration.status) &&
+         ['DRAFT', 'AWAITING_MEMBERS', 'HOLDING', 'NEEDS_CORRECTION'].includes(
+            registration.status,
+         ) &&
          (registration.status !== 'NEEDS_CORRECTION' ||
             !registration.correctionDeadlineAt ||
             now < registration.correctionDeadlineAt)
@@ -675,6 +809,7 @@ class EventRegistrationService {
             package: registrationPackage
                ? mapPackage(registrationPackage)
                : null,
+            packages,
             registrationId: registration.id,
             forms,
          };
@@ -689,6 +824,7 @@ class EventRegistrationService {
             code: 'CORRECTION_DEADLINE_PASSED',
             destinationUrl: null,
             package: null,
+            packages,
             registrationId: registration.id,
             forms: [],
          };
@@ -704,6 +840,7 @@ class EventRegistrationService {
             code: 'REGISTRATION_CLOSED',
             destinationUrl: null,
             package: null,
+            packages,
             registrationId: null,
             forms: [],
          };
@@ -714,30 +851,33 @@ class EventRegistrationService {
             code: 'ACTIVE_REGISTRATION_EXISTS',
             destinationUrl: null,
             package: null,
+            packages,
             registrationId: registration.id,
             forms: [],
          };
       }
-      const available = source.ticketPackages.find(
-         (item) =>
-            item.status === 'ACTIVE' &&
-            (!item.salesStartAt || item.salesStartAt <= now) &&
-            (!item.salesEndAt || item.salesEndAt > now),
-      );
+      const available =
+         eligiblePackages.length === 1 ? eligiblePackages[0] : undefined;
+      if (eligiblePackages.length > 1)
+         return {
+            action: 'REGISTER' as const,
+            code: 'PACKAGE_SELECTION_REQUIRED',
+            destinationUrl: null,
+            package: null,
+            packages,
+            registrationId: null,
+            forms: [],
+         };
       if (!available)
          return {
             action: 'REGISTER' as const,
             code: 'DEFAULT_PACKAGE_WILL_BE_PROVISIONED',
             destinationUrl: null,
             package: null,
+            packages,
             registrationId: null,
             forms: [],
          };
-      if (available.seatCount !== 1)
-         throw unsupported(
-            'UNSUPPORTED_BUNDLE_PACKAGE',
-            'Bundle packages are not supported by free registration MVP',
-         );
       const forms = await eventRegistrationRepository.getAssignedForms(
          subEventId,
          available.id,
@@ -758,6 +898,7 @@ class EventRegistrationService {
          code: 'ELIGIBLE',
          destinationUrl: null,
          package: mapPackage(available),
+         packages,
          registrationId: null,
          forms: mapForms(forms),
       };
@@ -803,17 +944,49 @@ class EventRegistrationService {
             403,
             order.eligibilityCode,
          );
-      if ('unsupportedCode' in order)
+      if ('unsupportedCode' in order && order.unsupportedCode)
          throw unsupported(
             order.unsupportedCode,
             'This registration configuration is not supported by the free registration MVP',
          );
-      if (order.ticketPackage.seatCount !== 1)
-         throw unsupported(
-            'UNSUPPORTED_BUNDLE_PACKAGE',
-            'Bundle packages are not supported by free registration MVP',
+      if ('packageSelectionRequired' in order)
+         throw new AppError(
+            'Explicit packageId is required',
+            400,
+            'PACKAGE_SELECTION_REQUIRED',
          );
-      return mapDetail(order, user.id);
+      if ('invitationCountMismatch' in order)
+         throw new AppError(
+            'Too many invitation emails',
+            400,
+            'INVITATION_COUNT_MISMATCH',
+         );
+      if ('invitationEmailConflict' in order)
+         throw new AppError(
+            'Invitation emails must be unique and cannot be the buyer email',
+            409,
+            'INVITATION_EMAIL_CONFLICT',
+         );
+      if ('capacityExceeded' in order)
+         throw new AppError(
+            'The selected package no longer fits available capacity',
+            409,
+            'CAPACITY_EXCEEDED',
+         );
+      if ('created' in order) {
+         const detail = await mapDetail(order.created, user.id);
+         return {
+            ...detail,
+            createdInvitations: order.initialInvitations.map((invitation) => ({
+               registrationId: order.created.id,
+               position: invitation.position,
+               email: invitation.email,
+               token: invitation.token,
+               invitationPath: `/event-registration/invitations#token=${encodeURIComponent(invitation.token)}`,
+            })),
+         };
+      }
+      return mapDetail(order as DetailOrder, user.id);
    }
 
    async listMine(user: SessionUser, params: RegistrationPagination) {
@@ -930,6 +1103,12 @@ class EventRegistrationService {
             'UNSUPPORTED_BUNDLE_PACKAGE',
             'Bundle packages are not supported by free registration MVP',
          );
+      if ('membersIncomplete' in result)
+         throw new AppError(
+            'All package seats must be claimed before submission',
+            409,
+            'MEMBERS_INCOMPLETE',
+         );
       if ('packageUnavailable' in result)
          throw new AppError(
             'The selected package is no longer available',
@@ -978,6 +1157,217 @@ class EventRegistrationService {
             'CANCELLATION_NOT_ALLOWED',
          );
       return mapDetail(result, user.id);
+   }
+
+   private mapInvitation(
+      invitation: {
+         id: string;
+         registrationOrderId: string | null;
+         slotPosition: number | null;
+         email: string;
+         status: string;
+         expiresAt: Date;
+      },
+      token?: string,
+   ) {
+      return {
+         id: invitation.id,
+         registrationId: invitation.registrationOrderId!,
+         position: invitation.slotPosition!,
+         email: invitation.email,
+         status: invitation.status,
+         expiresAt: invitation.expiresAt.toISOString(),
+         ...(token && {
+            token,
+            invitationPath: `/event-registration/invitations#token=${encodeURIComponent(token)}`,
+         }),
+      };
+   }
+
+   async invitationContext(token: string, user: SessionUser) {
+      const result = await eventRegistrationRepository.invitationContext(
+         createHash('sha256').update(token).digest('hex'),
+         user.id,
+      );
+      if (!result)
+         throw new AppError(
+            'Invitation not found',
+            404,
+            'INVITATION_NOT_FOUND',
+         );
+      if ('eligibilityCode' in result)
+         throw new AppError(
+            'Verified invitation email is required',
+            403,
+            result.eligibilityCode,
+         );
+      if (result.status !== 'PENDING')
+         throw new AppError(
+            'Invitation is not pending',
+            409,
+            'INVITATION_NOT_PENDING',
+         );
+      const order = result.order!;
+      return {
+         invitation: this.mapInvitation(result),
+         order: {
+            id: order.id,
+            orderNumber: order.orderNumber,
+            status: order.status,
+            event: order.event,
+            subEvent: {
+               ...order.subEvent,
+               date: order.subEvent.date.toISOString(),
+            },
+            package: mapPackage(order.ticketPackage),
+            buyer: order.buyer,
+         },
+      };
+   }
+
+   async createInvitation(
+      registrationId: string,
+      user: SessionUser,
+      payload: import('./eventRegistrationTypes.js').CreateOrderInvitationRequest,
+   ) {
+      const { result, token } =
+         await eventRegistrationRepository.createInvitation(
+            registrationId,
+            user.id,
+            payload.email,
+            payload.position,
+         );
+      if (!result)
+         throw new AppError(
+            'Registration not found',
+            404,
+            'REGISTRATION_NOT_FOUND',
+         );
+      if ('invalidPosition' in result)
+         throw new AppError(
+            'Position is outside package seats',
+            400,
+            'INVALID_SLOT_POSITION',
+         );
+      if ('occupied' in result)
+         throw new AppError(
+            'Invitation slot is occupied',
+            409,
+            'SLOT_OCCUPIED',
+         );
+      if ('emailConflict' in result)
+         throw new AppError(
+            'Invitation email is already live or belongs to the buyer',
+            409,
+            'INVITATION_EMAIL_CONFLICT',
+         );
+      return this.mapInvitation(result, token);
+   }
+
+   async resendInvitation(
+      registrationId: string,
+      invitationId: string,
+      user: SessionUser,
+      payload: import('./eventRegistrationTypes.js').ResendOrderInvitationRequest,
+   ) {
+      const result = await eventRegistrationRepository.resendInvitation(
+         registrationId,
+         invitationId,
+         user.id,
+         payload.email,
+      );
+      if (!result)
+         throw new AppError(
+            'Invitation not found',
+            404,
+            'INVITATION_NOT_FOUND',
+         );
+      if ('emailConflict' in result)
+         throw new AppError(
+            'Invitation email is already live or belongs to the buyer',
+            409,
+            'INVITATION_EMAIL_CONFLICT',
+         );
+      if ('conflict' in result)
+         throw new AppError(
+            'Invitation changed concurrently',
+            409,
+            'INVITATION_CONFLICT',
+         );
+      return this.mapInvitation(result.invitation, result.token);
+   }
+
+   async revokeInvitation(
+      registrationId: string,
+      invitationId: string,
+      user: SessionUser,
+   ) {
+      const result = await eventRegistrationRepository.revokeInvitation(
+         registrationId,
+         invitationId,
+         user.id,
+      );
+      if (!result)
+         throw new AppError(
+            'Invitation not found',
+            404,
+            'INVITATION_NOT_FOUND',
+         );
+      return this.mapInvitation(result);
+   }
+
+   async acceptInvitation(token: string, user: SessionUser) {
+      const result = await eventRegistrationRepository.decideInvitation(
+         createHash('sha256').update(token).digest('hex'),
+         user.id,
+         true,
+      );
+      if (!result)
+         throw new AppError(
+            'Invitation not found',
+            404,
+            'INVITATION_NOT_FOUND',
+         );
+      if ('eligibilityCode' in result)
+         throw new AppError(
+            'Verified invitation email is required',
+            403,
+            result.eligibilityCode,
+         );
+      if ('conflict' in result)
+         throw new AppError(
+            'Invitation claim conflicts with the roster',
+            409,
+            'INVITATION_CONFLICT',
+         );
+      if (!('orderNumber' in result))
+         throw new AppError('Invitation conflict', 409, 'INVITATION_CONFLICT');
+      return mapDetail(result, user.id);
+   }
+
+   async declineInvitation(token: string, user: SessionUser) {
+      const result = await eventRegistrationRepository.decideInvitation(
+         createHash('sha256').update(token).digest('hex'),
+         user.id,
+         false,
+      );
+      if (!result)
+         throw new AppError(
+            'Invitation not found',
+            404,
+            'INVITATION_NOT_FOUND',
+         );
+      if ('eligibilityCode' in result)
+         throw new AppError(
+            'Verified invitation email is required',
+            403,
+            result.eligibilityCode,
+         );
+      if ('conflict' in result)
+         throw new AppError('Invitation conflict', 409, 'INVITATION_CONFLICT');
+      if (!('email' in result))
+         throw new AppError('Invitation conflict', 409, 'INVITATION_CONFLICT');
+      return this.mapInvitation(result);
    }
 }
 

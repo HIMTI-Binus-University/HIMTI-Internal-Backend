@@ -8,6 +8,8 @@ import type {
    internalRegistrationListSchema,
    registrationDecisionSchema,
    replaceRegistrationResponsesSchema,
+   createOrderInvitationSchema,
+   resendOrderInvitationSchema,
 } from './eventRegistrationSchema.js';
 
 export type SessionUser = typeof auth.$Infer.Session.user;
@@ -19,6 +21,12 @@ export type CreateRegistrationRequest = z.infer<
 >;
 export type ReplaceResponsesRequest = z.infer<
    typeof replaceRegistrationResponsesSchema
+>;
+export type CreateOrderInvitationRequest = z.infer<
+   typeof createOrderInvitationSchema
+>;
+export type ResendOrderInvitationRequest = z.infer<
+   typeof resendOrderInvitationSchema
 >;
 export type InternalRegistrationListQuery = z.infer<
    typeof internalRegistrationListSchema

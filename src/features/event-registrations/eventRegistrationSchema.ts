@@ -53,9 +53,41 @@ export const registrationContextQuerySchema = z.object({
    inviteToken: z.string().trim().min(1).max(512).optional(),
 });
 
-export const createEventRegistrationSchema = z.object({
-   packageId: z.string().min(1).optional(),
-   inviteToken: z.string().trim().min(1).max(512).optional(),
+const normalizedEmailSchema = z
+   .string()
+   .trim()
+   .email()
+   .max(255)
+   .transform((email) => email.toLowerCase());
+
+export const createEventRegistrationSchema = z
+   .object({
+      packageId: z.string().min(1).optional(),
+      inviteToken: z.string().trim().min(1).max(512).optional(),
+      invitationEmails: z.array(normalizedEmailSchema).max(999).optional(),
+   })
+   .superRefine((value, context) => {
+      const emails = value.invitationEmails ?? [];
+      if (new Set(emails).size !== emails.length)
+         context.addIssue({
+            code: 'custom',
+            path: ['invitationEmails'],
+            message: 'Invitation emails must be unique',
+         });
+   });
+
+export const invitationTokenSchema = z.object({
+   token: z.string().trim().min(32).max(512),
+});
+export const createOrderInvitationSchema = z.object({
+   email: normalizedEmailSchema,
+   position: z.number().int().positive().max(1000),
+});
+export const invitationIdParamsSchema = registrationIdParamsSchema.extend({
+   invitationId: z.string().trim().min(1).max(100),
+});
+export const resendOrderInvitationSchema = z.object({
+   email: normalizedEmailSchema.optional(),
 });
 
 const boundedIdSchema = z.string().trim().min(1).max(100);
@@ -181,6 +213,7 @@ export const packageSnapshotSchema = z.object({
    seatCount: z.number().int(),
    currency: z.string(),
    priceMinor: z.string(),
+   revision: z.number().int().optional(),
 });
 
 export const registrationOrderStatusSchema = z.enum([
@@ -245,6 +278,20 @@ export const internalRegistrationSummarySchema = z.object({
    responseStatuses: z.array(internalResponseStatusSchema),
    paymentStatus: z.string().nullable(),
    seatCount: z.number().int(),
+   package: packageSnapshotSchema,
+   rosterSummary: z.object({
+      activeMemberCount: z.number().int(),
+      pendingSlotCount: z.number().int(),
+      pendingInvitationCount: z.number().int(),
+   }),
+   readiness: z.object({
+      claimedSeatCount: z.number().int(),
+      requiredResponseCount: z.number().int(),
+      completedResponseCount: z.number().int(),
+      responsesComplete: z.boolean(),
+      submittable: z.boolean(),
+      blockerCodes: z.array(z.string()),
+   }),
    participant: z.object({
       id: z.string(),
       name: z.string(),
@@ -305,6 +352,8 @@ export const internalCapacitySchema = z.object({
    name: z.string(),
    maxParticipants: z.number().int().nullable(),
    occupied: z.number().int(),
+   liveHeldSeats: z.number().int(),
+   reserved: z.number().int(),
    remaining: z.number().int().nullable(),
    byStatus: z.record(z.string(), z.number().int()),
 });
@@ -361,6 +410,8 @@ export const registrationSubmissionSchema = z.object({
       'SUPERSEDED',
    ]),
    revision: z.number().int(),
+   audience: z.string(),
+   orderMemberId: z.string().nullable(),
    answers: z.array(savedAnswerSchema),
 });
 
@@ -385,6 +436,46 @@ export const registrationDetailSchema = registrationSummarySchema.extend({
    correctionDeadlineAt: z.string().datetime().nullable(),
    forms: z.array(registrationFormDefinitionSchema),
    submissions: z.array(registrationSubmissionSchema),
+   viewer: z.object({
+      role: z.enum(['BUYER', 'MEMBER']),
+      capabilities: z.array(z.string()),
+   }),
+   memberDeadlineAt: z.string().datetime().nullable(),
+   roster: z.array(
+      z.object({
+         position: z.number().int(),
+         status: z.string(),
+         isBuyer: z.boolean(),
+         isSelf: z.boolean(),
+         name: z.string().nullable(),
+         email: z.string().email().nullable(),
+         invitationId: z.string().nullable(),
+      }),
+   ),
+   readiness: z.object({
+      seatCount: z.number().int(),
+      claimedSeatCount: z.number().int(),
+      activeMemberCount: z.number().int(),
+      pendingSlotCount: z.number().int(),
+      readyMemberCount: z.number().int(),
+      requiredResponseCount: z.number().int(),
+      completedResponseCount: z.number().int(),
+      responsesComplete: z.boolean(),
+      submittable: z.boolean(),
+      blockerCodes: z.array(z.string()),
+      complete: z.boolean(),
+   }),
+   createdInvitations: z
+      .array(
+         z.object({
+            registrationId: z.string(),
+            position: z.number().int(),
+            email: z.string().email(),
+            token: z.string(),
+            invitationPath: z.string(),
+         }),
+      )
+      .optional(),
 });
 
 export const registrationContextSchema = z.object({
@@ -399,8 +490,37 @@ export const registrationContextSchema = z.object({
    code: z.string(),
    destinationUrl: z.string().nullable(),
    package: packageSnapshotSchema.nullable(),
+   packages: z.array(packageSnapshotSchema),
    registrationId: z.string().nullable(),
    forms: z.array(registrationFormDefinitionSchema),
+});
+
+export const invitationMutationSchema = z.object({
+   id: z.string(),
+   registrationId: z.string(),
+   position: z.number().int(),
+   email: z.string().email(),
+   status: z.string(),
+   expiresAt: z.string().datetime(),
+   token: z.string().optional(),
+   invitationPath: z.string().optional(),
+});
+
+export const invitationContextSchema = z.object({
+   invitation: invitationMutationSchema.omit({ token: true }),
+   order: z.object({
+      id: z.string(),
+      orderNumber: z.string(),
+      status: registrationOrderStatusSchema,
+      event: z.object({ id: z.string(), name: z.string() }),
+      subEvent: z.object({
+         id: z.string(),
+         name: z.string(),
+         date: z.string().datetime(),
+      }),
+      package: packageSnapshotSchema,
+      buyer: z.object({ name: z.string() }),
+   }),
 });
 
 export const successSchema = <T extends z.ZodType>(data: T) =>

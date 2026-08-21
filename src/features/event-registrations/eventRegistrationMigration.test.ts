@@ -48,6 +48,15 @@ const assignmentSnapshotSql = readFileSync(
    ),
    'utf8',
 );
+const fixedBundleSql = readFileSync(
+   fileURLToPath(
+      new URL(
+         '../../../prisma/migrations/20260822010000_add_fixed_bundle_registration/migration.sql',
+         import.meta.url,
+      ),
+   ),
+   'utf8',
+);
 
 describe('free registration MVP migration', () => {
    it('restores drifted indexes and adds an active-hold guard', () => {
@@ -136,6 +145,17 @@ describe('free registration MVP migration', () => {
       assert.match(
          assignmentSnapshotSql,
          /CASE WHEN applicable\."audience" = 'BUYER' THEN NULL ELSE applicable\.buyer_member_id END/,
+      );
+   });
+
+   it('additively binds invitation slots and protects logical response targets', () => {
+      assert.match(fixedBundleSql, /ADD COLUMN "revision"/);
+      assert.match(fixedBundleSql, /"registrationOrderId"/);
+      assert.match(fixedBundleSql, /buyer_logical_target_key/);
+      assert.match(fixedBundleSql, /member_logical_target_key/);
+      assert.doesNotMatch(
+         fixedBundleSql,
+         /DROP\s+(?:TABLE|COLUMN|TYPE|INDEX|CONSTRAINT)/i,
       );
    });
 });

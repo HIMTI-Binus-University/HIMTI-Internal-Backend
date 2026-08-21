@@ -73,34 +73,47 @@ class EventPaymentRepository {
                paymentProofMaxBytes: values.maxProofBytes,
             },
          });
-         await tx.ticketPackage.updateMany({
-            where: { subEventId, code: 'FREE-INDIVIDUAL' },
-            data: { status: 'INACTIVE' },
-         });
-         const packageRow = await tx.ticketPackage.upsert({
+         const existingDefault = await tx.ticketPackage.findUnique({
             where: {
                subEventId_code: { subEventId, code: 'DEFAULT-INDIVIDUAL' },
             },
-            create: {
-               id: `default-individual-${subEventId}`,
-               eventId: scope.eventId,
-               subEventId,
-               code: 'DEFAULT-INDIVIDUAL',
-               name: 'Individual registration',
-               description: 'Default one-seat registration package',
-               status: 'ACTIVE',
-               seatCount: 1,
-               currency: values.currency,
-               priceMinor: BigInt(values.amountMinor),
-            },
-            update: {
-               status: 'ACTIVE',
-               seatCount: 1,
-               currency: values.currency,
-               priceMinor: BigInt(values.amountMinor),
+            select: {
+               id: true,
+               seatCount: true,
+               _count: { select: { orders: true } },
             },
          });
-         return { subEvent, packageRow };
+         let packageUpdated = false;
+         if (!existingDefault) {
+            await tx.ticketPackage.create({
+               data: {
+                  id: `default-individual-${subEventId}`,
+                  eventId: scope.eventId,
+                  subEventId,
+                  code: 'DEFAULT-INDIVIDUAL',
+                  name: 'Individual registration',
+                  description: 'Default one-seat registration package',
+                  status: 'ACTIVE',
+                  seatCount: 1,
+                  currency: values.currency,
+                  priceMinor: BigInt(values.amountMinor),
+               },
+            });
+            packageUpdated = true;
+         } else if (
+            existingDefault.seatCount === 1 &&
+            existingDefault._count.orders === 0
+         ) {
+            await tx.ticketPackage.update({
+               where: { id: existingDefault.id },
+               data: {
+                  currency: values.currency,
+                  priceMinor: BigInt(values.amountMinor),
+               },
+            });
+            packageUpdated = true;
+         }
+         return { subEvent, packageUpdated };
       });
    }
 

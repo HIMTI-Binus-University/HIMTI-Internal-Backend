@@ -4,6 +4,7 @@ import { registrationFormV1Routes } from '@/features/registration-forms/registra
 import eventRegistrationRoutes from '@/features/event-registrations/eventRegistrationRoutes.js';
 import eventPaymentRoutes from '@/features/event-payments/eventPaymentRoutes.js';
 import postRegistrationFormRoutes from '@/features/post-registration-forms/postRegistrationFormRoutes.js';
+import eventPackageRoutes from '@/features/event-packages/eventPackageRoutes.js';
 
 const router: Router = express.Router();
 
@@ -18,5 +19,6 @@ router.use('/registration-form', registrationFormV1Routes);
 router.use('/', eventRegistrationRoutes);
 router.use('/', eventPaymentRoutes);
 router.use('/', postRegistrationFormRoutes);
+router.use('/', eventPackageRoutes);
 
 export default router;

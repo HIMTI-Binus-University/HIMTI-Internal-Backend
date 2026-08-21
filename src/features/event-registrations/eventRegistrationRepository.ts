@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
 import type {
@@ -18,6 +18,14 @@ import {
    validateFreshSubmission,
 } from './eventRegistrationTypes.js';
 import { assignPublishedPostRegistrationForms } from '@/features/post-registration-forms/postRegistrationFormRepository.js';
+
+const createInvitationToken = () => {
+   const token = randomBytes(32).toString('base64url');
+   return {
+      token,
+      tokenHash: createHash('sha256').update(token).digest('hex'),
+   };
+};
 
 const publicSubEventSelect = {
    id: true,
@@ -41,6 +49,7 @@ const packageSelect = {
    seatCount: true,
    currency: true,
    priceMinor: true,
+   revision: true,
    status: true,
    salesStartAt: true,
    salesEndAt: true,
@@ -69,7 +78,24 @@ const detailInclude = {
    subEvent: { select: { id: true, name: true, date: true } },
    ticketPackage: { select: packageSelect },
    members: {
-      select: { id: true, userId: true, isBuyer: true, status: true },
+      select: {
+         id: true,
+         userId: true,
+         isBuyer: true,
+         status: true,
+         position: true,
+         user: { select: { name: true, email: true } },
+      },
+   },
+   invitations: {
+      orderBy: { slotPosition: 'asc' as const },
+      select: {
+         id: true,
+         email: true,
+         status: true,
+         slotPosition: true,
+         expiresAt: true,
+      },
    },
    submissions: {
       orderBy: { createdAt: 'asc' as const },
@@ -170,6 +196,63 @@ export const buildInternalRegistrationWhere = (
 });
 
 class EventRegistrationRepository {
+   private async expireAssemblyOrders(
+      tx: Prisma.TransactionClient,
+      filter: Prisma.RegistrationOrderWhereInput,
+   ) {
+      const now = new Date();
+      const expired = await tx.registrationOrder.findMany({
+         where: {
+            ...filter,
+            status: { in: ['DRAFT', 'AWAITING_MEMBERS', 'HOLDING'] },
+            memberDeadlineAt: { lte: now },
+         },
+         select: { id: true, status: true },
+      });
+      if (!expired.length) return;
+      const ids = expired.map((item) => item.id);
+      await tx.registrationCapacityHold.updateMany({
+         where: { registrationOrderId: { in: ids }, status: 'ACTIVE' },
+         data: { status: 'EXPIRED', releasedAt: now },
+      });
+      await tx.registrationOrderMember.updateMany({
+         where: {
+            registrationOrderId: { in: ids },
+            status: { not: 'CANCELLED' },
+         },
+         data: { status: 'CANCELLED' },
+      });
+      await tx.registrationInvitation.updateMany({
+         where: { registrationOrderId: { in: ids }, status: 'PENDING' },
+         data: { status: 'EXPIRED' },
+      });
+      await tx.registrationOrder.updateMany({
+         where: { id: { in: ids } },
+         data: { status: 'EXPIRED', revision: { increment: 1 } },
+      });
+      await tx.registrationStatusHistory.createMany({
+         data: expired.map((item) => ({
+            registrationOrderId: item.id,
+            entityType: 'ORDER',
+            entityId: item.id,
+            fromStatus: item.status,
+            toStatus: 'EXPIRED',
+            reason: 'Member assembly deadline expired',
+         })),
+      });
+   }
+
+   async expireForRegistration(registrationId: string) {
+      return prisma.$transaction((tx) =>
+         this.expireAssemblyOrders(tx, { id: registrationId }),
+      );
+   }
+
+   async expireForSubEvent(subEventId: string) {
+      return prisma.$transaction((tx) =>
+         this.expireAssemblyOrders(tx, { subEventId }),
+      );
+   }
    async getSubEventScope(subEventId: string) {
       return prisma.subevent.findUnique({
          where: { id: subEventId },
@@ -214,6 +297,7 @@ class EventRegistrationRepository {
       subEventId: string,
       params: InternalRegistrationListQuery,
    ) {
+      await this.expireForSubEvent(subEventId);
       const where = buildInternalRegistrationWhere(subEventId, params);
       const [field, direction] = params.sort.split(':') as [
          'submittedAt' | 'createdAt',
@@ -245,7 +329,33 @@ class EventRegistrationRepository {
                },
                subEvent: { select: { id: true, name: true, date: true } },
                payment: { select: { status: true } },
-               submissions: { select: { status: true } },
+               submissions: {
+                  select: {
+                     status: true,
+                     assignmentRequired: true,
+                     form: {
+                        select: {
+                           questions: {
+                              where: { status: 'ACTIVE' },
+                              select: {
+                                 id: true,
+                                 fieldType: true,
+                                 isRequired: true,
+                                 validation: true,
+                                 options: {
+                                    where: { isActive: true },
+                                    select: { id: true },
+                                 },
+                              },
+                           },
+                        },
+                     },
+                     answers: { include: { selectedOptions: true } },
+                  },
+               },
+               ticketPackage: { select: packageSelect },
+               members: { select: { status: true } },
+               invitations: { select: { status: true } },
             },
          }),
          prisma.registrationOrder.count({ where }),
@@ -254,6 +364,7 @@ class EventRegistrationRepository {
    }
 
    async capacitySummary(subEventId: string) {
+      await this.expireForSubEvent(subEventId);
       return prisma.subevent.findUnique({
          where: { id: subEventId },
          select: {
@@ -264,11 +375,22 @@ class EventRegistrationRepository {
                where: { status: { in: [...capacityConsumingStatuses] } },
                select: { seatCount: true, status: true },
             },
+            capacityHolds: {
+               where: {
+                  status: 'ACTIVE',
+                  expiresAt: { gt: new Date() },
+                  order: {
+                     status: { notIn: [...capacityConsumingStatuses] },
+                  },
+               },
+               select: { quantity: true },
+            },
          },
       });
    }
 
    async findInternal(registrationId: string) {
+      await this.expireForRegistration(registrationId);
       return prisma.registrationOrder.findFirst({
          where: { id: registrationId },
          include: internalDetailInclude,
@@ -386,6 +508,13 @@ class EventRegistrationRepository {
                      data: { status: 'NEEDS_CORRECTION', lockedAt: null },
                   });
                } else if (action !== 'APPROVED') {
+                  await tx.registrationInvitation.updateMany({
+                     where: {
+                        registrationOrderId: item.registrationId,
+                        status: 'PENDING',
+                     },
+                     data: { status: 'REVOKED' },
+                  });
                   await tx.registrationCapacityHold.updateMany({
                      where: {
                         registrationOrderId: item.registrationId,
@@ -485,6 +614,7 @@ class EventRegistrationRepository {
    }
 
    async getContextSource(subEventId: string, userId?: string) {
+      await this.expireForSubEvent(subEventId);
       return prisma.subevent.findUnique({
          where: { id: subEventId },
          include: {
@@ -584,6 +714,8 @@ class EventRegistrationRepository {
    ) {
       return prisma.$transaction(
          async (tx) => {
+            await tx.$queryRaw`SELECT "id" FROM "subevents" WHERE "id" = ${subEventId} FOR UPDATE`;
+            await this.expireAssemblyOrders(tx, { subEventId });
             const subEvent = await tx.subevent.findUnique({
                where: { id: subEventId },
                include: { event: { select: { status: true } } },
@@ -627,12 +759,30 @@ class EventRegistrationRepository {
                } as const;
 
             const existing = await tx.registrationOrder.findFirst({
-               where: { subEventId, buyerUserId: userId, status: 'DRAFT' },
+               where: {
+                  subEventId,
+                  buyerUserId: userId,
+                  OR: [
+                     {
+                        status: {
+                           in: ['DRAFT', 'AWAITING_MEMBERS', 'HOLDING'],
+                        },
+                     },
+                     {
+                        status: 'NEEDS_CORRECTION',
+                        OR: [
+                           { correctionDeadlineAt: null },
+                           { correctionDeadlineAt: { gt: new Date() } },
+                        ],
+                     },
+                  ],
+               },
                include: {
                   ...detailInclude,
                   members: {
                      where: { userId, isBuyer: true },
                      include: {
+                        user: { select: { name: true, email: true } },
                         claimedInvitation: {
                            select: {
                               tokenHash: true,
@@ -787,7 +937,7 @@ class EventRegistrationRepository {
             }
 
             const now = new Date();
-            const selectedPackage = await tx.ticketPackage.findFirst({
+            const eligiblePackages = await tx.ticketPackage.findMany({
                where: {
                   subEventId,
                   ...(payload.packageId && { id: payload.packageId }),
@@ -801,11 +951,10 @@ class EventRegistrationRepository {
                },
                orderBy: { createdAt: 'asc' },
             });
+            if (!payload.packageId && eligiblePackages.length > 1)
+               return { packageSelectionRequired: true } as const;
+            const selectedPackage = eligiblePackages[0];
             if (!selectedPackage) return null;
-            if (selectedPackage.seatCount !== 1)
-               return {
-                  unsupportedCode: 'UNSUPPORTED_BUNDLE_PACKAGE',
-               } as const;
 
             const assignments = await tx.registrationFormAssignment.findMany({
                where: {
@@ -883,6 +1032,48 @@ class EventRegistrationRepository {
                   return { eligibilityCode: 'INVITATION_INVALID' } as const;
                invitationId = invitation.id;
             }
+            const memberDeadlineAt = new Date(
+               now.getTime() + subEvent.memberDeadlineHours * 60 * 60 * 1000,
+            );
+            const invitationEmails = payload.invitationEmails ?? [];
+            if (invitationEmails.length > selectedPackage.seatCount - 1)
+               return { invitationCountMismatch: true } as const;
+            if (
+               new Set(invitationEmails).size !== invitationEmails.length ||
+               invitationEmails.includes(identity.email.toLowerCase())
+            )
+               return { invitationEmailConflict: true } as const;
+            const consumed = await tx.registrationOrder.aggregate({
+               where: {
+                  subEventId,
+                  status: { in: [...capacityConsumingStatuses] },
+               },
+               _sum: { seatCount: true },
+            });
+            const liveHolds = await tx.registrationCapacityHold.aggregate({
+               where: {
+                  subEventId,
+                  status: 'ACTIVE',
+                  expiresAt: { gt: now },
+                  order: {
+                     status: { notIn: [...capacityConsumingStatuses] },
+                  },
+               },
+               _sum: { quantity: true },
+            });
+            if (
+               subEvent.maxParticipants !== null &&
+               (consumed._sum.seatCount ?? 0) +
+                  (liveHolds._sum.quantity ?? 0) +
+                  selectedPackage.seatCount >
+                  subEvent.maxParticipants
+            )
+               return { capacityExceeded: true } as const;
+            const initialInvitations = invitationEmails.map((email, index) => ({
+               email,
+               position: index + 1,
+               ...createInvitationToken(),
+            }));
             const created = await tx.registrationOrder.create({
                data: {
                   orderNumber: `REG-${Date.now()}-${randomUUID().slice(0, 8)}`,
@@ -894,6 +1085,11 @@ class EventRegistrationRepository {
                   currency: selectedPackage.currency,
                   subtotalMinor: selectedPackage.priceMinor,
                   totalMinor: selectedPackage.priceMinor,
+                  status:
+                     selectedPackage.seatCount === 1
+                        ? 'HOLDING'
+                        : 'AWAITING_MEMBERS',
+                  memberDeadlineAt,
                   members: {
                      create: {
                         id: memberId,
@@ -914,6 +1110,27 @@ class EventRegistrationRepository {
                         assignmentOrderIndex: assignment.orderIndex,
                         orderMemberId:
                            assignment.audience === 'BUYER' ? null : memberId,
+                     })),
+                  },
+                  capacityHolds: {
+                     create: {
+                        id: `assembly-${randomUUID()}`,
+                        subEventId,
+                        quantity: selectedPackage.seatCount,
+                        status: 'ACTIVE',
+                        expiresAt: memberDeadlineAt,
+                     },
+                  },
+                  invitations: {
+                     create: initialInvitations.map((invitation) => ({
+                        eventId: subEvent.eventId,
+                        subEventId,
+                        email: invitation.email,
+                        tokenHash: invitation.tokenHash,
+                        status: 'PENDING',
+                        sentBy: userId,
+                        slotPosition: invitation.position,
+                        expiresAt: memberDeadlineAt,
                      })),
                   },
                },
@@ -940,13 +1157,18 @@ class EventRegistrationRepository {
                      'Invitation claim conflict',
                   );
             }
-            return created;
+            return { created, initialInvitations } as const;
          },
          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
    }
 
    async listOwned(userId: string, params: RegistrationPagination) {
+      await prisma.$transaction((tx) =>
+         this.expireAssemblyOrders(tx, {
+            OR: [{ buyerUserId: userId }, { members: { some: { userId } } }],
+         }),
+      );
       const where: Prisma.RegistrationOrderWhereInput = {
          OR: [{ buyerUserId: userId }, { members: { some: { userId } } }],
       };
@@ -974,6 +1196,7 @@ class EventRegistrationRepository {
    }
 
    async findOwned(registrationId: string, userId: string) {
+      await this.expireForRegistration(registrationId);
       return prisma.registrationOrder.findFirst({
          where: {
             id: registrationId,
@@ -990,12 +1213,20 @@ class EventRegistrationRepository {
    ) {
       return prisma.$transaction(
          async (tx) => {
+            await this.expireAssemblyOrders(tx, { id: registrationId });
             const scope = await tx.registrationOrder.findFirst({
-               where: { id: registrationId, buyerUserId: userId },
+               where: {
+                  id: registrationId,
+                  OR: [
+                     { buyerUserId: userId },
+                     { members: { some: { userId } } },
+                  ],
+               },
                select: { subEventId: true },
             });
             if (!scope) return null;
             await tx.$queryRaw`SELECT "id" FROM "subevents" WHERE "id" = ${scope.subEventId} FOR UPDATE`;
+            await this.expireAssemblyOrders(tx, { id: registrationId });
             const order = await tx.registrationOrder.findFirst({
                where: {
                   id: registrationId,
@@ -1003,7 +1234,14 @@ class EventRegistrationRepository {
                      { buyerUserId: userId },
                      { members: { some: { userId } } },
                   ],
-                  status: { in: ['DRAFT', 'NEEDS_CORRECTION'] },
+                  status: {
+                     in: [
+                        'DRAFT',
+                        'AWAITING_MEMBERS',
+                        'HOLDING',
+                        'NEEDS_CORRECTION',
+                     ],
+                  },
                },
                select: {
                   id: true,
@@ -1013,6 +1251,9 @@ class EventRegistrationRepository {
                   members: {
                      where: { userId, status: { not: 'CANCELLED' } },
                      select: { id: true, isBuyer: true },
+                  },
+                  invitations: {
+                     select: { id: true, status: true, expiresAt: true },
                   },
                },
             });
@@ -1191,6 +1432,7 @@ class EventRegistrationRepository {
             });
             if (!scope) return null;
             await tx.$queryRaw`SELECT "id" FROM "subevents" WHERE "id" = ${scope.subEventId} FOR UPDATE`;
+            await this.expireAssemblyOrders(tx, { id: registrationId });
 
             const replay = await tx.registrationOrder.findFirst({
                where: {
@@ -1262,10 +1504,20 @@ class EventRegistrationRepository {
                         answers: { include: { selectedOptions: true } },
                      },
                   },
+                  invitations: {
+                     select: { id: true, status: true, expiresAt: true },
+                  },
                },
             });
             if (!order) return null;
-            if (!['DRAFT', 'NEEDS_CORRECTION'].includes(order.status))
+            if (
+               ![
+                  'DRAFT',
+                  'AWAITING_MEMBERS',
+                  'HOLDING',
+                  'NEEDS_CORRECTION',
+               ].includes(order.status)
+            )
                return { lifecycleConflict: true } as const;
             const isCorrection = order.status === 'NEEDS_CORRECTION';
 
@@ -1288,8 +1540,16 @@ class EventRegistrationRepository {
                      eligibilityNow >= order.subEvent.registrationClosesAt))
             )
                return { registrationClosed: true } as const;
-            if (order.ticketPackage.seatCount !== 1)
-               return { bundlePackage: true } as const;
+            if (
+               order.members.filter((member) => member.status !== 'CANCELLED')
+                  .length !== order.seatCount ||
+               order.invitations.some(
+                  (invitation) => invitation.status === 'PENDING',
+               ) ||
+               (order.memberDeadlineAt &&
+                  eligibilityNow >= order.memberDeadlineAt)
+            )
+               return { membersIncomplete: true } as const;
             if (
                !isCorrection &&
                (order.ticketPackage.status !== 'ACTIVE' ||
@@ -1431,18 +1691,9 @@ class EventRegistrationRepository {
                        order.subEvent.paymentDeadlineHours * 60 * 60 * 1000,
                  )
                : null;
-            await tx.registrationCapacityHold.upsert({
-               where: { id: `submit-${order.id}` },
-               create: {
-                  id: `submit-${order.id}`,
-                  registrationOrderId: order.id,
-                  subEventId: order.subEventId,
-                  quantity: order.seatCount,
-                  status: isPaid ? 'ACTIVE' : 'CONSUMED',
-                  expiresAt: paymentDeadlineAt ?? now,
-                  consumedAt: isPaid ? null : now,
-               },
-               update: {
+            await tx.registrationCapacityHold.updateMany({
+               where: { registrationOrderId: order.id, status: 'ACTIVE' },
+               data: {
                   status: isPaid ? 'ACTIVE' : 'CONSUMED',
                   expiresAt: paymentDeadlineAt ?? now,
                   consumedAt: isPaid ? null : now,
@@ -1557,6 +1808,13 @@ class EventRegistrationRepository {
                where: { registrationOrderId: order.id },
                data: { status: 'CANCELLED' },
             });
+            await tx.registrationInvitation.updateMany({
+               where: {
+                  registrationOrderId: order.id,
+                  status: 'PENDING',
+               },
+               data: { status: 'REVOKED' },
+            });
             await tx.registrationTicket.updateMany({
                where: {
                   orderMember: { registrationOrderId: order.id },
@@ -1571,10 +1829,13 @@ class EventRegistrationRepository {
                },
                data: { status: 'CANCELLED', revision: { increment: 1 } },
             });
-            if (order.status === 'DRAFT') {
+            if (
+               ['DRAFT', 'AWAITING_MEMBERS', 'HOLDING'].includes(order.status)
+            ) {
                await tx.registrationInvitation.updateMany({
                   where: {
                      orderMember: { registrationOrderId: order.id },
+                     registrationOrderId: null,
                      status: 'ACCEPTED',
                      claimedBy: userId,
                   },
@@ -1605,6 +1866,357 @@ class EventRegistrationRepository {
                   cancelledAt: now,
                   cancellationReason: reason,
                },
+               include: detailInclude,
+            });
+         },
+         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+   }
+
+   async invitationContext(tokenHash: string, userId: string) {
+      return prisma.$transaction(async (tx) => {
+         const invitation = await tx.registrationInvitation.findUnique({
+            where: { tokenHash },
+            include: {
+               order: {
+                  include: {
+                     event: { select: { id: true, name: true } },
+                     subEvent: { select: { id: true, name: true, date: true } },
+                     ticketPackage: { select: packageSelect },
+                     buyer: { select: { name: true } },
+                  },
+               },
+            },
+         });
+         if (invitation?.registrationOrderId)
+            await this.expireAssemblyOrders(tx, {
+               id: invitation.registrationOrderId,
+            });
+         const refreshed = invitation
+            ? await tx.registrationInvitation.findUnique({
+                 where: { id: invitation.id },
+                 include: {
+                    order: {
+                       include: {
+                          event: { select: { id: true, name: true } },
+                          subEvent: {
+                             select: { id: true, name: true, date: true },
+                          },
+                          ticketPackage: { select: packageSelect },
+                          buyer: { select: { name: true } },
+                       },
+                    },
+                 },
+              })
+            : null;
+         if (!refreshed?.order) return null;
+         const user = await tx.user.findUnique({
+            where: { id: userId },
+            select: { email: true, emailVerified: true, status: true },
+         });
+         if (
+            !user ||
+            user.status !== 'ACTIVE' ||
+            !user.emailVerified ||
+            user.email.toLowerCase() !== refreshed.email.toLowerCase()
+         )
+            return { eligibilityCode: 'INVITATION_EMAIL_MISMATCH' } as const;
+         return refreshed;
+      });
+   }
+
+   async createInvitation(
+      registrationOrderId: string,
+      buyerUserId: string,
+      email: string,
+      position: number,
+   ) {
+      const credentials = createInvitationToken();
+      const result = await prisma.$transaction(
+         async (tx) => {
+            await this.expireAssemblyOrders(tx, { id: registrationOrderId });
+            const scope = await tx.registrationOrder.findFirst({
+               where: { id: registrationOrderId, buyerUserId },
+               select: { subEventId: true },
+            });
+            if (!scope) return null;
+            await tx.$queryRaw`SELECT "id" FROM "subevents" WHERE "id" = ${scope.subEventId} FOR UPDATE`;
+            await this.expireAssemblyOrders(tx, { id: registrationOrderId });
+            const order = await tx.registrationOrder.findFirst({
+               where: {
+                  id: registrationOrderId,
+                  buyerUserId,
+                  status: { in: ['DRAFT', 'AWAITING_MEMBERS', 'HOLDING'] },
+                  memberDeadlineAt: { gt: new Date() },
+               },
+               include: { members: true, invitations: true },
+            });
+            if (!order) return null;
+            const normalizedEmail = email.trim().toLowerCase();
+            const buyer = await tx.user.findUniqueOrThrow({
+               where: { id: buyerUserId },
+               select: { email: true },
+            });
+            if (normalizedEmail === buyer.email.toLowerCase())
+               return { emailConflict: true } as const;
+            if (position <= 0 || position >= order.seatCount)
+               return { invalidPosition: true } as const;
+            if (
+               order.members.some(
+                  (member) =>
+                     member.position === position &&
+                     member.status !== 'CANCELLED',
+               ) ||
+               order.invitations.some(
+                  (invitation) =>
+                     ['PENDING', 'ACCEPTED'].includes(invitation.status) &&
+                     (invitation.slotPosition === position ||
+                        invitation.email.toLowerCase() === normalizedEmail),
+               )
+            )
+               return { occupied: true } as const;
+            return tx.registrationInvitation.create({
+               data: {
+                  eventId: order.eventId,
+                  subEventId: order.subEventId,
+                  registrationOrderId,
+                  slotPosition: position,
+                  email: normalizedEmail,
+                  tokenHash: credentials.tokenHash,
+                  status: 'PENDING',
+                  sentBy: buyerUserId,
+                  expiresAt: order.memberDeadlineAt!,
+               },
+            });
+         },
+         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+      return { result, token: credentials.token };
+   }
+
+   async resendInvitation(
+      registrationOrderId: string,
+      invitationId: string,
+      buyerUserId: string,
+      email?: string,
+   ) {
+      const credentials = createInvitationToken();
+      return prisma.$transaction(
+         async (tx) => {
+            const scope = await tx.registrationOrder.findFirst({
+               where: { id: registrationOrderId, buyerUserId },
+               select: { subEventId: true },
+            });
+            if (!scope) return null;
+            await tx.$queryRaw`SELECT "id" FROM "subevents" WHERE "id" = ${scope.subEventId} FOR UPDATE`;
+            await this.expireAssemblyOrders(tx, { id: registrationOrderId });
+            const current = await tx.registrationInvitation.findFirst({
+               where: {
+                  id: invitationId,
+                  registrationOrderId,
+                  order: {
+                     buyerUserId,
+                     status: { in: ['DRAFT', 'AWAITING_MEMBERS', 'HOLDING'] },
+                     memberDeadlineAt: { gt: new Date() },
+                  },
+                  status: { in: ['PENDING', 'DECLINED', 'EXPIRED', 'REVOKED'] },
+               },
+               include: {
+                  order: { select: { buyer: { select: { email: true } } } },
+               },
+            });
+            if (!current?.order) return null;
+            const normalizedEmail = (email ?? current.email)
+               .trim()
+               .toLowerCase();
+            if (normalizedEmail === current.order.buyer.email.toLowerCase())
+               return { emailConflict: true } as const;
+            const duplicate = await tx.registrationInvitation.count({
+               where: {
+                  registrationOrderId,
+                  id: { not: invitationId },
+                  email: { equals: normalizedEmail, mode: 'insensitive' },
+                  status: { in: ['PENDING', 'ACCEPTED'] },
+               },
+            });
+            if (duplicate) return { emailConflict: true } as const;
+            const changed = await tx.registrationInvitation.updateMany({
+               where: { id: invitationId, status: current.status },
+               data: {
+                  email: normalizedEmail,
+                  tokenHash: credentials.tokenHash,
+                  status: 'PENDING',
+                  claimedBy: null,
+                  orderMemberId: null,
+                  acceptedAt: null,
+               },
+            });
+            if (changed.count !== 1) return { conflict: true } as const;
+            return {
+               invitation: await tx.registrationInvitation.findUniqueOrThrow({
+                  where: { id: invitationId },
+               }),
+               token: credentials.token,
+            };
+         },
+         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+   }
+
+   async revokeInvitation(
+      registrationOrderId: string,
+      invitationId: string,
+      buyerUserId: string,
+   ) {
+      await this.expireForRegistration(registrationOrderId);
+      const changed = await prisma.registrationInvitation.updateMany({
+         where: {
+            id: invitationId,
+            registrationOrderId,
+            status: 'PENDING',
+            order: { buyerUserId },
+         },
+         data: { status: 'REVOKED' },
+      });
+      return changed.count === 1
+         ? prisma.registrationInvitation.findUnique({
+              where: { id: invitationId },
+           })
+         : null;
+   }
+
+   async decideInvitation(tokenHash: string, userId: string, accept: boolean) {
+      return prisma.$transaction(
+         async (tx) => {
+            const invitationScope = await tx.registrationInvitation.findUnique({
+               where: { tokenHash },
+               select: { registrationOrderId: true },
+            });
+            if (!invitationScope?.registrationOrderId) return null;
+            const orderScope = await tx.registrationOrder.findUnique({
+               where: { id: invitationScope.registrationOrderId },
+               select: { subEventId: true },
+            });
+            if (!orderScope) return null;
+            await tx.$queryRaw`SELECT "id" FROM "subevents" WHERE "id" = ${orderScope.subEventId} FOR UPDATE`;
+            await this.expireAssemblyOrders(tx, {
+               id: invitationScope.registrationOrderId,
+            });
+            const invitation = await tx.registrationInvitation.findUnique({
+               where: { tokenHash },
+               include: {
+                  order: {
+                     include: {
+                        members: true,
+                        event: { select: { status: true } },
+                        subEvent: true,
+                     },
+                  },
+               },
+            });
+            if (!invitation?.order || invitation.status !== 'PENDING')
+               return null;
+            const now = new Date();
+            const order = invitation.order;
+            if (
+               !['DRAFT', 'AWAITING_MEMBERS', 'HOLDING'].includes(
+                  order.status,
+               ) ||
+               !order.memberDeadlineAt ||
+               order.memberDeadlineAt <= now ||
+               invitation.expiresAt <= now ||
+               order.event.status !== 'PUBLISHED' ||
+               order.subEvent.status !== 'OPEN' ||
+               order.subEvent.registrationMode !== 'INTERNAL' ||
+               !order.subEvent.isRegistrationOpen ||
+               (order.subEvent.registrationOpensAt &&
+                  now < order.subEvent.registrationOpensAt) ||
+               (order.subEvent.registrationClosesAt &&
+                  now >= order.subEvent.registrationClosesAt)
+            )
+               return { conflict: true } as const;
+            const user = await tx.user.findUnique({
+               where: { id: userId },
+               select: { email: true, emailVerified: true, status: true },
+            });
+            if (
+               !user ||
+               user.status !== 'ACTIVE' ||
+               !user.emailVerified ||
+               user.email.toLowerCase() !== invitation.email.toLowerCase()
+            )
+               return { eligibilityCode: 'INVITATION_EMAIL_MISMATCH' } as const;
+            if (!accept) {
+               const changed = await tx.registrationInvitation.updateMany({
+                  where: { id: invitation.id, status: 'PENDING' },
+                  data: { status: 'DECLINED' },
+               });
+               if (changed.count !== 1) return { conflict: true } as const;
+               return tx.registrationInvitation.findUniqueOrThrow({
+                  where: { id: invitation.id },
+               });
+            }
+            const position = invitation.slotPosition!;
+            if (
+               order.members.some(
+                  (member) =>
+                     member.status !== 'CANCELLED' &&
+                     (member.userId === userId || member.position === position),
+               )
+            )
+               return { conflict: true } as const;
+            const member = await tx.registrationOrderMember.create({
+               data: {
+                  registrationOrderId: order.id,
+                  subEventId: invitation.subEventId,
+                  userId,
+                  position,
+                  status: 'READY',
+                  isBuyer: false,
+                  acceptedAt: now,
+                  readyAt: now,
+               },
+            });
+            const templates = await tx.registrationFormSubmission.findMany({
+               where: {
+                  registrationOrderId: order.id,
+                  assignmentAudience: {
+                     in: ['EACH_ATTENDEE', 'ALL_ORDER_MEMBERS'],
+                  },
+               },
+               distinct: ['registrationFormId', 'assignmentAudience'],
+            });
+            if (templates.length)
+               await tx.registrationFormSubmission.createMany({
+                  data: templates.map((template) => ({
+                     registrationFormId: template.registrationFormId,
+                     registrationOrderId: order.id,
+                     orderMemberId: member.id,
+                     assignmentAudience: template.assignmentAudience,
+                     assignmentRequired: template.assignmentRequired,
+                     assignmentOrderIndex: template.assignmentOrderIndex,
+                  })),
+               });
+            const claimed = await tx.registrationInvitation.updateMany({
+               where: { id: invitation.id, status: 'PENDING' },
+               data: {
+                  status: 'ACCEPTED',
+                  claimedBy: userId,
+                  orderMemberId: member.id,
+                  acceptedAt: now,
+               },
+            });
+            if (claimed.count !== 1) throw new ResponseRevisionConflict();
+            const activeCount =
+               order.members.filter((item) => item.status !== 'CANCELLED')
+                  .length + 1;
+            if (activeCount === order.seatCount)
+               await tx.registrationOrder.update({
+                  where: { id: order.id },
+                  data: { status: 'HOLDING', revision: { increment: 1 } },
+               });
+            return tx.registrationOrder.findUnique({
+               where: { id: order.id },
                include: detailInclude,
             });
          },

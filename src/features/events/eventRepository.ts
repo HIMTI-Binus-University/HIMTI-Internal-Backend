@@ -227,6 +227,15 @@ class EventRepository {
                },
                data: { status: 'CANCELLED' },
             });
+            await tx.registrationInvitation.updateMany({
+               where: {
+                  registrationOrderId: {
+                     in: activeOrders.map((order) => order.id),
+                  },
+                  status: 'PENDING',
+               },
+               data: { status: 'REVOKED' },
+            });
             await tx.registrationTicket.updateMany({
                where: {
                   subEventId: { in: subEventIds },
