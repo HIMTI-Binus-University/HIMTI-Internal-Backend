@@ -61,7 +61,9 @@ class SubEventService {
          user,
       );
 
-      return await subEventRepository.findDetailById(id);
+      const detail = await subEventRepository.findDetailById(id);
+      if (!detail) throw new AppError('Sub-event not found', 404);
+      return detail;
    }
 
    async createSubEvent(

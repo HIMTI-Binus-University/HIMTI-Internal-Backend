@@ -14,6 +14,8 @@ import { registerUrlShortenerDocs } from '@/features/url-shortener/urlDocs.js';
 import { registerUserDocs } from '@/features/users/userDocs.js';
 import { registerLinkWorkspaceDocs } from '@/features/link-workspaces/linkWorkspaceDocs.js';
 import { registerEventRegistrationDocs } from '@/features/event-registrations/eventRegistrationDocs.js';
+import { registerEventPaymentDocs } from '@/features/event-payments/eventPaymentDocs.js';
+import { registerPostRegistrationFormDocs } from '@/features/post-registration-forms/postRegistrationFormDocs.js';
 import {
    canonicalErrorResponseSchema,
    canonicalValidationErrorResponseSchema,
@@ -44,6 +46,8 @@ registerMembershipDocs(registry);
 registerSubEventDocs(registry);
 registerRegistrationFormDocs(registry);
 registerEventRegistrationDocs(registry);
+registerEventPaymentDocs(registry);
+registerPostRegistrationFormDocs(registry);
 
 export const generateOpenApiDocument = () => {
    const generator = new OpenApiGeneratorV3(registry.definitions);

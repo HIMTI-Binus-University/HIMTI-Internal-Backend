@@ -2,6 +2,7 @@ import { FormQuestion, FormQuestionOption, Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
 import { randomUUID } from 'node:crypto';
 import { AppError } from '@/utils/appError.js';
+import { assignPublishedPostRegistrationForms } from '@/features/post-registration-forms/postRegistrationFormRepository.js';
 
 export const getTemporarySectionOrderOffset = (
    maximumOrder: number | null,
@@ -108,7 +109,7 @@ class RegistrationFormRepository {
       metadata: {
          name: string;
          description?: string | null;
-         stage: 'REGISTRATION' | 'POST_SUBMISSION' | 'POST_APPROVAL';
+         stage: 'REGISTRATION' | 'POST_REGISTRATION';
       },
       sections: Array<{
          id?: string;
@@ -124,6 +125,15 @@ class RegistrationFormRepository {
             validation: Prisma.InputJsonValue;
             options: Array<{ id?: string; label: string; value: string }>;
          }>;
+      }>,
+      assignments: Array<{
+         ticketPackageId: string | null;
+         audience: Prisma.RegistrationFormAssignmentCreateManyInput['audience'];
+         isRequired: boolean;
+         blocksCheckIn: boolean;
+         orderIndex: number;
+         opensAt: Date | null;
+         closesAt: Date | null;
       }>,
    ) {
       return await prisma.$transaction(async (tx) => {
@@ -225,6 +235,15 @@ class RegistrationFormRepository {
          await tx.formQuestionOption.updateMany({
             where: { question: { registrationFormId: formId } },
             data: { isActive: false, updatedBy: userId },
+         });
+         await tx.registrationFormAssignment.deleteMany({
+            where: { registrationFormId: formId },
+         });
+         await tx.registrationFormAssignment.createMany({
+            data: assignments.map((assignment) => ({
+               registrationFormId: formId,
+               ...assignment,
+            })),
          });
 
          for (const [sectionIndex, section] of sections.entries()) {
@@ -408,6 +427,11 @@ class RegistrationFormRepository {
                      409,
                      'LIFECYCLE_CONFLICT',
                   );
+               if (status === 'PUBLISHED' && form.stage === 'POST_REGISTRATION')
+                  await assignPublishedPostRegistrationForms(tx, {
+                     subEventId: form.subEventId,
+                     formId: id,
+                  });
                return await tx.registrationForm.findUnique({
                   where: { id },
                   include: this.builderInclude,
@@ -499,17 +523,18 @@ class RegistrationFormRepository {
                                  },
                               })),
                         },
-                        assignments: {
-                           create: source.assignments.map((assignment) => ({
-                              ticketPackageId: assignment.ticketPackageId,
-                              audience: assignment.audience,
-                              isRequired: assignment.isRequired,
-                              orderIndex: assignment.orderIndex,
-                              opensAt: assignment.opensAt,
-                              closesAt: assignment.closesAt,
-                           })),
-                        },
                      })),
+               },
+               assignments: {
+                  create: source.assignments.map((assignment) => ({
+                     ticketPackageId: assignment.ticketPackageId,
+                     audience: assignment.audience,
+                     isRequired: assignment.isRequired,
+                     blocksCheckIn: assignment.blocksCheckIn,
+                     orderIndex: assignment.orderIndex,
+                     opensAt: assignment.opensAt,
+                     closesAt: assignment.closesAt,
+                  })),
                },
             },
             include: this.builderInclude,

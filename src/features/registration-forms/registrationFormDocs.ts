@@ -21,8 +21,7 @@ const tag = 'Registration forms';
 
 const registrationFormStageV1Schema = z.enum([
    'REGISTRATION',
-   'POST_SUBMISSION',
-   'POST_APPROVAL',
+   'POST_REGISTRATION',
 ]);
 const registrationFormStatusV1Schema = z.enum(['DRAFT', 'PUBLISHED', 'CLOSED']);
 const validationIssueV1Schema = z.object({
@@ -97,6 +96,21 @@ const builderFormV1Schema = z.object({
    updatedBy: z.string().nullable(),
    subEvent: z.object({ eventId: z.string() }),
    sections: z.array(builderSectionV1Schema),
+   assignments: z.array(
+      z.object({
+         id: z.string(),
+         registrationFormId: z.string(),
+         ticketPackageId: z.string().nullable(),
+         audience: z.enum(['BUYER', 'EACH_ATTENDEE', 'ALL_ORDER_MEMBERS']),
+         isRequired: z.boolean(),
+         blocksCheckIn: z.boolean(),
+         orderIndex: z.number().int().min(0),
+         opensAt: z.string().datetime().nullable(),
+         closesAt: z.string().datetime().nullable(),
+         createdAt: z.string().datetime(),
+         updatedAt: z.string().datetime().nullable(),
+      }),
+   ),
 });
 const publishedOptionV1Schema = builderOptionV1Schema.pick({
    id: true,

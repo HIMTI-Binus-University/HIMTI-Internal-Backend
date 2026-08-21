@@ -239,7 +239,7 @@ describe('registration form Phase 4 concurrency invariants', () => {
       assert.match(repositorySource, /assignmentCount === 0/);
       assert.match(
          repositorySource,
-         /assignments: \{[\s\S]*source\.assignments\.map/,
+         /sections: \{[\s\S]*\},\s*assignments: \{\s*create: source\.assignments\.map/,
       );
       assert.match(
          repositorySource,

@@ -246,6 +246,13 @@ class SubEventRepository {
                },
                data: { status: 'REVOKED', revokedAt: now },
             });
+            await tx.registrationPayment.updateMany({
+               where: {
+                  order: { subEventId: id },
+                  status: { in: ['UNPAID', 'PROOF_SUBMITTED', 'REJECTED'] },
+               },
+               data: { status: 'CANCELLED', revision: { increment: 1 } },
+            });
             for (const order of activeOrders) {
                await tx.registrationStatusHistory.create({
                   data: {

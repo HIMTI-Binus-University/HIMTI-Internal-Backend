@@ -339,6 +339,68 @@
          },
          "CreateRegistrationFormV1": {
             "properties": {
+               "assignments": {
+                  "default": [
+                     {
+                        "audience": "EACH_ATTENDEE",
+                        "blocksCheckIn": false,
+                        "closesAt": null,
+                        "isRequired": true,
+                        "opensAt": null,
+                        "orderIndex": 0,
+                        "ticketPackageId": null
+                     }
+                  ],
+                  "items": {
+                     "properties": {
+                        "audience": {
+                           "enum": [
+                              "BUYER",
+                              "EACH_ATTENDEE",
+                              "ALL_ORDER_MEMBERS"
+                           ],
+                           "type": "string"
+                        },
+                        "blocksCheckIn": {
+                           "default": false,
+                           "type": "boolean"
+                        },
+                        "closesAt": {
+                           "default": null,
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "isRequired": {
+                           "default": true,
+                           "type": "boolean"
+                        },
+                        "opensAt": {
+                           "default": null,
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "orderIndex": {
+                           "default": 0,
+                           "minimum": 0,
+                           "type": "integer"
+                        },
+                        "ticketPackageId": {
+                           "default": null,
+                           "minLength": 1,
+                           "nullable": true,
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "audience"
+                     ],
+                     "type": "object"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+               },
                "description": {
                   "maxLength": 5000,
                   "nullable": true,
@@ -353,8 +415,7 @@
                   "default": "REGISTRATION",
                   "enum": [
                      "REGISTRATION",
-                     "POST_SUBMISSION",
-                     "POST_APPROVAL"
+                     "POST_REGISTRATION"
                   ],
                   "type": "string"
                },
@@ -1276,6 +1337,192 @@
             ],
             "type": "object"
          },
+         "EventPaymentErrorResponseV1": {
+            "properties": {
+               "code": {
+                  "type": "string"
+               },
+               "details": {
+                  "nullable": true
+               },
+               "errors": {
+                  "nullable": true
+               },
+               "message": {
+                  "type": "string"
+               },
+               "msg": {
+                  "type": "string"
+               },
+               "status": {
+                  "enum": [
+                     "fail",
+                     "error"
+                  ],
+                  "type": "string"
+               },
+               "success": {
+                  "type": "boolean"
+               }
+            },
+            "required": [
+               "status",
+               "code",
+               "message",
+               "msg"
+            ],
+            "type": "object"
+         },
+         "EventPaymentReviewResultV1": {
+            "properties": {
+               "orderStatus": {
+                  "enum": [
+                     "DRAFT",
+                     "AWAITING_MEMBERS",
+                     "HOLDING",
+                     "SUBMITTED",
+                     "PENDING_PAYMENT",
+                     "PAYMENT_REVIEW",
+                     "PENDING_APPROVAL",
+                     "APPROVED",
+                     "NEEDS_CORRECTION",
+                     "WAITLISTED",
+                     "REJECTED",
+                     "EXPIRED",
+                     "CANCELLED"
+                  ],
+                  "type": "string"
+               },
+               "paymentId": {
+                  "type": "string"
+               },
+               "proofId": {
+                  "type": "string"
+               },
+               "revision": {
+                  "exclusiveMinimum": true,
+                  "minimum": 0,
+                  "type": "integer"
+               },
+               "status": {
+                  "enum": [
+                     "VERIFIED",
+                     "REJECTED"
+                  ],
+                  "type": "string"
+               }
+            },
+            "required": [
+               "paymentId",
+               "proofId",
+               "status",
+               "orderStatus",
+               "revision"
+            ],
+            "type": "object"
+         },
+         "EventPaymentSettingsV1": {
+            "properties": {
+               "acceptedProofTypes": {
+                  "items": {
+                     "enum": [
+                        "image/jpeg",
+                        "image/png",
+                        "image/webp",
+                        "application/pdf"
+                     ],
+                     "type": "string"
+                  },
+                  "maxItems": 4,
+                  "type": "array"
+               },
+               "accountHolder": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "accountNumber": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "amountMinor": {
+                  "pattern": "^\\d+$",
+                  "type": "string"
+               },
+               "bankName": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "currency": {
+                  "pattern": "^[A-Z]{3}$",
+                  "type": "string"
+               },
+               "instructions": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "maxProofBytes": {
+                  "maximum": 10485760,
+                  "minimum": 1,
+                  "type": "integer"
+               },
+               "paymentDeadlineHours": {
+                  "maximum": 720,
+                  "minimum": 1,
+                  "type": "integer"
+               }
+            },
+            "required": [
+               "amountMinor",
+               "currency",
+               "bankName",
+               "accountHolder",
+               "accountNumber",
+               "instructions",
+               "paymentDeadlineHours",
+               "acceptedProofTypes",
+               "maxProofBytes"
+            ],
+            "type": "object"
+         },
+         "EventPaymentValidationErrorResponseV1": {
+            "properties": {
+               "code": {
+                  "enum": [
+                     "VALIDATION_ERROR"
+                  ],
+                  "type": "string"
+               },
+               "details": {
+                  "nullable": true
+               },
+               "errors": {
+                  "nullable": true
+               },
+               "message": {
+                  "type": "string"
+               },
+               "msg": {
+                  "type": "string"
+               },
+               "status": {
+                  "enum": [
+                     "fail",
+                     "error"
+                  ],
+                  "type": "string"
+               },
+               "success": {
+                  "type": "boolean"
+               }
+            },
+            "required": [
+               "status",
+               "code",
+               "message",
+               "msg"
+            ],
+            "type": "object"
+         },
          "EventRegistrationDetailV1": {
             "properties": {
                "data": {
@@ -1427,6 +1674,16 @@
                                              "minSelections": {
                                                 "minimum": 0,
                                                 "type": "integer"
+                                             },
+                                             "pattern": {
+                                                "maxLength": 256,
+                                                "minLength": 1,
+                                                "type": "string"
+                                             },
+                                             "patternMessage": {
+                                                "maxLength": 200,
+                                                "minLength": 1,
+                                                "type": "string"
                                              }
                                           },
                                           "type": "object"
@@ -1974,6 +2231,16 @@
                               "minSelections": {
                                  "minimum": 0,
                                  "type": "integer"
+                              },
+                              "pattern": {
+                                 "maxLength": 256,
+                                 "minLength": 1,
+                                 "type": "string"
+                              },
+                              "patternMessage": {
+                                 "maxLength": 200,
+                                 "minLength": 1,
+                                 "type": "string"
                               }
                            },
                            "type": "object"
@@ -2189,6 +2456,16 @@
                            "minSelections": {
                               "minimum": 0,
                               "type": "integer"
+                           },
+                           "pattern": {
+                              "maxLength": 256,
+                              "minLength": 1,
+                              "type": "string"
+                           },
+                           "patternMessage": {
+                              "maxLength": 200,
+                              "minLength": 1,
+                              "type": "string"
                            }
                         },
                         "type": "object"
@@ -2314,6 +2591,801 @@
                "status",
                "uptime",
                "timestamp"
+            ],
+            "type": "object"
+         },
+         "InternalEventPaymentDetailV1": {
+            "properties": {
+               "amountMinor": {
+                  "type": "string"
+               },
+               "bankSnapshot": {
+                  "properties": {
+                     "acceptedProofTypes": {
+                        "items": {
+                           "enum": [
+                              "image/jpeg",
+                              "image/png",
+                              "image/webp",
+                              "application/pdf"
+                           ],
+                           "type": "string"
+                        },
+                        "type": "array"
+                     },
+                     "accountHolder": {
+                        "type": "string"
+                     },
+                     "accountNumber": {
+                        "type": "string"
+                     },
+                     "bankName": {
+                        "type": "string"
+                     },
+                     "instructions": {
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "maxProofBytes": {
+                        "exclusiveMinimum": true,
+                        "minimum": 0,
+                        "type": "integer"
+                     }
+                  },
+                  "required": [
+                     "bankName",
+                     "accountHolder",
+                     "accountNumber",
+                     "instructions",
+                     "acceptedProofTypes",
+                     "maxProofBytes"
+                  ],
+                  "type": "object"
+               },
+               "createdAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "currency": {
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "type": "string"
+               },
+               "expiresAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "history": {
+                  "items": {
+                     "properties": {
+                        "createdAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "fromStatus": {
+                           "enum": [
+                              "UNPAID",
+                              "PROOF_SUBMITTED",
+                              "VERIFIED",
+                              "REJECTED",
+                              "EXPIRED",
+                              "CANCELLED",
+                              null
+                           ],
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "reason": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "toStatus": {
+                           "enum": [
+                              "UNPAID",
+                              "PROOF_SUBMITTED",
+                              "VERIFIED",
+                              "REJECTED",
+                              "EXPIRED",
+                              "CANCELLED"
+                           ],
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "fromStatus",
+                        "toStatus",
+                        "reason",
+                        "createdAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "id": {
+                  "type": "string"
+               },
+               "order": {
+                  "properties": {
+                     "buyer": {
+                        "properties": {
+                           "email": {
+                              "format": "email",
+                              "type": "string"
+                           },
+                           "id": {
+                              "type": "string"
+                           },
+                           "name": {
+                              "type": "string"
+                           },
+                           "nim": {
+                              "nullable": true,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "id",
+                           "name",
+                           "email",
+                           "nim"
+                        ],
+                        "type": "object"
+                     },
+                     "eventId": {
+                        "type": "string"
+                     },
+                     "orderNumber": {
+                        "type": "string"
+                     },
+                     "status": {
+                        "enum": [
+                           "DRAFT",
+                           "AWAITING_MEMBERS",
+                           "HOLDING",
+                           "SUBMITTED",
+                           "PENDING_PAYMENT",
+                           "PAYMENT_REVIEW",
+                           "PENDING_APPROVAL",
+                           "APPROVED",
+                           "NEEDS_CORRECTION",
+                           "WAITLISTED",
+                           "REJECTED",
+                           "EXPIRED",
+                           "CANCELLED"
+                        ],
+                        "type": "string"
+                     },
+                     "subEventId": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "eventId",
+                     "subEventId",
+                     "orderNumber",
+                     "status",
+                     "buyer"
+                  ],
+                  "type": "object"
+               },
+               "proofs": {
+                  "items": {
+                     "properties": {
+                        "contentPath": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "reviewedAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "reviewReason": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "SUBMITTED",
+                              "ACCEPTED",
+                              "REJECTED",
+                              "SUPERSEDED"
+                           ],
+                           "type": "string"
+                        },
+                        "submittedAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "upload": {
+                           "properties": {
+                              "id": {
+                                 "type": "string"
+                              },
+                              "mediaType": {
+                                 "enum": [
+                                    "image/jpeg",
+                                    "image/png",
+                                    "image/webp",
+                                    "application/pdf"
+                                 ],
+                                 "type": "string"
+                              },
+                              "originalFilename": {
+                                 "type": "string"
+                              },
+                              "sha256": {
+                                 "pattern": "^[a-f0-9]{64}$",
+                                 "type": "string"
+                              },
+                              "sizeBytes": {
+                                 "exclusiveMinimum": true,
+                                 "minimum": 0,
+                                 "type": "integer"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "originalFilename",
+                              "mediaType",
+                              "sizeBytes",
+                              "sha256"
+                           ],
+                           "type": "object"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "status",
+                        "submittedAt",
+                        "reviewedAt",
+                        "reviewReason",
+                        "contentPath",
+                        "upload"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "registrationOrderId": {
+                  "type": "string"
+               },
+               "rejectionReason": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "reviewedAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "revision": {
+                  "exclusiveMinimum": true,
+                  "minimum": 0,
+                  "type": "integer"
+               },
+               "status": {
+                  "enum": [
+                     "UNPAID",
+                     "PROOF_SUBMITTED",
+                     "VERIFIED",
+                     "REJECTED",
+                     "EXPIRED",
+                     "CANCELLED"
+                  ],
+                  "type": "string"
+               },
+               "submittedAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "verifiedAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "id",
+               "registrationOrderId",
+               "status",
+               "revision",
+               "currency",
+               "amountMinor",
+               "submittedAt",
+               "expiresAt",
+               "createdAt",
+               "order",
+               "bankSnapshot",
+               "verifiedAt",
+               "rejectionReason",
+               "reviewedAt",
+               "proofs",
+               "history"
+            ],
+            "type": "object"
+         },
+         "InternalEventPaymentQueueRowV1": {
+            "properties": {
+               "amountMinor": {
+                  "type": "string"
+               },
+               "createdAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "currency": {
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "type": "string"
+               },
+               "expiresAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "id": {
+                  "type": "string"
+               },
+               "order": {
+                  "properties": {
+                     "buyer": {
+                        "properties": {
+                           "email": {
+                              "format": "email",
+                              "type": "string"
+                           },
+                           "id": {
+                              "type": "string"
+                           },
+                           "name": {
+                              "type": "string"
+                           },
+                           "nim": {
+                              "nullable": true,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "id",
+                           "name",
+                           "email",
+                           "nim"
+                        ],
+                        "type": "object"
+                     },
+                     "orderNumber": {
+                        "type": "string"
+                     },
+                     "status": {
+                        "enum": [
+                           "DRAFT",
+                           "AWAITING_MEMBERS",
+                           "HOLDING",
+                           "SUBMITTED",
+                           "PENDING_PAYMENT",
+                           "PAYMENT_REVIEW",
+                           "PENDING_APPROVAL",
+                           "APPROVED",
+                           "NEEDS_CORRECTION",
+                           "WAITLISTED",
+                           "REJECTED",
+                           "EXPIRED",
+                           "CANCELLED"
+                        ],
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "orderNumber",
+                     "status",
+                     "buyer"
+                  ],
+                  "type": "object"
+               },
+               "registrationOrderId": {
+                  "type": "string"
+               },
+               "revision": {
+                  "exclusiveMinimum": true,
+                  "minimum": 0,
+                  "type": "integer"
+               },
+               "status": {
+                  "enum": [
+                     "UNPAID",
+                     "PROOF_SUBMITTED",
+                     "VERIFIED",
+                     "REJECTED",
+                     "EXPIRED",
+                     "CANCELLED"
+                  ],
+                  "type": "string"
+               },
+               "submittedAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "id",
+               "registrationOrderId",
+               "status",
+               "revision",
+               "currency",
+               "amountMinor",
+               "submittedAt",
+               "expiresAt",
+               "createdAt",
+               "order"
+            ],
+            "type": "object"
+         },
+         "InternalPostRegistrationAssignmentListResponseV1": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "assignedAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "audience": {
+                           "enum": [
+                              "BUYER",
+                              "EACH_ATTENDEE",
+                              "ALL_ORDER_MEMBERS"
+                           ],
+                           "type": "string"
+                        },
+                        "availability": {
+                           "enum": [
+                              "UPCOMING",
+                              "OPEN",
+                              "OVERDUE",
+                              "COMPLETED",
+                              "CORRECTION"
+                           ],
+                           "type": "string"
+                        },
+                        "blocksCheckIn": {
+                           "type": "boolean"
+                        },
+                        "canEdit": {
+                           "type": "boolean"
+                        },
+                        "canSubmit": {
+                           "type": "boolean"
+                        },
+                        "closesAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "completion": {
+                           "enum": [
+                              "NOT_STARTED",
+                              "DRAFT",
+                              "LOCKED",
+                              "NEEDS_CORRECTION"
+                           ],
+                           "type": "string"
+                        },
+                        "correctionDeadlineAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "correctionReason": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "formDescription": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "formId": {
+                           "type": "string"
+                        },
+                        "formName": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "isRequired": {
+                           "type": "boolean"
+                        },
+                        "logicalFormKey": {
+                           "type": "string"
+                        },
+                        "memberId": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "opensAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "orderIndex": {
+                           "type": "integer"
+                        },
+                        "registrationId": {
+                           "type": "string"
+                        },
+                        "reopenDeadlineAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "reopenReason": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "response": {
+                           "nullable": true,
+                           "properties": {
+                              "answers": {
+                                 "items": {
+                                    "properties": {
+                                       "questionId": {
+                                          "type": "string"
+                                       },
+                                       "type": {
+                                          "type": "string"
+                                       },
+                                       "value": {
+                                          "anyOf": [
+                                             {
+                                                "type": "string"
+                                             },
+                                             {
+                                                "items": {
+                                                   "type": "string"
+                                                },
+                                                "type": "array"
+                                             },
+                                             {
+                                                "nullable": true
+                                             }
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "questionId",
+                                       "type",
+                                       "value"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "id": {
+                                 "type": "string"
+                              },
+                              "revision": {
+                                 "type": "integer"
+                              },
+                              "status": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "status",
+                              "revision",
+                              "answers"
+                           ],
+                           "type": "object"
+                        },
+                        "sections": {
+                           "items": {
+                              "properties": {
+                                 "description": {
+                                    "nullable": true,
+                                    "type": "string"
+                                 },
+                                 "id": {
+                                    "type": "string"
+                                 },
+                                 "orderIndex": {
+                                    "type": "integer"
+                                 },
+                                 "questions": {
+                                    "items": {
+                                       "properties": {
+                                          "fieldKey": {
+                                             "type": "string"
+                                          },
+                                          "fieldType": {
+                                             "type": "string"
+                                          },
+                                          "helpText": {
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "isRequired": {
+                                             "type": "boolean"
+                                          },
+                                          "label": {
+                                             "type": "string"
+                                          },
+                                          "options": {
+                                             "items": {
+                                                "properties": {
+                                                   "id": {
+                                                      "type": "string"
+                                                   },
+                                                   "label": {
+                                                      "type": "string"
+                                                   },
+                                                   "orderIndex": {
+                                                      "type": "integer"
+                                                   },
+                                                   "value": {
+                                                      "type": "string"
+                                                   }
+                                                },
+                                                "required": [
+                                                   "id",
+                                                   "label",
+                                                   "value",
+                                                   "orderIndex"
+                                                ],
+                                                "type": "object"
+                                             },
+                                             "type": "array"
+                                          },
+                                          "orderIndex": {
+                                             "type": "integer"
+                                          },
+                                          "validation": {
+                                             "additionalProperties": {
+                                                "nullable": true
+                                             },
+                                             "type": "object"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "label",
+                                          "fieldKey",
+                                          "fieldType",
+                                          "isRequired",
+                                          "helpText",
+                                          "validation",
+                                          "orderIndex",
+                                          "options"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "type": "array"
+                                 },
+                                 "title": {
+                                    "type": "string"
+                                 }
+                              },
+                              "required": [
+                                 "id",
+                                 "title",
+                                 "description",
+                                 "orderIndex",
+                                 "questions"
+                              ],
+                              "type": "object"
+                           },
+                           "type": "array"
+                        },
+                        "version": {
+                           "type": "integer"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "registrationId",
+                        "formId",
+                        "logicalFormKey",
+                        "formName",
+                        "formDescription",
+                        "version",
+                        "memberId",
+                        "audience",
+                        "isRequired",
+                        "blocksCheckIn",
+                        "orderIndex",
+                        "opensAt",
+                        "closesAt",
+                        "assignedAt",
+                        "correctionReason",
+                        "correctionDeadlineAt",
+                        "reopenReason",
+                        "reopenDeadlineAt",
+                        "availability",
+                        "completion",
+                        "canEdit",
+                        "canSubmit",
+                        "response",
+                        "sections"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "meta": {
+                  "properties": {
+                     "limit": {
+                        "type": "integer"
+                     },
+                     "page": {
+                        "type": "integer"
+                     },
+                     "totalPages": {
+                        "type": "integer"
+                     },
+                     "totalRecords": {
+                        "type": "integer"
+                     }
+                  },
+                  "required": [
+                     "page",
+                     "limit",
+                     "totalRecords",
+                     "totalPages"
+                  ],
+                  "type": "object"
+               },
+               "msg": {
+                  "enum": [
+                     "success"
+                  ],
+                  "type": "string"
+               },
+               "summary": {
+                  "properties": {
+                     "blockingIncomplete": {
+                        "type": "integer"
+                     },
+                     "completed": {
+                        "type": "integer"
+                     },
+                     "overdue": {
+                        "type": "integer"
+                     },
+                     "requiredIncomplete": {
+                        "type": "integer"
+                     },
+                     "total": {
+                        "type": "integer"
+                     }
+                  },
+                  "required": [
+                     "total",
+                     "completed",
+                     "overdue",
+                     "requiredIncomplete",
+                     "blockingIncomplete"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "msg",
+               "data",
+               "summary",
+               "meta"
             ],
             "type": "object"
          },
@@ -3834,6 +4906,285 @@
             ],
             "type": "object"
          },
+         "ParticipantEventPaymentDetailV1": {
+            "properties": {
+               "amountMinor": {
+                  "pattern": "^\\d+$",
+                  "type": "string"
+               },
+               "bankSnapshot": {
+                  "properties": {
+                     "acceptedProofTypes": {
+                        "items": {
+                           "enum": [
+                              "image/jpeg",
+                              "image/png",
+                              "image/webp",
+                              "application/pdf"
+                           ],
+                           "type": "string"
+                        },
+                        "type": "array"
+                     },
+                     "accountHolder": {
+                        "type": "string"
+                     },
+                     "accountNumber": {
+                        "type": "string"
+                     },
+                     "bankName": {
+                        "type": "string"
+                     },
+                     "instructions": {
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "maxProofBytes": {
+                        "exclusiveMinimum": true,
+                        "minimum": 0,
+                        "type": "integer"
+                     }
+                  },
+                  "required": [
+                     "bankName",
+                     "accountHolder",
+                     "accountNumber",
+                     "instructions",
+                     "acceptedProofTypes",
+                     "maxProofBytes"
+                  ],
+                  "type": "object"
+               },
+               "canReplaceProof": {
+                  "type": "boolean"
+               },
+               "canUploadProof": {
+                  "type": "boolean"
+               },
+               "currency": {
+                  "maxLength": 3,
+                  "minLength": 3,
+                  "type": "string"
+               },
+               "deadlineExpired": {
+                  "type": "boolean"
+               },
+               "expiresAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "history": {
+                  "items": {
+                     "properties": {
+                        "createdAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "fromStatus": {
+                           "enum": [
+                              "UNPAID",
+                              "PROOF_SUBMITTED",
+                              "VERIFIED",
+                              "REJECTED",
+                              "EXPIRED",
+                              "CANCELLED",
+                              null
+                           ],
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "reason": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "toStatus": {
+                           "enum": [
+                              "UNPAID",
+                              "PROOF_SUBMITTED",
+                              "VERIFIED",
+                              "REJECTED",
+                              "EXPIRED",
+                              "CANCELLED"
+                           ],
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "fromStatus",
+                        "toStatus",
+                        "reason",
+                        "createdAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "id": {
+                  "type": "string"
+               },
+               "orderNumber": {
+                  "type": "string"
+               },
+               "orderStatus": {
+                  "enum": [
+                     "DRAFT",
+                     "AWAITING_MEMBERS",
+                     "HOLDING",
+                     "SUBMITTED",
+                     "PENDING_PAYMENT",
+                     "PAYMENT_REVIEW",
+                     "PENDING_APPROVAL",
+                     "APPROVED",
+                     "NEEDS_CORRECTION",
+                     "WAITLISTED",
+                     "REJECTED",
+                     "EXPIRED",
+                     "CANCELLED"
+                  ],
+                  "type": "string"
+               },
+               "proofs": {
+                  "items": {
+                     "properties": {
+                        "contentPath": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "reviewedAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "reviewReason": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "SUBMITTED",
+                              "ACCEPTED",
+                              "REJECTED",
+                              "SUPERSEDED"
+                           ],
+                           "type": "string"
+                        },
+                        "submittedAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "upload": {
+                           "properties": {
+                              "id": {
+                                 "type": "string"
+                              },
+                              "mediaType": {
+                                 "enum": [
+                                    "image/jpeg",
+                                    "image/png",
+                                    "image/webp",
+                                    "application/pdf"
+                                 ],
+                                 "type": "string"
+                              },
+                              "originalFilename": {
+                                 "type": "string"
+                              },
+                              "sha256": {
+                                 "pattern": "^[a-f0-9]{64}$",
+                                 "type": "string"
+                              },
+                              "sizeBytes": {
+                                 "exclusiveMinimum": true,
+                                 "minimum": 0,
+                                 "type": "integer"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "originalFilename",
+                              "mediaType",
+                              "sizeBytes",
+                              "sha256"
+                           ],
+                           "type": "object"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "status",
+                        "submittedAt",
+                        "reviewedAt",
+                        "reviewReason",
+                        "contentPath",
+                        "upload"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "registrationOrderId": {
+                  "type": "string"
+               },
+               "rejectionReason": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "revision": {
+                  "exclusiveMinimum": true,
+                  "minimum": 0,
+                  "type": "integer"
+               },
+               "status": {
+                  "enum": [
+                     "UNPAID",
+                     "PROOF_SUBMITTED",
+                     "VERIFIED",
+                     "REJECTED",
+                     "EXPIRED",
+                     "CANCELLED"
+                  ],
+                  "type": "string"
+               },
+               "submittedAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "verifiedAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "id",
+               "registrationOrderId",
+               "orderNumber",
+               "orderStatus",
+               "status",
+               "revision",
+               "currency",
+               "amountMinor",
+               "bankSnapshot",
+               "submittedAt",
+               "verifiedAt",
+               "expiresAt",
+               "rejectionReason",
+               "canUploadProof",
+               "canReplaceProof",
+               "deadlineExpired",
+               "proofs",
+               "history"
+            ],
+            "type": "object"
+         },
          "PermissionListResponse": {
             "properties": {
                "data": {
@@ -3974,6 +5325,906 @@
             "required": [
                "msg",
                "data"
+            ],
+            "type": "object"
+         },
+         "PostRegistrationAssignmentListResponseV1": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "assignedAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "audience": {
+                           "enum": [
+                              "BUYER",
+                              "EACH_ATTENDEE",
+                              "ALL_ORDER_MEMBERS"
+                           ],
+                           "type": "string"
+                        },
+                        "availability": {
+                           "enum": [
+                              "UPCOMING",
+                              "OPEN",
+                              "OVERDUE",
+                              "COMPLETED",
+                              "CORRECTION"
+                           ],
+                           "type": "string"
+                        },
+                        "blocksCheckIn": {
+                           "type": "boolean"
+                        },
+                        "canEdit": {
+                           "type": "boolean"
+                        },
+                        "canSubmit": {
+                           "type": "boolean"
+                        },
+                        "closesAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "completion": {
+                           "enum": [
+                              "NOT_STARTED",
+                              "DRAFT",
+                              "LOCKED",
+                              "NEEDS_CORRECTION"
+                           ],
+                           "type": "string"
+                        },
+                        "correctionDeadlineAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "correctionReason": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "formDescription": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "formId": {
+                           "type": "string"
+                        },
+                        "formName": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "isRequired": {
+                           "type": "boolean"
+                        },
+                        "logicalFormKey": {
+                           "type": "string"
+                        },
+                        "memberId": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "opensAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "orderIndex": {
+                           "type": "integer"
+                        },
+                        "registrationId": {
+                           "type": "string"
+                        },
+                        "reopenDeadlineAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "reopenReason": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "response": {
+                           "nullable": true,
+                           "properties": {
+                              "answers": {
+                                 "items": {
+                                    "properties": {
+                                       "questionId": {
+                                          "type": "string"
+                                       },
+                                       "type": {
+                                          "type": "string"
+                                       },
+                                       "value": {
+                                          "anyOf": [
+                                             {
+                                                "type": "string"
+                                             },
+                                             {
+                                                "items": {
+                                                   "type": "string"
+                                                },
+                                                "type": "array"
+                                             },
+                                             {
+                                                "nullable": true
+                                             }
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "questionId",
+                                       "type",
+                                       "value"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "id": {
+                                 "type": "string"
+                              },
+                              "revision": {
+                                 "type": "integer"
+                              },
+                              "status": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "status",
+                              "revision",
+                              "answers"
+                           ],
+                           "type": "object"
+                        },
+                        "sections": {
+                           "items": {
+                              "properties": {
+                                 "description": {
+                                    "nullable": true,
+                                    "type": "string"
+                                 },
+                                 "id": {
+                                    "type": "string"
+                                 },
+                                 "orderIndex": {
+                                    "type": "integer"
+                                 },
+                                 "questions": {
+                                    "items": {
+                                       "properties": {
+                                          "fieldKey": {
+                                             "type": "string"
+                                          },
+                                          "fieldType": {
+                                             "type": "string"
+                                          },
+                                          "helpText": {
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "isRequired": {
+                                             "type": "boolean"
+                                          },
+                                          "label": {
+                                             "type": "string"
+                                          },
+                                          "options": {
+                                             "items": {
+                                                "properties": {
+                                                   "id": {
+                                                      "type": "string"
+                                                   },
+                                                   "label": {
+                                                      "type": "string"
+                                                   },
+                                                   "orderIndex": {
+                                                      "type": "integer"
+                                                   },
+                                                   "value": {
+                                                      "type": "string"
+                                                   }
+                                                },
+                                                "required": [
+                                                   "id",
+                                                   "label",
+                                                   "value",
+                                                   "orderIndex"
+                                                ],
+                                                "type": "object"
+                                             },
+                                             "type": "array"
+                                          },
+                                          "orderIndex": {
+                                             "type": "integer"
+                                          },
+                                          "validation": {
+                                             "additionalProperties": {
+                                                "nullable": true
+                                             },
+                                             "type": "object"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "label",
+                                          "fieldKey",
+                                          "fieldType",
+                                          "isRequired",
+                                          "helpText",
+                                          "validation",
+                                          "orderIndex",
+                                          "options"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "type": "array"
+                                 },
+                                 "title": {
+                                    "type": "string"
+                                 }
+                              },
+                              "required": [
+                                 "id",
+                                 "title",
+                                 "description",
+                                 "orderIndex",
+                                 "questions"
+                              ],
+                              "type": "object"
+                           },
+                           "type": "array"
+                        },
+                        "version": {
+                           "type": "integer"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "registrationId",
+                        "formId",
+                        "logicalFormKey",
+                        "formName",
+                        "formDescription",
+                        "version",
+                        "memberId",
+                        "audience",
+                        "isRequired",
+                        "blocksCheckIn",
+                        "orderIndex",
+                        "opensAt",
+                        "closesAt",
+                        "assignedAt",
+                        "correctionReason",
+                        "correctionDeadlineAt",
+                        "reopenReason",
+                        "reopenDeadlineAt",
+                        "availability",
+                        "completion",
+                        "canEdit",
+                        "canSubmit",
+                        "response",
+                        "sections"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "msg": {
+                  "enum": [
+                     "success"
+                  ],
+                  "type": "string"
+               }
+            },
+            "required": [
+               "msg",
+               "data"
+            ],
+            "type": "object"
+         },
+         "PostRegistrationAssignmentResponseV1": {
+            "properties": {
+               "data": {
+                  "properties": {
+                     "assignedAt": {
+                        "format": "date-time",
+                        "type": "string"
+                     },
+                     "audience": {
+                        "enum": [
+                           "BUYER",
+                           "EACH_ATTENDEE",
+                           "ALL_ORDER_MEMBERS"
+                        ],
+                        "type": "string"
+                     },
+                     "availability": {
+                        "enum": [
+                           "UPCOMING",
+                           "OPEN",
+                           "OVERDUE",
+                           "COMPLETED",
+                           "CORRECTION"
+                        ],
+                        "type": "string"
+                     },
+                     "blocksCheckIn": {
+                        "type": "boolean"
+                     },
+                     "canEdit": {
+                        "type": "boolean"
+                     },
+                     "canSubmit": {
+                        "type": "boolean"
+                     },
+                     "closesAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "completion": {
+                        "enum": [
+                           "NOT_STARTED",
+                           "DRAFT",
+                           "LOCKED",
+                           "NEEDS_CORRECTION"
+                        ],
+                        "type": "string"
+                     },
+                     "correctionDeadlineAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "correctionReason": {
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "formDescription": {
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "formId": {
+                        "type": "string"
+                     },
+                     "formName": {
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "isRequired": {
+                        "type": "boolean"
+                     },
+                     "logicalFormKey": {
+                        "type": "string"
+                     },
+                     "memberId": {
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "opensAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "orderIndex": {
+                        "type": "integer"
+                     },
+                     "registrationId": {
+                        "type": "string"
+                     },
+                     "reopenDeadlineAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "reopenReason": {
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "response": {
+                        "nullable": true,
+                        "properties": {
+                           "answers": {
+                              "items": {
+                                 "properties": {
+                                    "questionId": {
+                                       "type": "string"
+                                    },
+                                    "type": {
+                                       "type": "string"
+                                    },
+                                    "value": {
+                                       "anyOf": [
+                                          {
+                                             "type": "string"
+                                          },
+                                          {
+                                             "items": {
+                                                "type": "string"
+                                             },
+                                             "type": "array"
+                                          },
+                                          {
+                                             "nullable": true
+                                          }
+                                       ]
+                                    }
+                                 },
+                                 "required": [
+                                    "questionId",
+                                    "type",
+                                    "value"
+                                 ],
+                                 "type": "object"
+                              },
+                              "type": "array"
+                           },
+                           "id": {
+                              "type": "string"
+                           },
+                           "revision": {
+                              "type": "integer"
+                           },
+                           "status": {
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "id",
+                           "status",
+                           "revision",
+                           "answers"
+                        ],
+                        "type": "object"
+                     },
+                     "sections": {
+                        "items": {
+                           "properties": {
+                              "description": {
+                                 "nullable": true,
+                                 "type": "string"
+                              },
+                              "id": {
+                                 "type": "string"
+                              },
+                              "orderIndex": {
+                                 "type": "integer"
+                              },
+                              "questions": {
+                                 "items": {
+                                    "properties": {
+                                       "fieldKey": {
+                                          "type": "string"
+                                       },
+                                       "fieldType": {
+                                          "type": "string"
+                                       },
+                                       "helpText": {
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "id": {
+                                          "type": "string"
+                                       },
+                                       "isRequired": {
+                                          "type": "boolean"
+                                       },
+                                       "label": {
+                                          "type": "string"
+                                       },
+                                       "options": {
+                                          "items": {
+                                             "properties": {
+                                                "id": {
+                                                   "type": "string"
+                                                },
+                                                "label": {
+                                                   "type": "string"
+                                                },
+                                                "orderIndex": {
+                                                   "type": "integer"
+                                                },
+                                                "value": {
+                                                   "type": "string"
+                                                }
+                                             },
+                                             "required": [
+                                                "id",
+                                                "label",
+                                                "value",
+                                                "orderIndex"
+                                             ],
+                                             "type": "object"
+                                          },
+                                          "type": "array"
+                                       },
+                                       "orderIndex": {
+                                          "type": "integer"
+                                       },
+                                       "validation": {
+                                          "additionalProperties": {
+                                             "nullable": true
+                                          },
+                                          "type": "object"
+                                       }
+                                    },
+                                    "required": [
+                                       "id",
+                                       "label",
+                                       "fieldKey",
+                                       "fieldType",
+                                       "isRequired",
+                                       "helpText",
+                                       "validation",
+                                       "orderIndex",
+                                       "options"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "title": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "title",
+                              "description",
+                              "orderIndex",
+                              "questions"
+                           ],
+                           "type": "object"
+                        },
+                        "type": "array"
+                     },
+                     "version": {
+                        "type": "integer"
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "registrationId",
+                     "formId",
+                     "logicalFormKey",
+                     "formName",
+                     "formDescription",
+                     "version",
+                     "memberId",
+                     "audience",
+                     "isRequired",
+                     "blocksCheckIn",
+                     "orderIndex",
+                     "opensAt",
+                     "closesAt",
+                     "assignedAt",
+                     "correctionReason",
+                     "correctionDeadlineAt",
+                     "reopenReason",
+                     "reopenDeadlineAt",
+                     "availability",
+                     "completion",
+                     "canEdit",
+                     "canSubmit",
+                     "response",
+                     "sections"
+                  ],
+                  "type": "object"
+               },
+               "msg": {
+                  "enum": [
+                     "success"
+                  ],
+                  "type": "string"
+               }
+            },
+            "required": [
+               "msg",
+               "data"
+            ],
+            "type": "object"
+         },
+         "PostRegistrationAssignmentV1": {
+            "properties": {
+               "assignedAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "audience": {
+                  "enum": [
+                     "BUYER",
+                     "EACH_ATTENDEE",
+                     "ALL_ORDER_MEMBERS"
+                  ],
+                  "type": "string"
+               },
+               "availability": {
+                  "enum": [
+                     "UPCOMING",
+                     "OPEN",
+                     "OVERDUE",
+                     "COMPLETED",
+                     "CORRECTION"
+                  ],
+                  "type": "string"
+               },
+               "blocksCheckIn": {
+                  "type": "boolean"
+               },
+               "canEdit": {
+                  "type": "boolean"
+               },
+               "canSubmit": {
+                  "type": "boolean"
+               },
+               "closesAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "completion": {
+                  "enum": [
+                     "NOT_STARTED",
+                     "DRAFT",
+                     "LOCKED",
+                     "NEEDS_CORRECTION"
+                  ],
+                  "type": "string"
+               },
+               "correctionDeadlineAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "correctionReason": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "formDescription": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "formId": {
+                  "type": "string"
+               },
+               "formName": {
+                  "type": "string"
+               },
+               "id": {
+                  "type": "string"
+               },
+               "isRequired": {
+                  "type": "boolean"
+               },
+               "logicalFormKey": {
+                  "type": "string"
+               },
+               "memberId": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "opensAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "orderIndex": {
+                  "type": "integer"
+               },
+               "registrationId": {
+                  "type": "string"
+               },
+               "reopenDeadlineAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "reopenReason": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "response": {
+                  "nullable": true,
+                  "properties": {
+                     "answers": {
+                        "items": {
+                           "properties": {
+                              "questionId": {
+                                 "type": "string"
+                              },
+                              "type": {
+                                 "type": "string"
+                              },
+                              "value": {
+                                 "anyOf": [
+                                    {
+                                       "type": "string"
+                                    },
+                                    {
+                                       "items": {
+                                          "type": "string"
+                                       },
+                                       "type": "array"
+                                    },
+                                    {
+                                       "nullable": true
+                                    }
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "questionId",
+                              "type",
+                              "value"
+                           ],
+                           "type": "object"
+                        },
+                        "type": "array"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "revision": {
+                        "type": "integer"
+                     },
+                     "status": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "status",
+                     "revision",
+                     "answers"
+                  ],
+                  "type": "object"
+               },
+               "sections": {
+                  "items": {
+                     "properties": {
+                        "description": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "orderIndex": {
+                           "type": "integer"
+                        },
+                        "questions": {
+                           "items": {
+                              "properties": {
+                                 "fieldKey": {
+                                    "type": "string"
+                                 },
+                                 "fieldType": {
+                                    "type": "string"
+                                 },
+                                 "helpText": {
+                                    "nullable": true,
+                                    "type": "string"
+                                 },
+                                 "id": {
+                                    "type": "string"
+                                 },
+                                 "isRequired": {
+                                    "type": "boolean"
+                                 },
+                                 "label": {
+                                    "type": "string"
+                                 },
+                                 "options": {
+                                    "items": {
+                                       "properties": {
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "label": {
+                                             "type": "string"
+                                          },
+                                          "orderIndex": {
+                                             "type": "integer"
+                                          },
+                                          "value": {
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "label",
+                                          "value",
+                                          "orderIndex"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "type": "array"
+                                 },
+                                 "orderIndex": {
+                                    "type": "integer"
+                                 },
+                                 "validation": {
+                                    "additionalProperties": {
+                                       "nullable": true
+                                    },
+                                    "type": "object"
+                                 }
+                              },
+                              "required": [
+                                 "id",
+                                 "label",
+                                 "fieldKey",
+                                 "fieldType",
+                                 "isRequired",
+                                 "helpText",
+                                 "validation",
+                                 "orderIndex",
+                                 "options"
+                              ],
+                              "type": "object"
+                           },
+                           "type": "array"
+                        },
+                        "title": {
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "title",
+                        "description",
+                        "orderIndex",
+                        "questions"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "version": {
+                  "type": "integer"
+               }
+            },
+            "required": [
+               "id",
+               "registrationId",
+               "formId",
+               "logicalFormKey",
+               "formName",
+               "formDescription",
+               "version",
+               "memberId",
+               "audience",
+               "isRequired",
+               "blocksCheckIn",
+               "orderIndex",
+               "opensAt",
+               "closesAt",
+               "assignedAt",
+               "correctionReason",
+               "correctionDeadlineAt",
+               "reopenReason",
+               "reopenDeadlineAt",
+               "availability",
+               "completion",
+               "canEdit",
+               "canSubmit",
+               "response",
+               "sections"
             ],
             "type": "object"
          },
@@ -4913,6 +7164,16 @@
                                              "minSelections": {
                                                 "minimum": 0,
                                                 "type": "integer"
+                                             },
+                                             "pattern": {
+                                                "maxLength": 256,
+                                                "minLength": 1,
+                                                "type": "string"
+                                             },
+                                             "patternMessage": {
+                                                "maxLength": 200,
+                                                "minLength": 1,
+                                                "type": "string"
                                              }
                                           },
                                           "type": "object"
@@ -5233,6 +7494,16 @@
                      "minSelections": {
                         "minimum": 0,
                         "type": "integer"
+                     },
+                     "pattern": {
+                        "maxLength": 256,
+                        "minLength": 1,
+                        "type": "string"
+                     },
+                     "patternMessage": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string"
                      }
                   },
                   "type": "object"
@@ -5450,6 +7721,16 @@
                               "minSelections": {
                                  "minimum": 0,
                                  "type": "integer"
+                              },
+                              "pattern": {
+                                 "maxLength": 256,
+                                 "minLength": 1,
+                                 "type": "string"
+                              },
+                              "patternMessage": {
+                                 "maxLength": 200,
+                                 "minLength": 1,
+                                 "type": "string"
                               }
                            },
                            "type": "object"
@@ -5511,6 +7792,74 @@
          },
          "RegistrationFormBuilderV1": {
             "properties": {
+               "assignments": {
+                  "items": {
+                     "properties": {
+                        "audience": {
+                           "enum": [
+                              "BUYER",
+                              "EACH_ATTENDEE",
+                              "ALL_ORDER_MEMBERS"
+                           ],
+                           "type": "string"
+                        },
+                        "blocksCheckIn": {
+                           "type": "boolean"
+                        },
+                        "closesAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "createdAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "isRequired": {
+                           "type": "boolean"
+                        },
+                        "opensAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "orderIndex": {
+                           "minimum": 0,
+                           "type": "integer"
+                        },
+                        "registrationFormId": {
+                           "type": "string"
+                        },
+                        "ticketPackageId": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "updatedAt": {
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "registrationFormId",
+                        "ticketPackageId",
+                        "audience",
+                        "isRequired",
+                        "blocksCheckIn",
+                        "orderIndex",
+                        "opensAt",
+                        "closesAt",
+                        "createdAt",
+                        "updatedAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
                "createdAt": {
                   "format": "date-time",
                   "type": "string"
@@ -5735,6 +8084,16 @@
                                        "minSelections": {
                                           "minimum": 0,
                                           "type": "integer"
+                                       },
+                                       "pattern": {
+                                          "maxLength": 256,
+                                          "minLength": 1,
+                                          "type": "string"
+                                       },
+                                       "patternMessage": {
+                                          "maxLength": 200,
+                                          "minLength": 1,
+                                          "type": "string"
                                        }
                                     },
                                     "type": "object"
@@ -5799,8 +8158,7 @@
                "stage": {
                   "enum": [
                      "REGISTRATION",
-                     "POST_SUBMISSION",
-                     "POST_APPROVAL"
+                     "POST_REGISTRATION"
                   ],
                   "type": "string"
                },
@@ -5862,7 +8220,8 @@
                "updatedAt",
                "updatedBy",
                "subEvent",
-               "sections"
+               "sections",
+               "assignments"
             ],
             "type": "object"
          },
@@ -5907,6 +8266,68 @@
          },
          "RegistrationFormDraftV1": {
             "properties": {
+               "assignments": {
+                  "default": [
+                     {
+                        "audience": "EACH_ATTENDEE",
+                        "blocksCheckIn": false,
+                        "closesAt": null,
+                        "isRequired": true,
+                        "opensAt": null,
+                        "orderIndex": 0,
+                        "ticketPackageId": null
+                     }
+                  ],
+                  "items": {
+                     "properties": {
+                        "audience": {
+                           "enum": [
+                              "BUYER",
+                              "EACH_ATTENDEE",
+                              "ALL_ORDER_MEMBERS"
+                           ],
+                           "type": "string"
+                        },
+                        "blocksCheckIn": {
+                           "default": false,
+                           "type": "boolean"
+                        },
+                        "closesAt": {
+                           "default": null,
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "isRequired": {
+                           "default": true,
+                           "type": "boolean"
+                        },
+                        "opensAt": {
+                           "default": null,
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "orderIndex": {
+                           "default": 0,
+                           "minimum": 0,
+                           "type": "integer"
+                        },
+                        "ticketPackageId": {
+                           "default": null,
+                           "minLength": 1,
+                           "nullable": true,
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "audience"
+                     ],
+                     "type": "object"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+               },
                "description": {
                   "maxLength": 5000,
                   "nullable": true,
@@ -6059,6 +8480,16 @@
                                        "minSelections": {
                                           "minimum": 0,
                                           "type": "integer"
+                                       },
+                                       "pattern": {
+                                          "maxLength": 256,
+                                          "minLength": 1,
+                                          "type": "string"
+                                       },
+                                       "patternMessage": {
+                                          "maxLength": 200,
+                                          "minLength": 1,
+                                          "type": "string"
                                        }
                                     },
                                     "type": "object"
@@ -6091,8 +8522,7 @@
                "stage": {
                   "enum": [
                      "REGISTRATION",
-                     "POST_SUBMISSION",
-                     "POST_APPROVAL"
+                     "POST_REGISTRATION"
                   ],
                   "type": "string"
                }
@@ -6120,6 +8550,68 @@
          },
          "RegistrationFormPreviewV1": {
             "properties": {
+               "assignments": {
+                  "default": [
+                     {
+                        "audience": "EACH_ATTENDEE",
+                        "blocksCheckIn": false,
+                        "closesAt": null,
+                        "isRequired": true,
+                        "opensAt": null,
+                        "orderIndex": 0,
+                        "ticketPackageId": null
+                     }
+                  ],
+                  "items": {
+                     "properties": {
+                        "audience": {
+                           "enum": [
+                              "BUYER",
+                              "EACH_ATTENDEE",
+                              "ALL_ORDER_MEMBERS"
+                           ],
+                           "type": "string"
+                        },
+                        "blocksCheckIn": {
+                           "default": false,
+                           "type": "boolean"
+                        },
+                        "closesAt": {
+                           "default": null,
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "isRequired": {
+                           "default": true,
+                           "type": "boolean"
+                        },
+                        "opensAt": {
+                           "default": null,
+                           "format": "date-time",
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "orderIndex": {
+                           "default": 0,
+                           "minimum": 0,
+                           "type": "integer"
+                        },
+                        "ticketPackageId": {
+                           "default": null,
+                           "minLength": 1,
+                           "nullable": true,
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "audience"
+                     ],
+                     "type": "object"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+               },
                "description": {
                   "maxLength": 5000,
                   "nullable": true,
@@ -6272,6 +8764,16 @@
                                        "minSelections": {
                                           "minimum": 0,
                                           "type": "integer"
+                                       },
+                                       "pattern": {
+                                          "maxLength": 256,
+                                          "minLength": 1,
+                                          "type": "string"
+                                       },
+                                       "patternMessage": {
+                                          "maxLength": 200,
+                                          "minLength": 1,
+                                          "type": "string"
                                        }
                                     },
                                     "type": "object"
@@ -6304,8 +8806,7 @@
                "stage": {
                   "enum": [
                      "REGISTRATION",
-                     "POST_SUBMISSION",
-                     "POST_APPROVAL"
+                     "POST_REGISTRATION"
                   ],
                   "type": "string"
                },
@@ -6511,6 +9012,16 @@
                      "minSelections": {
                         "minimum": 0,
                         "type": "integer"
+                     },
+                     "pattern": {
+                        "maxLength": 256,
+                        "minLength": 1,
+                        "type": "string"
+                     },
+                     "patternMessage": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string"
                      }
                   },
                   "type": "object"
@@ -6659,6 +9170,16 @@
                               "minSelections": {
                                  "minimum": 0,
                                  "type": "integer"
+                              },
+                              "pattern": {
+                                 "maxLength": 256,
+                                 "minLength": 1,
+                                 "type": "string"
+                              },
+                              "patternMessage": {
+                                 "maxLength": 200,
+                                 "minLength": 1,
+                                 "type": "string"
                               }
                            },
                            "type": "object"
@@ -6844,6 +9365,16 @@
                                        "minSelections": {
                                           "minimum": 0,
                                           "type": "integer"
+                                       },
+                                       "pattern": {
+                                          "maxLength": 256,
+                                          "minLength": 1,
+                                          "type": "string"
+                                       },
+                                       "patternMessage": {
+                                          "maxLength": 200,
+                                          "minLength": 1,
+                                          "type": "string"
                                        }
                                     },
                                     "type": "object"
@@ -6882,8 +9413,7 @@
                "stage": {
                   "enum": [
                      "REGISTRATION",
-                     "POST_SUBMISSION",
-                     "POST_APPROVAL"
+                     "POST_REGISTRATION"
                   ],
                   "type": "string"
                },
@@ -6996,6 +9526,16 @@
                "minSelections": {
                   "minimum": 0,
                   "type": "integer"
+               },
+               "pattern": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "patternMessage": {
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
                }
             },
             "type": "object"
@@ -22667,6 +25207,360 @@
             ]
          }
       },
+      "/api/v1/internal/event-payments/{id}": {
+         "get": {
+            "operationId": "getInternalEventPaymentDetailV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/InternalEventPaymentDetailV1"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Payment detail returned."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentValidationErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Request validation failed."
+               },
+               "401": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Payment or sub-event not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Revision or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Get payment, proof metadata, and history",
+            "tags": [
+               "Event Payments"
+            ]
+         }
+      },
+      "/api/v1/internal/event-payments/{id}/reject": {
+         "post": {
+            "operationId": "rejectEventPaymentV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "reason": {
+                              "maxLength": 2000,
+                              "minLength": 1,
+                              "type": "string"
+                           },
+                           "revision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "revision",
+                           "reason"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/EventPaymentReviewResultV1"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Payment reviewed."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentValidationErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Request validation failed."
+               },
+               "401": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Payment or sub-event not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Revision or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Reject the latest submitted proof",
+            "tags": [
+               "Event Payments"
+            ]
+         }
+      },
+      "/api/v1/internal/event-payments/{id}/verify": {
+         "post": {
+            "operationId": "verifyEventPaymentV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "reason": {
+                              "maxLength": 2000,
+                              "minLength": 1,
+                              "type": "string"
+                           },
+                           "revision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "revision"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/EventPaymentReviewResultV1"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Payment reviewed."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentValidationErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Request validation failed."
+               },
+               "401": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Payment or sub-event not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Revision or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Verify the latest submitted proof",
+            "tags": [
+               "Event Payments"
+            ]
+         }
+      },
       "/api/v1/internal/event-registrations/{registrationId}": {
          "get": {
             "description": "Committee, creator, steering, or Admin event scope is required. Answers require view_event_answers. FILE answers expose availability only, never raw keys.",
@@ -24361,6 +27255,752 @@
             "summary": "request-correction a registration",
             "tags": [
                "Event registrations V1"
+            ]
+         }
+      },
+      "/api/v1/internal/post-registration-assignments/{assignmentId}": {
+         "get": {
+            "operationId": "getInternalPostRegistrationAssignmentV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "assignmentId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PostRegistrationAssignmentResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Assignment returned; answers are redacted without view_event_answers."
+               },
+               "403": {
+                  "description": "Review permission or event scope denied."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Post-registration forms"
+            ]
+         }
+      },
+      "/api/v1/internal/post-registration-assignments/{assignmentId}/reopen": {
+         "post": {
+            "operationId": "reopenPostRegistrationAssignmentV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "assignmentId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "deadlineAt": {
+                              "format": "date-time",
+                              "type": "string"
+                           },
+                           "reason": {
+                              "maxLength": 1000,
+                              "minLength": 1,
+                              "type": "string"
+                           },
+                           "revision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "revision",
+                           "reason",
+                           "deadlineAt"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PostRegistrationAssignmentResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Audited assignment transition completed."
+               },
+               "409": {
+                  "description": "Exact response state or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Post-registration forms"
+            ]
+         }
+      },
+      "/api/v1/internal/post-registration-assignments/{assignmentId}/request-correction": {
+         "post": {
+            "operationId": "requestPostRegistrationCorrectionV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "assignmentId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "deadlineAt": {
+                              "format": "date-time",
+                              "type": "string"
+                           },
+                           "reason": {
+                              "maxLength": 1000,
+                              "minLength": 1,
+                              "type": "string"
+                           },
+                           "revision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "revision",
+                           "reason",
+                           "deadlineAt"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PostRegistrationAssignmentResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Audited assignment transition completed."
+               },
+               "409": {
+                  "description": "Exact response state or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Post-registration forms"
+            ]
+         }
+      },
+      "/api/v1/internal/sub-events/{subEventId}/payment-settings": {
+         "get": {
+            "operationId": "getSubEventPaymentSettingsV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/EventPaymentSettingsV1"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Payment settings returned."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentValidationErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Request validation failed."
+               },
+               "401": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Payment or sub-event not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Revision or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Get sub-event payment settings",
+            "tags": [
+               "Event Payments"
+            ]
+         },
+         "put": {
+            "operationId": "updateSubEventPaymentSettingsV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "additionalProperties": false,
+                        "properties": {
+                           "acceptedProofTypes": {
+                              "items": {
+                                 "enum": [
+                                    "image/jpeg",
+                                    "image/png",
+                                    "image/webp",
+                                    "application/pdf"
+                                 ],
+                                 "type": "string"
+                              },
+                              "maxItems": 4,
+                              "type": "array"
+                           },
+                           "accountHolder": {
+                              "maxLength": 150,
+                              "minLength": 1,
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "accountNumber": {
+                              "maxLength": 100,
+                              "minLength": 1,
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "amountMinor": {
+                              "maxLength": 30,
+                              "pattern": "^\\d+$",
+                              "type": "string"
+                           },
+                           "bankName": {
+                              "maxLength": 100,
+                              "minLength": 1,
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "currency": {
+                              "default": "IDR",
+                              "pattern": "^[A-Z]{3}$",
+                              "type": "string"
+                           },
+                           "instructions": {
+                              "maxLength": 5000,
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "maxProofBytes": {
+                              "maximum": 10485760,
+                              "minimum": 1,
+                              "type": "integer"
+                           },
+                           "paymentDeadlineHours": {
+                              "maximum": 720,
+                              "minimum": 1,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "amountMinor",
+                           "bankName",
+                           "accountHolder",
+                           "accountNumber",
+                           "paymentDeadlineHours",
+                           "acceptedProofTypes",
+                           "maxProofBytes"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/EventPaymentSettingsV1"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Payment settings updated."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentValidationErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Request validation failed."
+               },
+               "401": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Payment or sub-event not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Revision or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Update payment settings and the default one-seat package",
+            "tags": [
+               "Event Payments"
+            ]
+         }
+      },
+      "/api/v1/internal/sub-events/{subEventId}/payments": {
+         "get": {
+            "operationId": "listSubEventPaymentsV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 20,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "status",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "UNPAID",
+                        "PROOF_SUBMITTED",
+                        "VERIFIED",
+                        "REJECTED",
+                        "EXPIRED",
+                        "CANCELLED"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 200,
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "sort",
+                  "required": false,
+                  "schema": {
+                     "default": "submittedAt:asc",
+                     "enum": [
+                        "submittedAt:asc",
+                        "submittedAt:desc",
+                        "createdAt:asc",
+                        "createdAt:desc",
+                        "expiresAt:asc",
+                        "expiresAt:desc"
+                     ],
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "$ref": "#/components/schemas/InternalEventPaymentQueueRowV1"
+                                 },
+                                 "type": "array"
+                              },
+                              "meta": {
+                                 "properties": {
+                                    "limit": {
+                                       "type": "number"
+                                    },
+                                    "page": {
+                                       "type": "number"
+                                    },
+                                    "totalPages": {
+                                       "type": "number"
+                                    },
+                                    "totalRecords": {
+                                       "type": "number"
+                                    }
+                                 },
+                                 "required": [
+                                    "page",
+                                    "limit",
+                                    "totalRecords",
+                                    "totalPages"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data",
+                              "meta"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Payment queue returned."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentValidationErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Request validation failed."
+               },
+               "401": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Payment or sub-event not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Revision or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "List the deterministic sub-event payment queue",
+            "tags": [
+               "Event Payments"
+            ]
+         }
+      },
+      "/api/v1/internal/sub-events/{subEventId}/post-registration-assignments": {
+         "get": {
+            "operationId": "listInternalPostRegistrationAssignmentsV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 20,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 255,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "status",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "NOT_STARTED",
+                        "DRAFT",
+                        "LOCKED",
+                        "NEEDS_CORRECTION"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "required",
+                  "required": false,
+                  "schema": {
+                     "nullable": true,
+                     "type": "boolean"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "blocksCheckIn",
+                  "required": false,
+                  "schema": {
+                     "nullable": true,
+                     "type": "boolean"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/InternalPostRegistrationAssignmentListResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Scoped assignment queue and summary returned."
+               },
+               "403": {
+                  "description": "Review permission or event scope denied."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Post-registration forms"
             ]
          }
       },
@@ -26123,6 +29763,156 @@
             ]
          }
       },
+      "/api/v1/me/event-payments/{id}/proof": {
+         "post": {
+            "operationId": "submitMyEventPaymentProofV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "multipart/form-data": {
+                     "schema": {
+                        "properties": {
+                           "proof": {
+                              "description": "One of image/jpeg, image/png, image/webp, application/pdf; maximum 10 MiB.",
+                              "format": "binary",
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "proof"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "paymentId": {
+                                       "type": "string"
+                                    },
+                                    "proofId": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "PROOF_SUBMITTED"
+                                       ],
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "paymentId",
+                                    "proofId",
+                                    "status"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Proof submitted."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentValidationErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Request validation failed."
+               },
+               "401": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Payment or sub-event not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Revision or lifecycle conflict."
+               },
+               "413": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Proof exceeds the allowed size."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Upload and submit one private payment proof",
+            "tags": [
+               "Event Payments"
+            ]
+         }
+      },
       "/api/v1/me/event-registrations": {
          "get": {
             "operationId": "listMyEventRegistrationsV1",
@@ -26668,6 +30458,537 @@
             "summary": "Cancel the whole registration order",
             "tags": [
                "Event registrations V1"
+            ]
+         }
+      },
+      "/api/v1/me/event-registrations/{registrationId}/payment": {
+         "get": {
+            "operationId": "getMyEventPaymentV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "registrationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/ParticipantEventPaymentDetailV1"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Payment returned."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentValidationErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Request validation failed."
+               },
+               "401": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Payment or sub-event not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Revision or lifecycle conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Get my authoritative registration payment state",
+            "tags": [
+               "Event Payments"
+            ]
+         }
+      },
+      "/api/v1/me/event-registrations/{registrationId}/post-registration-assignments": {
+         "get": {
+            "operationId": "listMyPostRegistrationAssignmentsV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "registrationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PostRegistrationAssignmentListResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Exact durable assignments returned."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "404": {
+                  "description": "Registration not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Post-registration forms"
+            ]
+         }
+      },
+      "/api/v1/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}": {
+         "get": {
+            "operationId": "getMyPostRegistrationAssignmentV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "registrationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "assignmentId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PostRegistrationAssignmentResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Exact immutable form version returned."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "404": {
+                  "description": "Assignment not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Post-registration forms"
+            ]
+         }
+      },
+      "/api/v1/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}/response": {
+         "put": {
+            "operationId": "saveMyPostRegistrationResponseV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "registrationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "assignmentId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "answers": {
+                              "items": {
+                                 "oneOf": [
+                                    {
+                                       "properties": {
+                                          "questionId": {
+                                             "maxLength": 100,
+                                             "minLength": 1,
+                                             "type": "string"
+                                          },
+                                          "type": {
+                                             "enum": [
+                                                "TEXT"
+                                             ],
+                                             "type": "string"
+                                          },
+                                          "value": {
+                                             "maxLength": 10000,
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "questionId",
+                                          "type",
+                                          "value"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    {
+                                       "properties": {
+                                          "questionId": {
+                                             "maxLength": 100,
+                                             "minLength": 1,
+                                             "type": "string"
+                                          },
+                                          "type": {
+                                             "enum": [
+                                                "TEXTAREA"
+                                             ],
+                                             "type": "string"
+                                          },
+                                          "value": {
+                                             "maxLength": 10000,
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "questionId",
+                                          "type",
+                                          "value"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    {
+                                       "properties": {
+                                          "questionId": {
+                                             "maxLength": 100,
+                                             "minLength": 1,
+                                             "type": "string"
+                                          },
+                                          "type": {
+                                             "enum": [
+                                                "NUMBER"
+                                             ],
+                                             "type": "string"
+                                          },
+                                          "value": {
+                                             "pattern": "^-?(?:0|[1-9]\\d{0,19})(?:\\.\\d{1,10})?$",
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "questionId",
+                                          "type",
+                                          "value"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    {
+                                       "properties": {
+                                          "questionId": {
+                                             "maxLength": 100,
+                                             "minLength": 1,
+                                             "type": "string"
+                                          },
+                                          "type": {
+                                             "enum": [
+                                                "DATE"
+                                             ],
+                                             "type": "string"
+                                          },
+                                          "value": {
+                                             "format": "date",
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "questionId",
+                                          "type",
+                                          "value"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    {
+                                       "properties": {
+                                          "optionId": {
+                                             "maxLength": 100,
+                                             "minLength": 1,
+                                             "type": "string"
+                                          },
+                                          "questionId": {
+                                             "maxLength": 100,
+                                             "minLength": 1,
+                                             "type": "string"
+                                          },
+                                          "type": {
+                                             "enum": [
+                                                "SELECT"
+                                             ],
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "questionId",
+                                          "type",
+                                          "optionId"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    {
+                                       "properties": {
+                                          "optionId": {
+                                             "maxLength": 100,
+                                             "minLength": 1,
+                                             "type": "string"
+                                          },
+                                          "questionId": {
+                                             "maxLength": 100,
+                                             "minLength": 1,
+                                             "type": "string"
+                                          },
+                                          "type": {
+                                             "enum": [
+                                                "RADIO"
+                                             ],
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "questionId",
+                                          "type",
+                                          "optionId"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    {
+                                       "properties": {
+                                          "optionIds": {
+                                             "items": {
+                                                "maxLength": 100,
+                                                "minLength": 1,
+                                                "type": "string"
+                                             },
+                                             "maxItems": 100,
+                                             "minItems": 1,
+                                             "type": "array"
+                                          },
+                                          "questionId": {
+                                             "maxLength": 100,
+                                             "minLength": 1,
+                                             "type": "string"
+                                          },
+                                          "type": {
+                                             "enum": [
+                                                "CHECKBOX"
+                                             ],
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "questionId",
+                                          "type",
+                                          "optionIds"
+                                       ],
+                                       "type": "object"
+                                    }
+                                 ]
+                              },
+                              "maxItems": 200,
+                              "type": "array"
+                           },
+                           "revision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "nullable": true,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "revision",
+                           "answers"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PostRegistrationAssignmentResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Draft replaced."
+               },
+               "400": {
+                  "description": "Answer validation failed."
+               },
+               "409": {
+                  "description": "Window, lifecycle, or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Post-registration forms"
+            ]
+         }
+      },
+      "/api/v1/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}/submit": {
+         "post": {
+            "operationId": "submitMyPostRegistrationResponseV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "registrationId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "assignmentId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "header",
+                  "name": "Idempotency-Key",
+                  "required": true,
+                  "schema": {
+                     "minLength": 8,
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "revision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "revision"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PostRegistrationAssignmentResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Exact response locked without order mutation."
+               },
+               "400": {
+                  "description": "Answer validation failed."
+               },
+               "409": {
+                  "description": "Window, lifecycle, revision, or idempotency conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Post-registration forms"
             ]
          }
       },
@@ -27530,6 +31851,81 @@
             "summary": "Submit a free registration",
             "tags": [
                "Event registrations V1"
+            ]
+         }
+      },
+      "/api/v1/private/payment-proofs/{id}/content": {
+         "get": {
+            "operationId": "getPrivatePaymentProofContentV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/pdf": {
+                        "schema": {
+                           "format": "binary",
+                           "type": "string"
+                        }
+                     },
+                     "image/jpeg": {
+                        "schema": {
+                           "format": "binary",
+                           "type": "string"
+                        }
+                     },
+                     "image/png": {
+                        "schema": {
+                           "format": "binary",
+                           "type": "string"
+                        }
+                     },
+                     "image/webp": {
+                        "schema": {
+                           "format": "binary",
+                           "type": "string"
+                        }
+                     }
+                  },
+                  "description": "Private proof content."
+               },
+               "401": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Authentication required."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EventPaymentErrorResponseV1"
+                        }
+                     }
+                  },
+                  "description": "Proof unavailable or authorization denied."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Stream authorized private proof content",
+            "tags": [
+               "Event Payments"
             ]
          }
       },

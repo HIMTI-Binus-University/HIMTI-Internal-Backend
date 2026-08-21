@@ -7409,6 +7409,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/internal/event-payments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get payment, proof metadata, and history */
+        get: operations["getInternalEventPaymentDetailV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/event-payments/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject the latest submitted proof */
+        post: operations["rejectEventPaymentV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/event-payments/{id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify the latest submitted proof */
+        post: operations["verifyEventPaymentV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/internal/event-registrations/{registrationId}": {
         parameters: {
             query?: never;
@@ -7503,6 +7554,105 @@ export interface paths {
          * @description Requires review_event_registrations, committee/creator/Admin event scope, and revision CAS.
          */
         post: operations["requestInternalRegistrationCorrectionV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/post-registration-assignments/{assignmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getInternalPostRegistrationAssignmentV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/post-registration-assignments/{assignmentId}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reopenPostRegistrationAssignmentV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/post-registration-assignments/{assignmentId}/request-correction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["requestPostRegistrationCorrectionV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/sub-events/{subEventId}/payment-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get sub-event payment settings */
+        get: operations["getSubEventPaymentSettingsV1"];
+        /** Update payment settings and the default one-seat package */
+        put: operations["updateSubEventPaymentSettingsV1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/sub-events/{subEventId}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the deterministic sub-event payment queue */
+        get: operations["listSubEventPaymentsV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/sub-events/{subEventId}/post-registration-assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listInternalPostRegistrationAssignmentsV1"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7620,6 +7770,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/event-payments/{id}/proof": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload and submit one private payment proof */
+        post: operations["submitMyEventPaymentProofV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/event-registrations": {
         parameters: {
             query?: never;
@@ -7671,6 +7838,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/event-registrations/{registrationId}/payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get my authoritative registration payment state */
+        get: operations["getMyEventPaymentV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/event-registrations/{registrationId}/post-registration-assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyPostRegistrationAssignmentsV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyPostRegistrationAssignmentV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}/response": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveMyPostRegistrationResponseV1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["submitMyPostRegistrationResponseV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/event-registrations/{registrationId}/response": {
         parameters: {
             query?: never;
@@ -7699,6 +7947,23 @@ export interface paths {
         put?: never;
         /** Submit a free registration */
         post: operations["submitEventRegistrationV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/payment-proofs/{id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream authorized private proof content */
+        get: operations["getPrivatePaymentProofContentV1"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7985,13 +8250,48 @@ export interface components {
             name: string;
         };
         CreateRegistrationFormV1: {
+            /**
+             * @default [
+             *       {
+             *         "audience": "EACH_ATTENDEE",
+             *         "blocksCheckIn": false,
+             *         "closesAt": null,
+             *         "isRequired": true,
+             *         "opensAt": null,
+             *         "orderIndex": 0,
+             *         "ticketPackageId": null
+             *       }
+             *     ]
+             */
+            assignments: {
+                /** @enum {string} */
+                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
+                /** @default false */
+                blocksCheckIn: boolean;
+                /**
+                 * Format: date-time
+                 * @default null
+                 */
+                closesAt: string | null;
+                /** @default true */
+                isRequired: boolean;
+                /**
+                 * Format: date-time
+                 * @default null
+                 */
+                opensAt: string | null;
+                /** @default 0 */
+                orderIndex: number;
+                /** @default null */
+                ticketPackageId: string | null;
+            }[];
             description?: string | null;
             name: string;
             /**
              * @default REGISTRATION
              * @enum {string}
              */
-            stage: "REGISTRATION" | "POST_SUBMISSION" | "POST_APPROVAL";
+            stage: "REGISTRATION" | "POST_REGISTRATION";
             subEventId: string;
         };
         CreateRoleRequest: {
@@ -8216,6 +8516,47 @@ export interface components {
             /** @enum {string} */
             msg: "success";
         };
+        EventPaymentErrorResponseV1: {
+            code: string;
+            details?: unknown;
+            errors?: unknown;
+            message: string;
+            msg: string;
+            /** @enum {string} */
+            status: "fail" | "error";
+            success?: boolean;
+        };
+        EventPaymentReviewResultV1: {
+            /** @enum {string} */
+            orderStatus: "DRAFT" | "AWAITING_MEMBERS" | "HOLDING" | "SUBMITTED" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "PENDING_APPROVAL" | "APPROVED" | "NEEDS_CORRECTION" | "WAITLISTED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            paymentId: string;
+            proofId: string;
+            revision: number;
+            /** @enum {string} */
+            status: "VERIFIED" | "REJECTED";
+        };
+        EventPaymentSettingsV1: {
+            acceptedProofTypes: ("image/jpeg" | "image/png" | "image/webp" | "application/pdf")[];
+            accountHolder: string | null;
+            accountNumber: string | null;
+            amountMinor: string;
+            bankName: string | null;
+            currency: string;
+            instructions: string | null;
+            maxProofBytes: number;
+            paymentDeadlineHours: number;
+        };
+        EventPaymentValidationErrorResponseV1: {
+            /** @enum {string} */
+            code: "VALIDATION_ERROR";
+            details?: unknown;
+            errors?: unknown;
+            message: string;
+            msg: string;
+            /** @enum {string} */
+            status: "fail" | "error";
+            success?: boolean;
+        };
         EventRegistrationDetailV1: {
             data: {
                 /** Format: date-time */
@@ -8260,6 +8601,8 @@ export interface components {
                             minDate?: string;
                             minLength?: number;
                             minSelections?: number;
+                            pattern?: string;
+                            patternMessage?: string;
                         };
                     }[];
                 }[];
@@ -8387,6 +8730,8 @@ export interface components {
                     minDate?: string;
                     minLength?: number;
                     minSelections?: number;
+                    pattern?: string;
+                    patternMessage?: string;
                 };
             }[];
             /** @enum {string} */
@@ -8440,6 +8785,8 @@ export interface components {
                     minDate?: string;
                     minLength?: number;
                     minSelections?: number;
+                    pattern?: string;
+                    patternMessage?: string;
                 };
             };
             /** @enum {string} */
@@ -8469,6 +8816,188 @@ export interface components {
             /** Format: date-time */
             timestamp: string;
             uptime: number;
+        };
+        InternalEventPaymentDetailV1: {
+            amountMinor: string;
+            bankSnapshot: {
+                acceptedProofTypes: ("image/jpeg" | "image/png" | "image/webp" | "application/pdf")[];
+                accountHolder: string;
+                accountNumber: string;
+                bankName: string;
+                instructions: string | null;
+                maxProofBytes: number;
+            };
+            /** Format: date-time */
+            createdAt: string;
+            currency: string;
+            /** Format: date-time */
+            expiresAt: string | null;
+            history: {
+                /** Format: date-time */
+                createdAt: string;
+                /** @enum {string|null} */
+                fromStatus: "UNPAID" | "PROOF_SUBMITTED" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED" | null;
+                id: string;
+                reason: string | null;
+                /** @enum {string} */
+                toStatus: "UNPAID" | "PROOF_SUBMITTED" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            }[];
+            id: string;
+            order: {
+                buyer: {
+                    /** Format: email */
+                    email: string;
+                    id: string;
+                    name: string;
+                    nim: string | null;
+                };
+                eventId: string;
+                orderNumber: string;
+                /** @enum {string} */
+                status: "DRAFT" | "AWAITING_MEMBERS" | "HOLDING" | "SUBMITTED" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "PENDING_APPROVAL" | "APPROVED" | "NEEDS_CORRECTION" | "WAITLISTED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+                subEventId: string;
+            };
+            proofs: {
+                contentPath: string;
+                id: string;
+                /** Format: date-time */
+                reviewedAt: string | null;
+                reviewReason: string | null;
+                /** @enum {string} */
+                status: "SUBMITTED" | "ACCEPTED" | "REJECTED" | "SUPERSEDED";
+                /** Format: date-time */
+                submittedAt: string;
+                upload: {
+                    id: string;
+                    /** @enum {string} */
+                    mediaType: "image/jpeg" | "image/png" | "image/webp" | "application/pdf";
+                    originalFilename: string;
+                    sha256: string;
+                    sizeBytes: number;
+                };
+            }[];
+            registrationOrderId: string;
+            rejectionReason: string | null;
+            /** Format: date-time */
+            reviewedAt: string | null;
+            revision: number;
+            /** @enum {string} */
+            status: "UNPAID" | "PROOF_SUBMITTED" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            /** Format: date-time */
+            submittedAt: string | null;
+            /** Format: date-time */
+            verifiedAt: string | null;
+        };
+        InternalEventPaymentQueueRowV1: {
+            amountMinor: string;
+            /** Format: date-time */
+            createdAt: string;
+            currency: string;
+            /** Format: date-time */
+            expiresAt: string | null;
+            id: string;
+            order: {
+                buyer: {
+                    /** Format: email */
+                    email: string;
+                    id: string;
+                    name: string;
+                    nim: string | null;
+                };
+                orderNumber: string;
+                /** @enum {string} */
+                status: "DRAFT" | "AWAITING_MEMBERS" | "HOLDING" | "SUBMITTED" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "PENDING_APPROVAL" | "APPROVED" | "NEEDS_CORRECTION" | "WAITLISTED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            };
+            registrationOrderId: string;
+            revision: number;
+            /** @enum {string} */
+            status: "UNPAID" | "PROOF_SUBMITTED" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            /** Format: date-time */
+            submittedAt: string | null;
+        };
+        InternalPostRegistrationAssignmentListResponseV1: {
+            data: {
+                /** Format: date-time */
+                assignedAt: string;
+                /** @enum {string} */
+                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
+                /** @enum {string} */
+                availability: "UPCOMING" | "OPEN" | "OVERDUE" | "COMPLETED" | "CORRECTION";
+                blocksCheckIn: boolean;
+                canEdit: boolean;
+                canSubmit: boolean;
+                /** Format: date-time */
+                closesAt: string | null;
+                /** @enum {string} */
+                completion: "NOT_STARTED" | "DRAFT" | "LOCKED" | "NEEDS_CORRECTION";
+                /** Format: date-time */
+                correctionDeadlineAt: string | null;
+                correctionReason: string | null;
+                formDescription: string | null;
+                formId: string;
+                formName: string;
+                id: string;
+                isRequired: boolean;
+                logicalFormKey: string;
+                memberId: string | null;
+                /** Format: date-time */
+                opensAt: string | null;
+                orderIndex: number;
+                registrationId: string;
+                /** Format: date-time */
+                reopenDeadlineAt: string | null;
+                reopenReason: string | null;
+                response: {
+                    answers: {
+                        questionId: string;
+                        type: string;
+                        value: string | string[] | unknown;
+                    }[];
+                    id: string;
+                    revision: number;
+                    status: string;
+                } | null;
+                sections: {
+                    description: string | null;
+                    id: string;
+                    orderIndex: number;
+                    questions: {
+                        fieldKey: string;
+                        fieldType: string;
+                        helpText: string | null;
+                        id: string;
+                        isRequired: boolean;
+                        label: string;
+                        options: {
+                            id: string;
+                            label: string;
+                            orderIndex: number;
+                            value: string;
+                        }[];
+                        orderIndex: number;
+                        validation: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    title: string;
+                }[];
+                version: number;
+            }[];
+            meta: {
+                limit: number;
+                page: number;
+                totalPages: number;
+                totalRecords: number;
+            };
+            /** @enum {string} */
+            msg: "success";
+            summary: {
+                blockingIncomplete: number;
+                completed: number;
+                overdue: number;
+                requiredIncomplete: number;
+                total: number;
+            };
         };
         InternalRegistrationBulkReviewResultV1: {
             data: {
@@ -8839,6 +9368,65 @@ export interface components {
             /** @enum {string} */
             msg: "success";
         };
+        ParticipantEventPaymentDetailV1: {
+            amountMinor: string;
+            bankSnapshot: {
+                acceptedProofTypes: ("image/jpeg" | "image/png" | "image/webp" | "application/pdf")[];
+                accountHolder: string;
+                accountNumber: string;
+                bankName: string;
+                instructions: string | null;
+                maxProofBytes: number;
+            };
+            canReplaceProof: boolean;
+            canUploadProof: boolean;
+            currency: string;
+            deadlineExpired: boolean;
+            /** Format: date-time */
+            expiresAt: string | null;
+            history: {
+                /** Format: date-time */
+                createdAt: string;
+                /** @enum {string|null} */
+                fromStatus: "UNPAID" | "PROOF_SUBMITTED" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED" | null;
+                id: string;
+                reason: string | null;
+                /** @enum {string} */
+                toStatus: "UNPAID" | "PROOF_SUBMITTED" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            }[];
+            id: string;
+            orderNumber: string;
+            /** @enum {string} */
+            orderStatus: "DRAFT" | "AWAITING_MEMBERS" | "HOLDING" | "SUBMITTED" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "PENDING_APPROVAL" | "APPROVED" | "NEEDS_CORRECTION" | "WAITLISTED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            proofs: {
+                contentPath: string;
+                id: string;
+                /** Format: date-time */
+                reviewedAt: string | null;
+                reviewReason: string | null;
+                /** @enum {string} */
+                status: "SUBMITTED" | "ACCEPTED" | "REJECTED" | "SUPERSEDED";
+                /** Format: date-time */
+                submittedAt: string;
+                upload: {
+                    id: string;
+                    /** @enum {string} */
+                    mediaType: "image/jpeg" | "image/png" | "image/webp" | "application/pdf";
+                    originalFilename: string;
+                    sha256: string;
+                    sizeBytes: number;
+                };
+            }[];
+            registrationOrderId: string;
+            rejectionReason: string | null;
+            revision: number;
+            /** @enum {string} */
+            status: "UNPAID" | "PROOF_SUBMITTED" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            /** Format: date-time */
+            submittedAt: string | null;
+            /** Format: date-time */
+            verifiedAt: string | null;
+        };
         PermissionListResponse: {
             data: {
                 /** Format: date-time */
@@ -8876,6 +9464,215 @@ export interface components {
             };
             /** @enum {string} */
             msg: "success";
+        };
+        PostRegistrationAssignmentListResponseV1: {
+            data: {
+                /** Format: date-time */
+                assignedAt: string;
+                /** @enum {string} */
+                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
+                /** @enum {string} */
+                availability: "UPCOMING" | "OPEN" | "OVERDUE" | "COMPLETED" | "CORRECTION";
+                blocksCheckIn: boolean;
+                canEdit: boolean;
+                canSubmit: boolean;
+                /** Format: date-time */
+                closesAt: string | null;
+                /** @enum {string} */
+                completion: "NOT_STARTED" | "DRAFT" | "LOCKED" | "NEEDS_CORRECTION";
+                /** Format: date-time */
+                correctionDeadlineAt: string | null;
+                correctionReason: string | null;
+                formDescription: string | null;
+                formId: string;
+                formName: string;
+                id: string;
+                isRequired: boolean;
+                logicalFormKey: string;
+                memberId: string | null;
+                /** Format: date-time */
+                opensAt: string | null;
+                orderIndex: number;
+                registrationId: string;
+                /** Format: date-time */
+                reopenDeadlineAt: string | null;
+                reopenReason: string | null;
+                response: {
+                    answers: {
+                        questionId: string;
+                        type: string;
+                        value: string | string[] | unknown;
+                    }[];
+                    id: string;
+                    revision: number;
+                    status: string;
+                } | null;
+                sections: {
+                    description: string | null;
+                    id: string;
+                    orderIndex: number;
+                    questions: {
+                        fieldKey: string;
+                        fieldType: string;
+                        helpText: string | null;
+                        id: string;
+                        isRequired: boolean;
+                        label: string;
+                        options: {
+                            id: string;
+                            label: string;
+                            orderIndex: number;
+                            value: string;
+                        }[];
+                        orderIndex: number;
+                        validation: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    title: string;
+                }[];
+                version: number;
+            }[];
+            /** @enum {string} */
+            msg: "success";
+        };
+        PostRegistrationAssignmentResponseV1: {
+            data: {
+                /** Format: date-time */
+                assignedAt: string;
+                /** @enum {string} */
+                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
+                /** @enum {string} */
+                availability: "UPCOMING" | "OPEN" | "OVERDUE" | "COMPLETED" | "CORRECTION";
+                blocksCheckIn: boolean;
+                canEdit: boolean;
+                canSubmit: boolean;
+                /** Format: date-time */
+                closesAt: string | null;
+                /** @enum {string} */
+                completion: "NOT_STARTED" | "DRAFT" | "LOCKED" | "NEEDS_CORRECTION";
+                /** Format: date-time */
+                correctionDeadlineAt: string | null;
+                correctionReason: string | null;
+                formDescription: string | null;
+                formId: string;
+                formName: string;
+                id: string;
+                isRequired: boolean;
+                logicalFormKey: string;
+                memberId: string | null;
+                /** Format: date-time */
+                opensAt: string | null;
+                orderIndex: number;
+                registrationId: string;
+                /** Format: date-time */
+                reopenDeadlineAt: string | null;
+                reopenReason: string | null;
+                response: {
+                    answers: {
+                        questionId: string;
+                        type: string;
+                        value: string | string[] | unknown;
+                    }[];
+                    id: string;
+                    revision: number;
+                    status: string;
+                } | null;
+                sections: {
+                    description: string | null;
+                    id: string;
+                    orderIndex: number;
+                    questions: {
+                        fieldKey: string;
+                        fieldType: string;
+                        helpText: string | null;
+                        id: string;
+                        isRequired: boolean;
+                        label: string;
+                        options: {
+                            id: string;
+                            label: string;
+                            orderIndex: number;
+                            value: string;
+                        }[];
+                        orderIndex: number;
+                        validation: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    title: string;
+                }[];
+                version: number;
+            };
+            /** @enum {string} */
+            msg: "success";
+        };
+        PostRegistrationAssignmentV1: {
+            /** Format: date-time */
+            assignedAt: string;
+            /** @enum {string} */
+            audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
+            /** @enum {string} */
+            availability: "UPCOMING" | "OPEN" | "OVERDUE" | "COMPLETED" | "CORRECTION";
+            blocksCheckIn: boolean;
+            canEdit: boolean;
+            canSubmit: boolean;
+            /** Format: date-time */
+            closesAt: string | null;
+            /** @enum {string} */
+            completion: "NOT_STARTED" | "DRAFT" | "LOCKED" | "NEEDS_CORRECTION";
+            /** Format: date-time */
+            correctionDeadlineAt: string | null;
+            correctionReason: string | null;
+            formDescription: string | null;
+            formId: string;
+            formName: string;
+            id: string;
+            isRequired: boolean;
+            logicalFormKey: string;
+            memberId: string | null;
+            /** Format: date-time */
+            opensAt: string | null;
+            orderIndex: number;
+            registrationId: string;
+            /** Format: date-time */
+            reopenDeadlineAt: string | null;
+            reopenReason: string | null;
+            response: {
+                answers: {
+                    questionId: string;
+                    type: string;
+                    value: string | string[] | unknown;
+                }[];
+                id: string;
+                revision: number;
+                status: string;
+            } | null;
+            sections: {
+                description: string | null;
+                id: string;
+                orderIndex: number;
+                questions: {
+                    fieldKey: string;
+                    fieldType: string;
+                    helpText: string | null;
+                    id: string;
+                    isRequired: boolean;
+                    label: string;
+                    options: {
+                        id: string;
+                        label: string;
+                        orderIndex: number;
+                        value: string;
+                    }[];
+                    orderIndex: number;
+                    validation: {
+                        [key: string]: unknown;
+                    };
+                }[];
+                title: string;
+            }[];
+            version: number;
         };
         ProfileMutationResponse: {
             data: {
@@ -9099,6 +9896,8 @@ export interface components {
                             minDate?: string;
                             minLength?: number;
                             minSelections?: number;
+                            pattern?: string;
+                            patternMessage?: string;
                         };
                     }[];
                 }[];
@@ -9176,6 +9975,8 @@ export interface components {
                 minDate?: string;
                 minLength?: number;
                 minSelections?: number;
+                pattern?: string;
+                patternMessage?: string;
             };
         };
         RegistrationFormBuilderSectionV1: {
@@ -9231,6 +10032,8 @@ export interface components {
                     minDate?: string;
                     minLength?: number;
                     minSelections?: number;
+                    pattern?: string;
+                    patternMessage?: string;
                 };
             }[];
             registrationFormId: string;
@@ -9241,6 +10044,24 @@ export interface components {
             updatedAt: string | null;
         };
         RegistrationFormBuilderV1: {
+            assignments: {
+                /** @enum {string} */
+                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
+                blocksCheckIn: boolean;
+                /** Format: date-time */
+                closesAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                id: string;
+                isRequired: boolean;
+                /** Format: date-time */
+                opensAt: string | null;
+                orderIndex: number;
+                registrationFormId: string;
+                ticketPackageId: string | null;
+                /** Format: date-time */
+                updatedAt: string | null;
+            }[];
             /** Format: date-time */
             createdAt: string;
             createdBy: string;
@@ -9304,6 +10125,8 @@ export interface components {
                         minDate?: string;
                         minLength?: number;
                         minSelections?: number;
+                        pattern?: string;
+                        patternMessage?: string;
                     };
                 }[];
                 registrationFormId: string;
@@ -9314,7 +10137,7 @@ export interface components {
                 updatedAt: string | null;
             }[];
             /** @enum {string} */
-            stage: "REGISTRATION" | "POST_SUBMISSION" | "POST_APPROVAL";
+            stage: "REGISTRATION" | "POST_REGISTRATION";
             /** @enum {string} */
             status: "DRAFT" | "PUBLISHED" | "CLOSED";
             subEvent: {
@@ -9338,6 +10161,41 @@ export interface components {
             msg: "success";
         };
         RegistrationFormDraftV1: {
+            /**
+             * @default [
+             *       {
+             *         "audience": "EACH_ATTENDEE",
+             *         "blocksCheckIn": false,
+             *         "closesAt": null,
+             *         "isRequired": true,
+             *         "opensAt": null,
+             *         "orderIndex": 0,
+             *         "ticketPackageId": null
+             *       }
+             *     ]
+             */
+            assignments: {
+                /** @enum {string} */
+                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
+                /** @default false */
+                blocksCheckIn: boolean;
+                /**
+                 * Format: date-time
+                 * @default null
+                 */
+                closesAt: string | null;
+                /** @default true */
+                isRequired: boolean;
+                /**
+                 * Format: date-time
+                 * @default null
+                 */
+                opensAt: string | null;
+                /** @default 0 */
+                orderIndex: number;
+                /** @default null */
+                ticketPackageId: string | null;
+            }[];
             description?: string | null;
             name: string;
             revision: number;
@@ -9376,17 +10234,54 @@ export interface components {
                         minDate?: string;
                         minLength?: number;
                         minSelections?: number;
+                        pattern?: string;
+                        patternMessage?: string;
                     };
                 }[];
                 title: string;
             }[];
             /** @enum {string} */
-            stage: "REGISTRATION" | "POST_SUBMISSION" | "POST_APPROVAL";
+            stage: "REGISTRATION" | "POST_REGISTRATION";
         };
         RegistrationFormLifecycleRequestV1: {
             revision: number;
         };
         RegistrationFormPreviewV1: {
+            /**
+             * @default [
+             *       {
+             *         "audience": "EACH_ATTENDEE",
+             *         "blocksCheckIn": false,
+             *         "closesAt": null,
+             *         "isRequired": true,
+             *         "opensAt": null,
+             *         "orderIndex": 0,
+             *         "ticketPackageId": null
+             *       }
+             *     ]
+             */
+            assignments: {
+                /** @enum {string} */
+                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
+                /** @default false */
+                blocksCheckIn: boolean;
+                /**
+                 * Format: date-time
+                 * @default null
+                 */
+                closesAt: string | null;
+                /** @default true */
+                isRequired: boolean;
+                /**
+                 * Format: date-time
+                 * @default null
+                 */
+                opensAt: string | null;
+                /** @default 0 */
+                orderIndex: number;
+                /** @default null */
+                ticketPackageId: string | null;
+            }[];
             description?: string | null;
             name: string;
             revision: number;
@@ -9425,12 +10320,14 @@ export interface components {
                         minDate?: string;
                         minLength?: number;
                         minSelections?: number;
+                        pattern?: string;
+                        patternMessage?: string;
                     };
                 }[];
                 title: string;
             }[];
             /** @enum {string} */
-            stage: "REGISTRATION" | "POST_SUBMISSION" | "POST_APPROVAL";
+            stage: "REGISTRATION" | "POST_REGISTRATION";
             validation: {
                 issues: {
                     code: string;
@@ -9480,6 +10377,8 @@ export interface components {
                 minDate?: string;
                 minLength?: number;
                 minSelections?: number;
+                pattern?: string;
+                patternMessage?: string;
             };
         };
         RegistrationFormPublishedSectionV1: {
@@ -9515,6 +10414,8 @@ export interface components {
                     minDate?: string;
                     minLength?: number;
                     minSelections?: number;
+                    pattern?: string;
+                    patternMessage?: string;
                 };
             }[];
             title: string;
@@ -9559,12 +10460,14 @@ export interface components {
                         minDate?: string;
                         minLength?: number;
                         minSelections?: number;
+                        pattern?: string;
+                        patternMessage?: string;
                     };
                 }[];
                 title: string;
             }[];
             /** @enum {string} */
-            stage: "REGISTRATION" | "POST_SUBMISSION" | "POST_APPROVAL";
+            stage: "REGISTRATION" | "POST_REGISTRATION";
             version: number;
         };
         RegistrationFormPublishedV1Response: {
@@ -9591,6 +10494,8 @@ export interface components {
             minDate?: string;
             minLength?: number;
             minSelections?: number;
+            pattern?: string;
+            patternMessage?: string;
         };
         RegistrationFormValidationResultV1: {
             issues: {
@@ -10558,6 +11463,233 @@ export interface operations {
             };
         };
     };
+    getInternalEventPaymentDetailV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Payment detail returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["InternalEventPaymentDetailV1"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentValidationErrorResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Payment or sub-event not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Revision or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+        };
+    };
+    rejectEventPaymentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Payment reviewed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPaymentReviewResultV1"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentValidationErrorResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Payment or sub-event not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Revision or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+        };
+    };
+    verifyEventPaymentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason?: string;
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Payment reviewed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPaymentReviewResultV1"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentValidationErrorResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Payment or sub-event not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Revision or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+        };
+    };
     getInternalEventRegistrationV1: {
         parameters: {
             query?: never;
@@ -11211,6 +12343,387 @@ export interface operations {
             };
         };
     };
+    getInternalPostRegistrationAssignmentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Assignment returned; answers are redacted without view_event_answers. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostRegistrationAssignmentResponseV1"];
+                };
+            };
+            /** @description Review permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    reopenPostRegistrationAssignmentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: date-time */
+                    deadlineAt: string;
+                    reason: string;
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Audited assignment transition completed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostRegistrationAssignmentResponseV1"];
+                };
+            };
+            /** @description Exact response state or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    requestPostRegistrationCorrectionV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: date-time */
+                    deadlineAt: string;
+                    reason: string;
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Audited assignment transition completed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostRegistrationAssignmentResponseV1"];
+                };
+            };
+            /** @description Exact response state or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getSubEventPaymentSettingsV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subEventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Payment settings returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPaymentSettingsV1"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentValidationErrorResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Payment or sub-event not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Revision or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+        };
+    };
+    updateSubEventPaymentSettingsV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subEventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    acceptedProofTypes: ("image/jpeg" | "image/png" | "image/webp" | "application/pdf")[];
+                    accountHolder: string | null;
+                    accountNumber: string | null;
+                    amountMinor: string;
+                    bankName: string | null;
+                    /** @default IDR */
+                    currency?: string;
+                    instructions?: string | null;
+                    maxProofBytes: number;
+                    paymentDeadlineHours: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Payment settings updated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPaymentSettingsV1"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentValidationErrorResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Payment or sub-event not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Revision or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+        };
+    };
+    listSubEventPaymentsV1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                status?: "UNPAID" | "PROOF_SUBMITTED" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+                search?: string;
+                sort?: "submittedAt:asc" | "submittedAt:desc" | "createdAt:asc" | "createdAt:desc" | "expiresAt:asc" | "expiresAt:desc";
+            };
+            header?: never;
+            path: {
+                subEventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Payment queue returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["InternalEventPaymentQueueRowV1"][];
+                        meta: {
+                            limit: number;
+                            page: number;
+                            totalPages: number;
+                            totalRecords: number;
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentValidationErrorResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Payment or sub-event not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Revision or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+        };
+    };
+    listInternalPostRegistrationAssignmentsV1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                search?: string;
+                status?: "NOT_STARTED" | "DRAFT" | "LOCKED" | "NEEDS_CORRECTION";
+                required?: boolean | null;
+                blocksCheckIn?: boolean | null;
+            };
+            header?: never;
+            path: {
+                subEventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Scoped assignment queue and summary returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalPostRegistrationAssignmentListResponseV1"];
+                };
+            };
+            /** @description Review permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     listInternalEventRegistrationsV1: {
         parameters: {
             query?: {
@@ -11850,6 +13363,101 @@ export interface operations {
             };
         };
     };
+    submitMyEventPaymentProofV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description One of image/jpeg, image/png, image/webp, application/pdf; maximum 10 MiB.
+                     */
+                    proof: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Proof submitted. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            paymentId: string;
+                            proofId: string;
+                            /** @enum {string} */
+                            status: "PROOF_SUBMITTED";
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentValidationErrorResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Payment or sub-event not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Revision or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Proof exceeds the allowed size. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+        };
+    };
     listMyEventRegistrationsV1: {
         parameters: {
             query?: {
@@ -12085,6 +13693,275 @@ export interface operations {
                         success?: boolean;
                     };
                 };
+            };
+        };
+    };
+    getMyEventPaymentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Payment returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ParticipantEventPaymentDetailV1"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Request validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentValidationErrorResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Payment or sub-event not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Revision or lifecycle conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+        };
+    };
+    listMyPostRegistrationAssignmentsV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Exact durable assignments returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostRegistrationAssignmentListResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getMyPostRegistrationAssignmentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Exact immutable form version returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostRegistrationAssignmentResponseV1"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Assignment not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    saveMyPostRegistrationResponseV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    answers: ({
+                        questionId: string;
+                        /** @enum {string} */
+                        type: "TEXT";
+                        value: string;
+                    } | {
+                        questionId: string;
+                        /** @enum {string} */
+                        type: "TEXTAREA";
+                        value: string;
+                    } | {
+                        questionId: string;
+                        /** @enum {string} */
+                        type: "NUMBER";
+                        value: string;
+                    } | {
+                        questionId: string;
+                        /** @enum {string} */
+                        type: "DATE";
+                        /** Format: date */
+                        value: string;
+                    } | {
+                        optionId: string;
+                        questionId: string;
+                        /** @enum {string} */
+                        type: "SELECT";
+                    } | {
+                        optionId: string;
+                        questionId: string;
+                        /** @enum {string} */
+                        type: "RADIO";
+                    } | {
+                        optionIds: string[];
+                        questionId: string;
+                        /** @enum {string} */
+                        type: "CHECKBOX";
+                    })[];
+                    revision: number | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Draft replaced. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostRegistrationAssignmentResponseV1"];
+                };
+            };
+            /** @description Answer validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Window, lifecycle, or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    submitMyPostRegistrationResponseV1: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                registrationId: string;
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Exact response locked without order mutation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostRegistrationAssignmentResponseV1"];
+                };
+            };
+            /** @description Answer validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Window, lifecycle, revision, or idempotency conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -12412,6 +14289,49 @@ export interface operations {
                         status?: string;
                         success?: boolean;
                     };
+                };
+            };
+        };
+    };
+    getPrivatePaymentProofContentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private proof content. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                    "image/jpeg": string;
+                    "image/png": string;
+                    "image/webp": string;
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
+                };
+            };
+            /** @description Proof unavailable or authorization denied. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPaymentErrorResponseV1"];
                 };
             };
         };

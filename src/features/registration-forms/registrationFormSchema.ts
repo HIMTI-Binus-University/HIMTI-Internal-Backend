@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getRegexValidationError } from '@/utils/safeRegex.js';
 
 const FormFieldTypeEnum = z.enum([
    'TEXT',
@@ -29,6 +30,8 @@ export const FormValidationSchema = z
       maxFiles: z.number().int().positive().max(20).optional(),
       minDate: z.iso.date().optional(),
       maxDate: z.iso.date().optional(),
+      pattern: z.string().min(1).max(256).optional(),
+      patternMessage: z.string().min(1).max(200).optional(),
    })
    .strict()
    .superRefine((value, ctx) => {
@@ -72,6 +75,17 @@ export const FormValidationSchema = z
             path: ['minDate'],
             message: 'minDate must not exceed maxDate',
          });
+      if (value.patternMessage && !value.pattern)
+         ctx.addIssue({
+            code: 'custom',
+            path: ['patternMessage'],
+            message: 'patternMessage requires pattern',
+         });
+      if (value.pattern) {
+         const error = getRegexValidationError(value.pattern);
+         if (error)
+            ctx.addIssue({ code: 'custom', path: ['pattern'], message: error });
+      }
    });
 
 const DraftOptionSchema = z.object({
@@ -108,16 +122,39 @@ export const CreateRegistrationFormV1Schema = z.object({
    subEventId: z.string().min(1),
    name: z.string().trim().min(1).max(255),
    description: z.string().trim().max(5000).nullable().optional(),
-   stage: z
-      .enum(['REGISTRATION', 'POST_SUBMISSION', 'POST_APPROVAL'])
-      .default('REGISTRATION'),
+   stage: z.enum(['REGISTRATION', 'POST_REGISTRATION']).default('REGISTRATION'),
+   assignments: z
+      .array(
+         z.object({
+            ticketPackageId: z.string().min(1).nullable().default(null),
+            audience: z.enum(['BUYER', 'EACH_ATTENDEE', 'ALL_ORDER_MEMBERS']),
+            isRequired: z.boolean().default(true),
+            blocksCheckIn: z.boolean().default(false),
+            orderIndex: z.number().int().min(0).default(0),
+            opensAt: z.iso.datetime().nullable().default(null),
+            closesAt: z.iso.datetime().nullable().default(null),
+         }),
+      )
+      .min(1)
+      .default([
+         {
+            ticketPackageId: null,
+            audience: 'EACH_ATTENDEE',
+            isRequired: true,
+            blocksCheckIn: false,
+            orderIndex: 0,
+            opensAt: null,
+            closesAt: null,
+         },
+      ]),
 });
 
 export const SaveRegistrationFormDraftV1Schema = z.object({
    revision: z.number().int().positive(),
    name: z.string().trim().min(1).max(255),
    description: z.string().trim().max(5000).nullable().optional(),
-   stage: z.enum(['REGISTRATION', 'POST_SUBMISSION', 'POST_APPROVAL']),
+   stage: z.enum(['REGISTRATION', 'POST_REGISTRATION']),
+   assignments: CreateRegistrationFormV1Schema.shape.assignments,
    sections: z.array(DraftSectionSchema).min(1).max(50),
 });
 

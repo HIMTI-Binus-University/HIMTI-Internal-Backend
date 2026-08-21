@@ -36,6 +36,8 @@ describe('free registration source invariants', () => {
    it('counts only submitted approval lifecycle states as occupied capacity', () => {
       assert.deepEqual(capacityConsumingStatuses, [
          'SUBMITTED',
+         'PENDING_PAYMENT',
+         'PAYMENT_REVIEW',
          'PENDING_APPROVAL',
          'APPROVED',
       ]);
@@ -48,7 +50,7 @@ describe('free registration source invariants', () => {
    it('locks the sub-event and uses serializable mutations', () => {
       assert.match(repositorySource, /FOR UPDATE/);
       assert.match(repositorySource, /TransactionIsolationLevel\.Serializable/);
-      assert.match(repositorySource, /status: 'CONSUMED'/);
+      assert.match(repositorySource, /status: isPaid \? 'ACTIVE' : 'CONSUMED'/);
    });
 
    it('protects every mutation and private read', () => {

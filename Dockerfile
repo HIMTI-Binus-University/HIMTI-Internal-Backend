@@ -29,6 +29,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
+RUN mkdir -p /var/lib/himti/private-uploads \
+   && chown -R node:node /var/lib/himti/private-uploads
+
 USER node
 
 EXPOSE 8000

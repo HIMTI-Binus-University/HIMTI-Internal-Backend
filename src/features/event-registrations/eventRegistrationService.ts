@@ -694,11 +694,6 @@ class EventRegistrationService {
             registrationId: null,
             forms: [],
          };
-      if (available.priceMinor !== 0n)
-         throw unsupported(
-            'UNSUPPORTED_PAID_PACKAGE',
-            'Paid packages are not supported by free registration MVP',
-         );
       if (available.seatCount !== 1)
          throw unsupported(
             'UNSUPPORTED_BUNDLE_PACKAGE',
@@ -773,11 +768,6 @@ class EventRegistrationService {
          throw unsupported(
             order.unsupportedCode,
             'This registration configuration is not supported by the free registration MVP',
-         );
-      if (order.ticketPackage.priceMinor !== 0n)
-         throw unsupported(
-            'UNSUPPORTED_PAID_PACKAGE',
-            'Paid packages are not supported by free registration MVP',
          );
       if (order.ticketPackage.seatCount !== 1)
          throw unsupported(
@@ -895,11 +885,6 @@ class EventRegistrationService {
             'Registration is closed',
             409,
             'REGISTRATION_CLOSED',
-         );
-      if ('paidPackage' in result)
-         throw unsupported(
-            'UNSUPPORTED_PAID_PACKAGE',
-            'Paid packages are not supported by free registration MVP',
          );
       if ('bundlePackage' in result)
          throw unsupported(

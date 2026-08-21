@@ -16,6 +16,7 @@ import {
    ResponseValidationFailure,
    validateFreshSubmission,
 } from './eventRegistrationTypes.js';
+import { assignPublishedPostRegistrationForms } from '@/features/post-registration-forms/postRegistrationFormRepository.js';
 
 const publicSubEventSelect = {
    id: true,
@@ -413,6 +414,10 @@ class EventRegistrationRepository {
                      reason: payload.reason,
                   },
                });
+               if (action === 'APPROVED')
+                  await assignPublishedPostRegistrationForms(tx, {
+                     orderIds: [item.registrationId],
+                  });
             }
             return tx.registrationOrder.findMany({
                where: { id: { in: ids } },
@@ -789,8 +794,6 @@ class EventRegistrationRepository {
                orderBy: { createdAt: 'asc' },
             });
             if (!selectedPackage) return null;
-            if (selectedPackage.priceMinor !== 0n)
-               return { unsupportedCode: 'UNSUPPORTED_PAID_PACKAGE' } as const;
             if (selectedPackage.seatCount !== 1)
                return {
                   unsupportedCode: 'UNSUPPORTED_BUNDLE_PACKAGE',
@@ -1269,8 +1272,6 @@ class EventRegistrationRepository {
                      eligibilityNow >= order.subEvent.registrationClosesAt))
             )
                return { registrationClosed: true } as const;
-            if (order.ticketPackage.priceMinor !== 0n)
-               return { paidPackage: true } as const;
             if (order.ticketPackage.seatCount !== 1)
                return { bundlePackage: true } as const;
             if (
@@ -1319,6 +1320,50 @@ class EventRegistrationRepository {
             }
 
             const now = new Date();
+            const expiredPayments = await tx.registrationPayment.findMany({
+               where: {
+                  order: { subEventId: order.subEventId },
+                  status: { in: ['UNPAID', 'REJECTED'] },
+                  expiresAt: { lte: now },
+               },
+               select: { id: true, registrationOrderId: true, status: true },
+            });
+            if (expiredPayments.length) {
+               await tx.registrationPayment.updateMany({
+                  where: { id: { in: expiredPayments.map((item) => item.id) } },
+                  data: { status: 'EXPIRED', revision: { increment: 1 } },
+               });
+               await tx.registrationOrder.updateMany({
+                  where: {
+                     id: {
+                        in: expiredPayments.map(
+                           (item) => item.registrationOrderId,
+                        ),
+                     },
+                     status: 'PENDING_PAYMENT',
+                  },
+                  data: { status: 'EXPIRED', revision: { increment: 1 } },
+               });
+               await tx.registrationCapacityHold.updateMany({
+                  where: {
+                     registrationOrderId: {
+                        in: expiredPayments.map(
+                           (item) => item.registrationOrderId,
+                        ),
+                     },
+                     status: 'ACTIVE',
+                  },
+                  data: { status: 'EXPIRED', releasedAt: now },
+               });
+               await tx.registrationPaymentHistory.createMany({
+                  data: expiredPayments.map((item) => ({
+                     paymentId: item.id,
+                     fromStatus: item.status,
+                     toStatus: 'EXPIRED' as const,
+                     reason: 'Payment deadline expired',
+                  })),
+               });
+            }
             const answerErrors = order.submissions.flatMap((submission) =>
                validateFreshSubmission(
                   submission.form.questions,
@@ -1343,6 +1388,9 @@ class EventRegistrationRepository {
                   status: 'ACTIVE',
                   expiresAt: { gt: new Date() },
                   registrationOrderId: { not: order.id },
+                  order: {
+                     status: { notIn: [...capacityConsumingStatuses] },
+                  },
                },
                _sum: { quantity: true },
             });
@@ -1355,10 +1403,18 @@ class EventRegistrationRepository {
             )
                return { capacityExceeded: true } as const;
 
-            const nextStatus =
-               order.subEvent.approvalMode === 'AUTO_APPROVE'
-                  ? 'APPROVED'
-                  : 'PENDING_APPROVAL';
+            const isPaid = order.totalMinor > 0n;
+            const nextStatus = isPaid
+               ? 'PENDING_PAYMENT'
+               : order.subEvent.approvalMode === 'AUTO_APPROVE'
+                 ? 'APPROVED'
+                 : 'PENDING_APPROVAL';
+            const paymentDeadlineAt = isPaid
+               ? new Date(
+                    now.getTime() +
+                       order.subEvent.paymentDeadlineHours * 60 * 60 * 1000,
+                 )
+               : null;
             await tx.registrationCapacityHold.upsert({
                where: { id: `submit-${order.id}` },
                create: {
@@ -1366,12 +1422,43 @@ class EventRegistrationRepository {
                   registrationOrderId: order.id,
                   subEventId: order.subEventId,
                   quantity: order.seatCount,
-                  status: 'CONSUMED',
-                  expiresAt: now,
-                  consumedAt: now,
+                  status: isPaid ? 'ACTIVE' : 'CONSUMED',
+                  expiresAt: paymentDeadlineAt ?? now,
+                  consumedAt: isPaid ? null : now,
                },
-               update: { status: 'CONSUMED', consumedAt: now },
+               update: {
+                  status: isPaid ? 'ACTIVE' : 'CONSUMED',
+                  expiresAt: paymentDeadlineAt ?? now,
+                  consumedAt: isPaid ? null : now,
+               },
             });
+            if (isPaid) {
+               const bankSnapshot = {
+                  bankName: order.subEvent.paymentBankName,
+                  accountHolder: order.subEvent.paymentAccountHolder,
+                  accountNumber: order.subEvent.paymentAccountNumberCanonical,
+                  instructions: order.subEvent.paymentInstructions,
+               } satisfies Prisma.InputJsonObject;
+               if (
+                  !bankSnapshot.bankName ||
+                  !bankSnapshot.accountHolder ||
+                  !bankSnapshot.accountNumber
+               )
+                  return { packageUnavailable: true } as const;
+               await tx.registrationPayment.upsert({
+                  where: { registrationOrderId: order.id },
+                  create: {
+                     registrationOrderId: order.id,
+                     status: 'UNPAID',
+                     currency: order.currency,
+                     amountMinor: order.totalMinor,
+                     bankSnapshot,
+                     expiresAt: paymentDeadlineAt,
+                     history: { create: { toStatus: 'UNPAID' } },
+                  },
+                  update: {},
+               });
+            }
             await tx.registrationFormSubmission.updateMany({
                where: { registrationOrderId: order.id },
                data: { status: 'SUBMITTED', submittedAt: now },
@@ -1395,9 +1482,14 @@ class EventRegistrationRepository {
                   idempotencyFingerprint: fingerprint,
                   submittedAt: now,
                   approvedAt: nextStatus === 'APPROVED' ? now : null,
+                  paymentDeadlineAt,
                },
                include: detailInclude,
             });
+            if (nextStatus === 'APPROVED')
+               await assignPublishedPostRegistrationForms(tx, {
+                  orderIds: [order.id],
+               });
             return { order: updated, replay: false } as const;
          },
          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
@@ -1455,6 +1547,13 @@ class EventRegistrationRepository {
                   status: { in: ['PENDING', 'ACTIVE'] },
                },
                data: { status: 'REVOKED', revokedAt: now },
+            });
+            await tx.registrationPayment.updateMany({
+               where: {
+                  registrationOrderId: order.id,
+                  status: { in: ['UNPAID', 'PROOF_SUBMITTED', 'REJECTED'] },
+               },
+               data: { status: 'CANCELLED', revision: { increment: 1 } },
             });
             if (order.status === 'DRAFT') {
                await tx.registrationInvitation.updateMany({

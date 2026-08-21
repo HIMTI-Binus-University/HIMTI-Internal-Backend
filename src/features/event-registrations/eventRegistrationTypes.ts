@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import type { auth } from '@/utils/auth.js';
+import { compileFullValueRegex } from '@/utils/safeRegex.js';
 import type {
    createEventRegistrationSchema,
    eventRegistrationPaginationSchema,
@@ -39,6 +40,8 @@ export type EligibilityAction =
 
 export const capacityConsumingStatuses = [
    'SUBMITTED',
+   'PENDING_PAYMENT',
+   'PAYMENT_REVIEW',
    'PENDING_APPROVAL',
    'APPROVED',
 ] as const;
@@ -84,6 +87,8 @@ type ValidationMetadata = {
    maxSelections?: number;
    minDate?: string;
    maxDate?: string;
+   pattern?: string;
+   patternMessage?: string;
 };
 
 type ValidationQuestion = {
@@ -160,6 +165,17 @@ export const validateFreshSubmission = (
          text.length > validation.maxLength
       )
          invalid('MAX_LENGTH', `Maximum length is ${validation.maxLength}`);
+      if (
+         validation.pattern &&
+         ['TEXT', 'TEXTAREA'].includes(question.fieldType)
+      ) {
+         const regex = compileFullValueRegex(validation.pattern);
+         if (!regex || !regex.test(text))
+            invalid(
+               'PATTERN_MISMATCH',
+               validation.patternMessage ?? 'Answer has an invalid format',
+            );
+      }
       if (
          validation.min !== undefined &&
          number !== null &&

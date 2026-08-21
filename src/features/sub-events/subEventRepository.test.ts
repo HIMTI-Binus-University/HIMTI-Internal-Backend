@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { buildSubEventCommitteeWhere } from './subEventRepository.js';
+import { mapSubEventResponse } from './subEventController.js';
 
 const query = {
    page: 1,
@@ -44,5 +45,17 @@ describe('sub-event repository authorization scope', () => {
       assert.equal(where.visibility, 'INTERNAL');
       assert.ok(where.event);
       assert.ok(where.OR);
+   });
+});
+
+describe('sub-event response serialization', () => {
+   it('maps canonical payment amounts to JSON-safe decimal strings', () => {
+      const response = mapSubEventResponse({
+         id: 'sub-event-1',
+         paymentAmountMinor: 150000n,
+      });
+
+      assert.equal(response.paymentAmountMinor, '150000');
+      assert.doesNotThrow(() => JSON.stringify(response));
    });
 });
