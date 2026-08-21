@@ -1532,6 +1532,15 @@
                         "nullable": true,
                         "type": "string"
                      },
+                     "correctionDeadlineAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "correctionReason": {
+                        "nullable": true,
+                        "type": "string"
+                     },
                      "createdAt": {
                         "format": "date-time",
                         "type": "string"
@@ -1875,6 +1884,8 @@
                      "createdAt",
                      "submittedAt",
                      "cancelledAt",
+                     "correctionReason",
+                     "correctionDeadlineAt",
                      "forms",
                      "submissions"
                   ],
@@ -31409,7 +31420,7 @@
                         }
                      }
                   },
-                  "description": "Paid, bundle, or FILE-question flow is unsupported in this MVP."
+                  "description": "Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported."
                }
             },
             "security": [
@@ -31840,7 +31851,7 @@
                         }
                      }
                   },
-                  "description": "Paid, bundle, or FILE-question flow is unsupported in this MVP."
+                  "description": "Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported."
                }
             },
             "security": [
@@ -31848,7 +31859,7 @@
                   "sessionCookie": []
                }
             ],
-            "summary": "Submit a free registration",
+            "summary": "Submit or resubmit a one-seat registration",
             "tags": [
                "Event registrations V1"
             ]
@@ -33864,7 +33875,7 @@
                         }
                      }
                   },
-                  "description": "Paid, bundle, or FILE-question flow is unsupported in this MVP."
+                  "description": "Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported."
                }
             },
             "summary": "Resolve registration context",
@@ -34290,7 +34301,7 @@
                         }
                      }
                   },
-                  "description": "Paid, bundle, or FILE-question flow is unsupported in this MVP."
+                  "description": "Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported."
                }
             },
             "security": [

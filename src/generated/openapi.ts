@@ -7945,7 +7945,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Submit a free registration */
+        /** Submit or resubmit a one-seat registration */
         post: operations["submitEventRegistrationV1"];
         delete?: never;
         options?: never;
@@ -8561,6 +8561,9 @@ export interface components {
             data: {
                 /** Format: date-time */
                 cancelledAt: string | null;
+                /** Format: date-time */
+                correctionDeadlineAt: string | null;
+                correctionReason: string | null;
                 /** Format: date-time */
                 createdAt: string;
                 event: {
@@ -14104,7 +14107,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Paid, bundle, or FILE-question flow is unsupported in this MVP. */
+            /** @description Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -14267,7 +14270,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Paid, bundle, or FILE-question flow is unsupported in this MVP. */
+            /** @description Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -15311,7 +15314,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Paid, bundle, or FILE-question flow is unsupported in this MVP. */
+            /** @description Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -15476,7 +15479,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Paid, bundle, or FILE-question flow is unsupported in this MVP. */
+            /** @description Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported. */
             422: {
                 headers: {
                     [name: string]: unknown;

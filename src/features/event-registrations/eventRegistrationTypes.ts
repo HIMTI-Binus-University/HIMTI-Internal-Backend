@@ -71,6 +71,7 @@ export class ResponseValidationFailure extends Error {
       super('Invalid form answers');
    }
 }
+export class ResponseCorrectionDeadlinePassed extends Error {}
 
 export interface AnswerValidationError {
    questionId: string;

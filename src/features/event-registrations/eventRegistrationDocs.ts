@@ -54,7 +54,7 @@ const errors = {
    },
    422: {
       description:
-         'Paid, bundle, or FILE-question flow is unsupported in this MVP.',
+         'Bundle packages and generic FILE-question flows are unsupported at this checkpoint; paid one-seat registration is supported.',
       content: { 'application/json': { schema: errorResponseSchema } },
    },
 };
@@ -453,7 +453,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
       path: '/api/v1/me/event-registrations/{registrationId}/submit',
       operationId: 'submitEventRegistrationV1',
       tags: [tag],
-      summary: 'Submit a free registration',
+      summary: 'Submit or resubmit a one-seat registration',
       security,
       request: {
          params: idParams,

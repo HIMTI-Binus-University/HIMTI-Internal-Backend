@@ -137,4 +137,29 @@ describe('phase 6 registration operations', () => {
          /!isCorrection &&[\s\S]*registrationClosesAt/,
       );
    });
+
+   it('exposes correction metadata only in participant detail and gates edits', () => {
+      const schema = source('./eventRegistrationSchema.ts');
+      const detail = schema.slice(
+         schema.indexOf('export const registrationDetailSchema'),
+         schema.indexOf('export const registrationContextSchema'),
+      );
+      assert.match(detail, /correctionReason: z\.string\(\)\.nullable\(\)/);
+      assert.match(
+         detail,
+         /correctionDeadlineAt: z\.string\(\)\.datetime\(\)\.nullable\(\)/,
+      );
+      const repository = source('./eventRegistrationRepository.ts');
+      const replace = repository.slice(
+         repository.indexOf('async replaceResponses('),
+         repository.indexOf('async submit('),
+      );
+      assert.match(replace, /status === 'NEEDS_CORRECTION'/);
+      assert.match(replace, /new Date\(\) >= order\.correctionDeadlineAt/);
+      assert.match(replace, /ResponseCorrectionDeadlinePassed/);
+      const service = source('./eventRegistrationService.ts');
+      assert.match(service, /code:[\s\S]*'CORRECTION_REQUIRED'/);
+      assert.match(service, /action: 'RESUME'/);
+      assert.match(service, /CORRECTION_DEADLINE_PASSED/);
+   });
 });

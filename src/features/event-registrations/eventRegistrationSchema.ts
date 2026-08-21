@@ -381,6 +381,8 @@ export const registrationSummarySchema = z.object({
 });
 
 export const registrationDetailSchema = registrationSummarySchema.extend({
+   correctionReason: z.string().nullable(),
+   correctionDeadlineAt: z.string().datetime().nullable(),
    forms: z.array(registrationFormDefinitionSchema),
    submissions: z.array(registrationSubmissionSchema),
 });

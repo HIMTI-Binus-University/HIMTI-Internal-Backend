@@ -15,6 +15,7 @@ import type {
 import {
    capacityConsumingStatuses,
    ResponseAccessDenied,
+   ResponseCorrectionDeadlinePassed,
    ResponseRevisionConflict,
    ResponseValidationFailure,
 } from './eventRegistrationTypes.js';
@@ -239,6 +240,14 @@ const mapDetail = async (order: DetailOrder, viewerUserId?: string) => {
       : order.submissions;
    return {
       ...mapSummary(order),
+      correctionReason:
+         order.status === 'NEEDS_CORRECTION'
+            ? (order.history[0]?.reason ?? null)
+            : null,
+      correctionDeadlineAt:
+         order.status === 'NEEDS_CORRECTION'
+            ? toIso(order.correctionDeadlineAt)
+            : null,
       forms: mapSubmissionForms(visibleSubmissions),
       submissions: visibleSubmissions.map((submission) => ({
          id: submission.id,
@@ -269,6 +278,13 @@ const translateConcurrencyError = (error: unknown): never => {
       throw new AppError('Invalid form answers', 400, 'FORM_ANSWER_INVALID', {
          fieldErrors: error.fieldErrors,
       });
+   }
+   if (error instanceof ResponseCorrectionDeadlinePassed) {
+      throw new AppError(
+         'The correction deadline has passed',
+         409,
+         'CORRECTION_DEADLINE_PASSED',
+      );
    }
    if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -632,6 +648,51 @@ class EventRegistrationService {
          };
       }
       const now = new Date();
+      const registration = source.registrationOrders[0];
+      if (
+         registration &&
+         ['DRAFT', 'NEEDS_CORRECTION'].includes(registration.status) &&
+         (registration.status !== 'NEEDS_CORRECTION' ||
+            !registration.correctionDeadlineAt ||
+            now < registration.correctionDeadlineAt)
+      ) {
+         const registrationPackage =
+            source.ticketPackages.find(
+               (item) => item.id === registration.ticketPackageId,
+            ) ?? null;
+         const draft = await eventRegistrationRepository.findOwned(
+            registration.id,
+            user.id,
+         );
+         const forms = draft ? mapSubmissionForms(draft.submissions) : [];
+         return {
+            action: 'RESUME' as const,
+            code:
+               registration.status === 'NEEDS_CORRECTION'
+                  ? 'CORRECTION_REQUIRED'
+                  : 'DRAFT_EXISTS',
+            destinationUrl: null,
+            package: registrationPackage
+               ? mapPackage(registrationPackage)
+               : null,
+            registrationId: registration.id,
+            forms,
+         };
+      }
+      if (
+         registration?.status === 'NEEDS_CORRECTION' &&
+         registration.correctionDeadlineAt &&
+         now >= registration.correctionDeadlineAt
+      ) {
+         return {
+            action: 'VIEW_REGISTRATION' as const,
+            code: 'CORRECTION_DEADLINE_PASSED',
+            destinationUrl: null,
+            package: null,
+            registrationId: registration.id,
+            forms: [],
+         };
+      }
       if (
          source.status !== 'OPEN' ||
          !source.isRegistrationOpen ||
@@ -645,28 +706,6 @@ class EventRegistrationService {
             package: null,
             registrationId: null,
             forms: [],
-         };
-      }
-      const registration = source.registrationOrders[0];
-      if (registration && registration.status === 'DRAFT') {
-         const registrationPackage =
-            source.ticketPackages.find(
-               (item) => item.id === registration.ticketPackageId,
-            ) ?? null;
-         const draft = await eventRegistrationRepository.findOwned(
-            registration.id,
-            user.id,
-         );
-         const forms = draft ? mapSubmissionForms(draft.submissions) : [];
-         return {
-            action: 'RESUME' as const,
-            code: 'DRAFT_EXISTS',
-            destinationUrl: null,
-            package: registrationPackage
-               ? mapPackage(registrationPackage)
-               : null,
-            registrationId: registration.id,
-            forms,
          };
       }
       if (registration && registration.status !== 'CANCELLED') {

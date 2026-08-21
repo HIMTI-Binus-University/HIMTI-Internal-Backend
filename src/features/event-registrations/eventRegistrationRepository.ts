@@ -12,6 +12,7 @@ import {
    activeRegistrationStatuses,
    capacityConsumingStatuses,
    ResponseAccessDenied,
+   ResponseCorrectionDeadlinePassed,
    ResponseRevisionConflict,
    ResponseValidationFailure,
    validateFreshSubmission,
@@ -87,6 +88,12 @@ const detailInclude = {
             include: { selectedOptions: true, question: true },
          },
       },
+   },
+   history: {
+      where: { entityType: 'ORDER', toStatus: 'NEEDS_CORRECTION' },
+      orderBy: [{ createdAt: 'desc' as const }, { id: 'desc' as const }],
+      take: 1,
+      select: { reason: true },
    },
 } satisfies Prisma.RegistrationOrderInclude;
 
@@ -493,6 +500,7 @@ class EventRegistrationRepository {
                        id: true,
                        status: true,
                        ticketPackageId: true,
+                       correctionDeadlineAt: true,
                     },
                     orderBy: { createdAt: 'desc' },
                  }
@@ -1000,6 +1008,8 @@ class EventRegistrationRepository {
                select: {
                   id: true,
                   buyerUserId: true,
+                  status: true,
+                  correctionDeadlineAt: true,
                   members: {
                      where: { userId, status: { not: 'CANCELLED' } },
                      select: { id: true, isBuyer: true },
@@ -1007,6 +1017,12 @@ class EventRegistrationRepository {
                },
             });
             if (!order) return null;
+            if (
+               order.status === 'NEEDS_CORRECTION' &&
+               order.correctionDeadlineAt &&
+               new Date() >= order.correctionDeadlineAt
+            )
+               throw new ResponseCorrectionDeadlinePassed();
             const ownMemberIds = new Set(
                order.members.map((member) => member.id),
             );
