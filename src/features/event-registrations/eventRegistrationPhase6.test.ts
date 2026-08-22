@@ -7,7 +7,11 @@ import {
    internalRegistrationListSchema,
    registrationReasonDecisionSchema,
 } from './eventRegistrationSchema.js';
-import { buildInternalRegistrationWhere } from './eventRegistrationRepository.js';
+import {
+   buildInternalRegistrationWhere,
+   correctionResubmissionStatus,
+} from './eventRegistrationRepository.js';
+import { registrationReviewCapabilities } from './eventRegistrationService.js';
 
 const source = (name: string) =>
    readFileSync(fileURLToPath(new URL(name, import.meta.url)), 'utf8');
@@ -51,6 +55,41 @@ describe('phase 6 registration operations', () => {
          }).success,
          true,
       );
+   });
+
+   it('derives paid correction transitions without resetting payment state', () => {
+      assert.equal(
+         correctionResubmissionStatus('VERIFIED', 'MANUAL_REVIEW'),
+         'PENDING_APPROVAL',
+      );
+      assert.equal(
+         correctionResubmissionStatus('VERIFIED', 'AUTO_APPROVE'),
+         'APPROVED',
+      );
+      assert.equal(
+         correctionResubmissionStatus('PROOF_SUBMITTED', 'MANUAL_REVIEW'),
+         'PAYMENT_REVIEW',
+      );
+      for (const status of ['UNPAID', 'REJECTED'])
+         assert.equal(
+            correctionResubmissionStatus(status, 'MANUAL_REVIEW'),
+            'PENDING_PAYMENT',
+         );
+      for (const status of [null, 'EXPIRED', 'CANCELLED'])
+         assert.equal(
+            correctionResubmissionStatus(status, 'MANUAL_REVIEW'),
+            null,
+         );
+   });
+
+   it('exposes review capabilities for corrected paid registrations', () => {
+      assert.deepEqual(registrationReviewCapabilities('PENDING_APPROVAL'), [
+         'approve',
+         'request-correction',
+         'reject',
+         'admin-cancel',
+      ]);
+      assert.deepEqual(registrationReviewCapabilities('PAYMENT_REVIEW'), []);
    });
 
    it('filters response status with the same aggregate precedence', () => {

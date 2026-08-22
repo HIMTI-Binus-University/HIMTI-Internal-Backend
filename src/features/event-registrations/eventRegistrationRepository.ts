@@ -20,6 +20,20 @@ import {
 import { assignPublishedPostRegistrationForms } from '@/features/post-registration-forms/postRegistrationFormRepository.js';
 import { issueTicketsForApprovedOrder } from '@/features/event-tickets/eventTicketService.js';
 
+export const correctionResubmissionStatus = (
+   paymentStatus: string | null,
+   approvalMode: string,
+) => {
+   if (paymentStatus === 'UNPAID' || paymentStatus === 'REJECTED')
+      return 'PENDING_PAYMENT' as const;
+   if (paymentStatus === 'PROOF_SUBMITTED') return 'PAYMENT_REVIEW' as const;
+   if (paymentStatus === 'VERIFIED')
+      return approvalMode === 'AUTO_APPROVE'
+         ? ('APPROVED' as const)
+         : ('PENDING_APPROVAL' as const);
+   return null;
+};
+
 const createInvitationToken = () => {
    const token = randomBytes(32).toString('base64url');
    return {
@@ -1416,6 +1430,7 @@ class EventRegistrationRepository {
                   invitations: {
                      select: { id: true, status: true, expiresAt: true },
                   },
+                  payment: { select: { status: true } },
                },
             });
             if (!order) return null;
@@ -1589,26 +1604,35 @@ class EventRegistrationRepository {
                return { capacityExceeded: true } as const;
 
             const isPaid = order.totalMinor > 0n;
-            const nextStatus = isPaid
-               ? 'PENDING_PAYMENT'
-               : order.subEvent.approvalMode === 'AUTO_APPROVE'
-                 ? 'APPROVED'
-                 : 'PENDING_APPROVAL';
-            const paymentDeadlineAt = isPaid
-               ? new Date(
-                    now.getTime() +
-                       order.subEvent.paymentDeadlineHours * 60 * 60 * 1000,
-                 )
-               : null;
-            await tx.registrationCapacityHold.updateMany({
-               where: { registrationOrderId: order.id, status: 'ACTIVE' },
-               data: {
-                  status: isPaid ? 'ACTIVE' : 'CONSUMED',
-                  expiresAt: paymentDeadlineAt ?? now,
-                  consumedAt: isPaid ? null : now,
-               },
-            });
-            if (isPaid) {
+            const nextStatus =
+               isCorrection && isPaid
+                  ? correctionResubmissionStatus(
+                       order.payment?.status ?? null,
+                       order.subEvent.approvalMode,
+                    )
+                  : isPaid
+                    ? 'PENDING_PAYMENT'
+                    : order.subEvent.approvalMode === 'AUTO_APPROVE'
+                      ? 'APPROVED'
+                      : 'PENDING_APPROVAL';
+            if (!nextStatus) return { lifecycleConflict: true } as const;
+            const paymentDeadlineAt =
+               isPaid && !isCorrection
+                  ? new Date(
+                       now.getTime() +
+                          order.subEvent.paymentDeadlineHours * 60 * 60 * 1000,
+                    )
+                  : null;
+            if (!isCorrection)
+               await tx.registrationCapacityHold.updateMany({
+                  where: { registrationOrderId: order.id, status: 'ACTIVE' },
+                  data: {
+                     status: isPaid ? 'ACTIVE' : 'CONSUMED',
+                     expiresAt: paymentDeadlineAt ?? now,
+                     consumedAt: isPaid ? null : now,
+                  },
+               });
+            if (isPaid && !isCorrection) {
                const bankSnapshot = {
                   bankName: order.subEvent.paymentBankName,
                   accountHolder: order.subEvent.paymentAccountHolder,
@@ -1623,9 +1647,8 @@ class EventRegistrationRepository {
                   !bankSnapshot.accountNumber
                )
                   return { packageUnavailable: true } as const;
-               await tx.registrationPayment.upsert({
-                  where: { registrationOrderId: order.id },
-                  create: {
+               await tx.registrationPayment.create({
+                  data: {
                      registrationOrderId: order.id,
                      status: 'UNPAID',
                      currency: order.currency,
@@ -1634,7 +1657,6 @@ class EventRegistrationRepository {
                      expiresAt: paymentDeadlineAt,
                      history: { create: { toStatus: 'UNPAID' } },
                   },
-                  update: {},
                });
             }
             await tx.registrationFormSubmission.updateMany({
@@ -1660,7 +1682,7 @@ class EventRegistrationRepository {
                   idempotencyFingerprint: fingerprint,
                   submittedAt: now,
                   approvedAt: nextStatus === 'APPROVED' ? now : null,
-                  paymentDeadlineAt,
+                  ...(!isCorrection && { paymentDeadlineAt }),
                },
                include: detailInclude,
             });
