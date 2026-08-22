@@ -8106,7 +8106,7 @@ export interface paths {
         put?: never;
         /**
          * Clone a form as an independent draft
-         * @description Creates a fresh logical form with version 1 and no superseded version, while copying active sections, questions, options, and assignments.
+         * @description Creates a fresh logical form with version 1 and no superseded version, while copying its form-level completion settings, active sections, questions, and options.
          */
         post: operations["cloneRegistrationFormV1"];
         delete?: never;
@@ -8396,42 +8396,28 @@ export interface components {
         };
         CreateRegistrationFormV1: {
             /**
-             * @default [
-             *       {
-             *         "audience": "EACH_ATTENDEE",
-             *         "blocksCheckIn": false,
-             *         "closesAt": null,
-             *         "isRequired": true,
-             *         "opensAt": null,
-             *         "orderIndex": 0,
-             *         "ticketPackageId": null
-             *       }
-             *     ]
+             * @default BUYER
+             * @enum {string}
              */
-            assignments: {
-                /** @enum {string} */
-                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
-                /** @default false */
-                blocksCheckIn: boolean;
-                /**
-                 * Format: date-time
-                 * @default null
-                 */
-                closesAt: string | null;
-                /** @default true */
-                isRequired: boolean;
-                /**
-                 * Format: date-time
-                 * @default null
-                 */
-                opensAt: string | null;
-                /** @default 0 */
-                orderIndex: number;
-                /** @default null */
-                ticketPackageId: string | null;
-            }[];
+            audience: "BUYER" | "EACH_ATTENDEE";
+            /** @default false */
+            blocksCheckIn: boolean;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            closesAt: string | null;
             description?: string | null;
+            /** @default true */
+            isRequired: boolean;
             name: string;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            opensAt: string | null;
+            /** @default 0 */
+            orderIndex: number;
             /**
              * @default REGISTRATION
              * @enum {string}
@@ -10293,31 +10279,22 @@ export interface components {
             updatedAt: string | null;
         };
         RegistrationFormBuilderV1: {
-            assignments: {
-                /** @enum {string} */
-                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
-                blocksCheckIn: boolean;
-                /** Format: date-time */
-                closesAt: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                id: string;
-                isRequired: boolean;
-                /** Format: date-time */
-                opensAt: string | null;
-                orderIndex: number;
-                registrationFormId: string;
-                ticketPackageId: string | null;
-                /** Format: date-time */
-                updatedAt: string | null;
-            }[];
+            /** @enum {string} */
+            audience: "BUYER" | "EACH_ATTENDEE";
+            blocksCheckIn: boolean;
+            /** Format: date-time */
+            closesAt: string | null;
             /** Format: date-time */
             createdAt: string;
             createdBy: string;
             description: string | null;
             id: string;
+            isRequired: boolean;
             logicalKey: string | null;
             name: string;
+            /** Format: date-time */
+            opensAt: string | null;
+            orderIndex: number;
             /** Format: date-time */
             publishedAt: string | null;
             revision: number;
@@ -10411,42 +10388,28 @@ export interface components {
         };
         RegistrationFormDraftV1: {
             /**
-             * @default [
-             *       {
-             *         "audience": "EACH_ATTENDEE",
-             *         "blocksCheckIn": false,
-             *         "closesAt": null,
-             *         "isRequired": true,
-             *         "opensAt": null,
-             *         "orderIndex": 0,
-             *         "ticketPackageId": null
-             *       }
-             *     ]
+             * @default BUYER
+             * @enum {string}
              */
-            assignments: {
-                /** @enum {string} */
-                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
-                /** @default false */
-                blocksCheckIn: boolean;
-                /**
-                 * Format: date-time
-                 * @default null
-                 */
-                closesAt: string | null;
-                /** @default true */
-                isRequired: boolean;
-                /**
-                 * Format: date-time
-                 * @default null
-                 */
-                opensAt: string | null;
-                /** @default 0 */
-                orderIndex: number;
-                /** @default null */
-                ticketPackageId: string | null;
-            }[];
+            audience: "BUYER" | "EACH_ATTENDEE";
+            /** @default false */
+            blocksCheckIn: boolean;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            closesAt: string | null;
             description?: string | null;
+            /** @default true */
+            isRequired: boolean;
             name: string;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            opensAt: string | null;
+            /** @default 0 */
+            orderIndex: number;
             revision: number;
             sections: {
                 clientKey?: string;
@@ -10497,42 +10460,28 @@ export interface components {
         };
         RegistrationFormPreviewV1: {
             /**
-             * @default [
-             *       {
-             *         "audience": "EACH_ATTENDEE",
-             *         "blocksCheckIn": false,
-             *         "closesAt": null,
-             *         "isRequired": true,
-             *         "opensAt": null,
-             *         "orderIndex": 0,
-             *         "ticketPackageId": null
-             *       }
-             *     ]
+             * @default BUYER
+             * @enum {string}
              */
-            assignments: {
-                /** @enum {string} */
-                audience: "BUYER" | "EACH_ATTENDEE" | "ALL_ORDER_MEMBERS";
-                /** @default false */
-                blocksCheckIn: boolean;
-                /**
-                 * Format: date-time
-                 * @default null
-                 */
-                closesAt: string | null;
-                /** @default true */
-                isRequired: boolean;
-                /**
-                 * Format: date-time
-                 * @default null
-                 */
-                opensAt: string | null;
-                /** @default 0 */
-                orderIndex: number;
-                /** @default null */
-                ticketPackageId: string | null;
-            }[];
+            audience: "BUYER" | "EACH_ATTENDEE";
+            /** @default false */
+            blocksCheckIn: boolean;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            closesAt: string | null;
             description?: string | null;
+            /** @default true */
+            isRequired: boolean;
             name: string;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            opensAt: string | null;
+            /** @default 0 */
+            orderIndex: number;
             revision: number;
             sections: {
                 clientKey?: string;

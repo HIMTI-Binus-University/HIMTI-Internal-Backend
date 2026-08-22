@@ -34,11 +34,7 @@ const optionFieldTypes: readonly FormFieldType[] = [
 ];
 
 export const validateRegistrationFormDraft = (
-   payload:
-      | SaveRegistrationFormDraftV1Request
-      | (Omit<SaveRegistrationFormDraftV1Request, 'assignments'> & {
-           assignments?: SaveRegistrationFormDraftV1Request['assignments'];
-        }),
+   payload: SaveRegistrationFormDraftV1Request,
 ): FormValidationIssue[] => {
    const issues: FormValidationIssue[] = [];
    const fieldKeys = new Set<string>();
@@ -46,43 +42,38 @@ export const validateRegistrationFormDraft = (
    const add = (code: string, path: string, message: string) =>
       issues.push({ code, path, message });
 
-   const assignmentKeys = new Set<string>();
-   if (payload.assignments && !payload.assignments.length)
+   if (
+      payload.opensAt &&
+      payload.closesAt &&
+      payload.opensAt >= payload.closesAt
+   )
       add(
-         'ASSIGNMENTS_REQUIRED',
-         'assignments',
-         'A publishable form must contain at least one assignment route',
+         'FORM_WINDOW_INVALID',
+         'opensAt',
+         'The opening date must be before the closing date',
       );
-   (payload.assignments ?? []).forEach((assignment, index) => {
-      const path = `assignments.${index}`;
-      const key = `${assignment.ticketPackageId ?? '*'}:${assignment.audience}`;
-      if (assignmentKeys.has(key))
-         add(
-            'ASSIGNMENT_DUPLICATE',
-            path,
-            'Package and audience route must be unique',
-         );
-      assignmentKeys.add(key);
-      if (
-         assignment.opensAt &&
-         assignment.closesAt &&
-         assignment.opensAt >= assignment.closesAt
-      )
-         add(
-            'ASSIGNMENT_WINDOW_INVALID',
-            path,
-            'opensAt must be before closesAt',
-         );
-      if (
-         assignment.blocksCheckIn &&
-         (!assignment.isRequired || payload.stage !== 'POST_REGISTRATION')
-      )
-         add(
-            'CHECK_IN_BLOCK_INVALID',
-            `${path}.blocksCheckIn`,
-            'Check-in blocking requires a required post-registration assignment',
-         );
-   });
+   if (
+      payload.stage === 'REGISTRATION' &&
+      (payload.audience !== 'BUYER' ||
+         !payload.isRequired ||
+         payload.blocksCheckIn ||
+         payload.opensAt ||
+         payload.closesAt)
+   )
+      add(
+         'REGISTRATION_CONFIGURATION_FIXED',
+         'stage',
+         'Registration forms must be completed by the buyer, required, always available, and cannot block check-in',
+      );
+   if (
+      payload.blocksCheckIn &&
+      (!payload.isRequired || payload.stage !== 'POST_REGISTRATION')
+   )
+      add(
+         'CHECK_IN_BLOCK_INVALID',
+         'blocksCheckIn',
+         'Only a required post-registration form can block check-in',
+      );
 
    if (!payload.sections.length)
       add(
@@ -379,18 +370,24 @@ class RegistrationFormService {
          name: payload.name,
          description: payload.description,
          stage: payload.stage,
+         audience:
+            payload.stage === 'REGISTRATION' ? 'BUYER' : payload.audience,
+         isRequired:
+            payload.stage === 'REGISTRATION' ? true : payload.isRequired,
+         blocksCheckIn:
+            payload.stage === 'POST_REGISTRATION' && payload.isRequired
+               ? payload.blocksCheckIn
+               : false,
+         orderIndex: payload.orderIndex,
+         opensAt:
+            payload.stage === 'REGISTRATION' || !payload.opensAt
+               ? null
+               : new Date(payload.opensAt),
+         closesAt:
+            payload.stage === 'REGISTRATION' || !payload.closesAt
+               ? null
+               : new Date(payload.closesAt),
          createdBy: user.id,
-         assignments: {
-            create: payload.assignments.map((assignment) => ({
-               ...assignment,
-               opensAt: assignment.opensAt
-                  ? new Date(assignment.opensAt)
-                  : null,
-               closesAt: assignment.closesAt
-                  ? new Date(assignment.closesAt)
-                  : null,
-            })),
-         },
       });
    }
 
@@ -460,15 +457,14 @@ class RegistrationFormService {
             name: payload.name,
             description: payload.description,
             stage: payload.stage,
+            audience: payload.audience,
+            isRequired: payload.isRequired,
+            blocksCheckIn: payload.blocksCheckIn,
+            orderIndex: payload.orderIndex,
+            opensAt: payload.opensAt ? new Date(payload.opensAt) : null,
+            closesAt: payload.closesAt ? new Date(payload.closesAt) : null,
          },
          sections,
-         payload.assignments.map((assignment) => ({
-            ...assignment,
-            opensAt: assignment.opensAt ? new Date(assignment.opensAt) : null,
-            closesAt: assignment.closesAt
-               ? new Date(assignment.closesAt)
-               : null,
-         })),
       );
       if (!saved) {
          const current = await registrationFormRepository.findFormRevision(id);
@@ -561,15 +557,15 @@ class RegistrationFormService {
          name: form.name,
          description: form.description,
          stage: form.stage,
-         assignments: form.assignments.map((assignment) => ({
-            ticketPackageId: assignment.ticketPackageId,
-            audience: assignment.audience,
-            isRequired: assignment.isRequired,
-            blocksCheckIn: assignment.blocksCheckIn,
-            orderIndex: assignment.orderIndex,
-            opensAt: assignment.opensAt?.toISOString() ?? null,
-            closesAt: assignment.closesAt?.toISOString() ?? null,
-         })),
+         audience:
+            form.audience === 'ALL_ORDER_MEMBERS'
+               ? 'EACH_ATTENDEE'
+               : form.audience,
+         isRequired: form.isRequired,
+         blocksCheckIn: form.blocksCheckIn,
+         orderIndex: form.orderIndex,
+         opensAt: form.opensAt?.toISOString() ?? null,
+         closesAt: form.closesAt?.toISOString() ?? null,
          sections: form.sections
             .filter((s) => s.status === 'ACTIVE')
             .map((s) => ({

@@ -724,17 +724,23 @@ model EventComittee {
 // ==========================================
 
 model RegistrationForm {
-  id           String                 @id @default(nanoid())
-  subEventId   String
-  status       RegistrationFormStatus @default(DRAFT)
-  name         String                 @default("Registration") @db.VarChar(255)
-  description  String?                @db.Text
-  logicalKey   String?                @db.VarChar(100)
-  version      Int                    @default(1)
-  revision     Int                    @default(1)
-  stage        RegistrationFormStage  @default(REGISTRATION)
-  publishedAt  DateTime?
-  supersedesId String?
+  id            String                   @id @default(nanoid())
+  subEventId    String
+  status        RegistrationFormStatus   @default(DRAFT)
+  name          String                   @default("Registration") @db.VarChar(255)
+  description   String?                  @db.Text
+  logicalKey    String?                  @db.VarChar(100)
+  version       Int                      @default(1)
+  revision      Int                      @default(1)
+  stage         RegistrationFormStage    @default(REGISTRATION)
+  audience      RegistrationFormAudience @default(BUYER)
+  isRequired    Boolean                  @default(true)
+  opensAt       DateTime?
+  closesAt      DateTime?
+  blocksCheckIn Boolean                  @default(false)
+  orderIndex    Int                      @default(0)
+  publishedAt   DateTime?
+  supersedesId  String?
 
   createdAt DateTime  @default(now()) @db.Timestamp(0)
   createdBy String    @db.VarChar(100)

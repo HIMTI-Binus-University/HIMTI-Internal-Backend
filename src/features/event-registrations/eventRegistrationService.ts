@@ -45,26 +45,19 @@ const mapPackage = (value: {
    ...(value.revision !== undefined && { revision: value.revision }),
 });
 
-type Assignment = Awaited<
+type CurrentRegistrationForm = Awaited<
    ReturnType<typeof eventRegistrationRepository.getAssignedForms>
 >[number];
 
-const mapForms = (assignments: Assignment[]) => {
-   const unique = new Map<string, Assignment>();
-   for (const assignment of assignments) {
-      unique.set(
-         `${assignment.registrationFormId}:${assignment.audience}`,
-         assignment,
-      );
-   }
-   return [...unique.values()].map((assignment) => ({
-      id: assignment.form.id,
-      name: assignment.form.name,
-      description: assignment.form.description,
-      audience: assignment.audience,
-      isRequired: assignment.isRequired,
-      orderIndex: assignment.orderIndex,
-      questions: assignment.form.questions.map((question) => ({
+const mapForms = (forms: CurrentRegistrationForm[]) =>
+   forms.map((form) => ({
+      id: form.id,
+      name: form.name,
+      description: form.description,
+      audience: form.audience,
+      isRequired: form.isRequired,
+      orderIndex: form.orderIndex,
+      questions: form.questions.map((question) => ({
          id: question.id,
          label: question.label,
          fieldKey: question.fieldKey,
@@ -80,7 +73,6 @@ const mapForms = (assignments: Assignment[]) => {
          })),
       })),
    }));
-};
 
 type DetailOrder = NonNullable<
    Awaited<ReturnType<typeof eventRegistrationRepository.findOwned>>
@@ -922,15 +914,11 @@ class EventRegistrationService {
             registrationId: null,
             forms: [],
          };
-      const forms = await eventRegistrationRepository.getAssignedForms(
-         subEventId,
-         available.id,
-      );
+      const forms =
+         await eventRegistrationRepository.getAssignedForms(subEventId);
       if (
-         forms.some((assignment) =>
-            assignment.form.questions.some(
-               (question) => question.fieldType === 'FILE',
-            ),
+         forms.some((form) =>
+            form.questions.some((question) => question.fieldType === 'FILE'),
          )
       )
          throw unsupported(

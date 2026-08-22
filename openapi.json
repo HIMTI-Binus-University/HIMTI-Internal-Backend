@@ -348,77 +348,48 @@
          },
          "CreateRegistrationFormV1": {
             "properties": {
-               "assignments": {
-                  "default": [
-                     {
-                        "audience": "EACH_ATTENDEE",
-                        "blocksCheckIn": false,
-                        "closesAt": null,
-                        "isRequired": true,
-                        "opensAt": null,
-                        "orderIndex": 0,
-                        "ticketPackageId": null
-                     }
+               "audience": {
+                  "default": "BUYER",
+                  "enum": [
+                     "BUYER",
+                     "EACH_ATTENDEE"
                   ],
-                  "items": {
-                     "properties": {
-                        "audience": {
-                           "enum": [
-                              "BUYER",
-                              "EACH_ATTENDEE",
-                              "ALL_ORDER_MEMBERS"
-                           ],
-                           "type": "string"
-                        },
-                        "blocksCheckIn": {
-                           "default": false,
-                           "type": "boolean"
-                        },
-                        "closesAt": {
-                           "default": null,
-                           "format": "date-time",
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "isRequired": {
-                           "default": true,
-                           "type": "boolean"
-                        },
-                        "opensAt": {
-                           "default": null,
-                           "format": "date-time",
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "orderIndex": {
-                           "default": 0,
-                           "minimum": 0,
-                           "type": "integer"
-                        },
-                        "ticketPackageId": {
-                           "default": null,
-                           "minLength": 1,
-                           "nullable": true,
-                           "type": "string"
-                        }
-                     },
-                     "required": [
-                        "audience"
-                     ],
-                     "type": "object"
-                  },
-                  "minItems": 1,
-                  "type": "array"
+                  "type": "string"
+               },
+               "blocksCheckIn": {
+                  "default": false,
+                  "type": "boolean"
+               },
+               "closesAt": {
+                  "default": null,
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
                },
                "description": {
                   "maxLength": 5000,
                   "nullable": true,
                   "type": "string"
                },
+               "isRequired": {
+                  "default": true,
+                  "type": "boolean"
+               },
                "name": {
                   "maxLength": 255,
                   "minLength": 1,
                   "type": "string"
+               },
+               "opensAt": {
+                  "default": null,
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "orderIndex": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
                },
                "stage": {
                   "default": "REGISTRATION",
@@ -8227,73 +8198,20 @@
          },
          "RegistrationFormBuilderV1": {
             "properties": {
-               "assignments": {
-                  "items": {
-                     "properties": {
-                        "audience": {
-                           "enum": [
-                              "BUYER",
-                              "EACH_ATTENDEE",
-                              "ALL_ORDER_MEMBERS"
-                           ],
-                           "type": "string"
-                        },
-                        "blocksCheckIn": {
-                           "type": "boolean"
-                        },
-                        "closesAt": {
-                           "format": "date-time",
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "createdAt": {
-                           "format": "date-time",
-                           "type": "string"
-                        },
-                        "id": {
-                           "type": "string"
-                        },
-                        "isRequired": {
-                           "type": "boolean"
-                        },
-                        "opensAt": {
-                           "format": "date-time",
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "orderIndex": {
-                           "minimum": 0,
-                           "type": "integer"
-                        },
-                        "registrationFormId": {
-                           "type": "string"
-                        },
-                        "ticketPackageId": {
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "updatedAt": {
-                           "format": "date-time",
-                           "nullable": true,
-                           "type": "string"
-                        }
-                     },
-                     "required": [
-                        "id",
-                        "registrationFormId",
-                        "ticketPackageId",
-                        "audience",
-                        "isRequired",
-                        "blocksCheckIn",
-                        "orderIndex",
-                        "opensAt",
-                        "closesAt",
-                        "createdAt",
-                        "updatedAt"
-                     ],
-                     "type": "object"
-                  },
-                  "type": "array"
+               "audience": {
+                  "enum": [
+                     "BUYER",
+                     "EACH_ATTENDEE"
+                  ],
+                  "type": "string"
+               },
+               "blocksCheckIn": {
+                  "type": "boolean"
+               },
+               "closesAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
                },
                "createdAt": {
                   "format": "date-time",
@@ -8309,12 +8227,24 @@
                "id": {
                   "type": "string"
                },
+               "isRequired": {
+                  "type": "boolean"
+               },
                "logicalKey": {
                   "nullable": true,
                   "type": "string"
                },
                "name": {
                   "type": "string"
+               },
+               "opensAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "orderIndex": {
+                  "minimum": 0,
+                  "type": "integer"
                },
                "publishedAt": {
                   "format": "date-time",
@@ -8648,6 +8578,12 @@
                "version",
                "revision",
                "stage",
+               "audience",
+               "isRequired",
+               "blocksCheckIn",
+               "orderIndex",
+               "opensAt",
+               "closesAt",
                "publishedAt",
                "supersedesId",
                "createdAt",
@@ -8655,8 +8591,7 @@
                "updatedAt",
                "updatedBy",
                "subEvent",
-               "sections",
-               "assignments"
+               "sections"
             ],
             "type": "object"
          },
@@ -8701,77 +8636,48 @@
          },
          "RegistrationFormDraftV1": {
             "properties": {
-               "assignments": {
-                  "default": [
-                     {
-                        "audience": "EACH_ATTENDEE",
-                        "blocksCheckIn": false,
-                        "closesAt": null,
-                        "isRequired": true,
-                        "opensAt": null,
-                        "orderIndex": 0,
-                        "ticketPackageId": null
-                     }
+               "audience": {
+                  "default": "BUYER",
+                  "enum": [
+                     "BUYER",
+                     "EACH_ATTENDEE"
                   ],
-                  "items": {
-                     "properties": {
-                        "audience": {
-                           "enum": [
-                              "BUYER",
-                              "EACH_ATTENDEE",
-                              "ALL_ORDER_MEMBERS"
-                           ],
-                           "type": "string"
-                        },
-                        "blocksCheckIn": {
-                           "default": false,
-                           "type": "boolean"
-                        },
-                        "closesAt": {
-                           "default": null,
-                           "format": "date-time",
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "isRequired": {
-                           "default": true,
-                           "type": "boolean"
-                        },
-                        "opensAt": {
-                           "default": null,
-                           "format": "date-time",
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "orderIndex": {
-                           "default": 0,
-                           "minimum": 0,
-                           "type": "integer"
-                        },
-                        "ticketPackageId": {
-                           "default": null,
-                           "minLength": 1,
-                           "nullable": true,
-                           "type": "string"
-                        }
-                     },
-                     "required": [
-                        "audience"
-                     ],
-                     "type": "object"
-                  },
-                  "minItems": 1,
-                  "type": "array"
+                  "type": "string"
+               },
+               "blocksCheckIn": {
+                  "default": false,
+                  "type": "boolean"
+               },
+               "closesAt": {
+                  "default": null,
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
                },
                "description": {
                   "maxLength": 5000,
                   "nullable": true,
                   "type": "string"
                },
+               "isRequired": {
+                  "default": true,
+                  "type": "boolean"
+               },
                "name": {
                   "maxLength": 255,
                   "minLength": 1,
                   "type": "string"
+               },
+               "opensAt": {
+                  "default": null,
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "orderIndex": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
                },
                "revision": {
                   "exclusiveMinimum": true,
@@ -8985,77 +8891,48 @@
          },
          "RegistrationFormPreviewV1": {
             "properties": {
-               "assignments": {
-                  "default": [
-                     {
-                        "audience": "EACH_ATTENDEE",
-                        "blocksCheckIn": false,
-                        "closesAt": null,
-                        "isRequired": true,
-                        "opensAt": null,
-                        "orderIndex": 0,
-                        "ticketPackageId": null
-                     }
+               "audience": {
+                  "default": "BUYER",
+                  "enum": [
+                     "BUYER",
+                     "EACH_ATTENDEE"
                   ],
-                  "items": {
-                     "properties": {
-                        "audience": {
-                           "enum": [
-                              "BUYER",
-                              "EACH_ATTENDEE",
-                              "ALL_ORDER_MEMBERS"
-                           ],
-                           "type": "string"
-                        },
-                        "blocksCheckIn": {
-                           "default": false,
-                           "type": "boolean"
-                        },
-                        "closesAt": {
-                           "default": null,
-                           "format": "date-time",
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "isRequired": {
-                           "default": true,
-                           "type": "boolean"
-                        },
-                        "opensAt": {
-                           "default": null,
-                           "format": "date-time",
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "orderIndex": {
-                           "default": 0,
-                           "minimum": 0,
-                           "type": "integer"
-                        },
-                        "ticketPackageId": {
-                           "default": null,
-                           "minLength": 1,
-                           "nullable": true,
-                           "type": "string"
-                        }
-                     },
-                     "required": [
-                        "audience"
-                     ],
-                     "type": "object"
-                  },
-                  "minItems": 1,
-                  "type": "array"
+                  "type": "string"
+               },
+               "blocksCheckIn": {
+                  "default": false,
+                  "type": "boolean"
+               },
+               "closesAt": {
+                  "default": null,
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
                },
                "description": {
                   "maxLength": 5000,
                   "nullable": true,
                   "type": "string"
                },
+               "isRequired": {
+                  "default": true,
+                  "type": "boolean"
+               },
                "name": {
                   "maxLength": 255,
                   "minLength": 1,
                   "type": "string"
+               },
+               "opensAt": {
+                  "default": null,
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "orderIndex": {
+                  "default": 0,
+                  "minimum": 0,
+                  "type": "integer"
                },
                "revision": {
                   "exclusiveMinimum": true,
@@ -34723,7 +34600,7 @@
       },
       "/api/v1/registration-form/{id}/clone": {
          "post": {
-            "description": "Creates a fresh logical form with version 1 and no superseded version, while copying active sections, questions, options, and assignments.",
+            "description": "Creates a fresh logical form with version 1 and no superseded version, while copying its form-level completion settings, active sections, questions, and options.",
             "operationId": "cloneRegistrationFormV1",
             "parameters": [
                {

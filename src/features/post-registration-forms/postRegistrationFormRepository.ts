@@ -85,63 +85,50 @@ export const assignPublishedPostRegistrationForms = async (
             deletedAt: null,
             logicalKey: { not: null },
          },
-         include: {
-            assignments: { orderBy: [{ orderIndex: 'asc' }, { id: 'asc' }] },
-         },
+         orderBy: [{ orderIndex: 'asc' }, { id: 'asc' }],
       });
       for (const form of forms) {
-         const packageRoutes = form.assignments.filter(
-            (route) => route.ticketPackageId === order.ticketPackageId,
-         );
-         const routes = packageRoutes.length
-            ? packageRoutes
-            : form.assignments.filter(
-                 (route) => route.ticketPackageId === null,
-              );
-         for (const route of routes) {
-            const targets =
-               route.audience === 'BUYER'
-                  ? [null]
-                  : order.members.map((member) => member.id);
-            for (const memberId of targets) {
-               const existing =
-                  await tx.postRegistrationFormAssignment.findFirst({
-                     where: {
-                        registrationOrderId: order.id,
-                        logicalFormKey: form.logicalKey!,
-                        orderMemberId: memberId,
-                     },
-                  });
-               if (existing) continue;
-               const responseId = randomUUID();
-               await tx.registrationFormSubmission.create({
-                  data: {
-                     id: responseId,
-                     registrationFormId: form.id,
-                     registrationOrderId: order.id,
-                     orderMemberId: memberId,
-                     assignmentAudience: route.audience,
-                     assignmentRequired: route.isRequired,
-                     assignmentOrderIndex: route.orderIndex,
-                  },
-               });
-               await tx.postRegistrationFormAssignment.create({
-                  data: {
-                     registrationOrderId: order.id,
-                     registrationFormId: form.id,
-                     logicalFormKey: form.logicalKey!,
-                     orderMemberId: memberId,
-                     audience: route.audience,
-                     isRequired: route.isRequired,
-                     blocksCheckIn: route.blocksCheckIn,
-                     orderIndex: route.orderIndex,
-                     opensAt: route.opensAt,
-                     closesAt: route.closesAt,
-                     responseId,
-                  },
-               });
-               created++;
-            }
+         const targets =
+            form.audience === 'BUYER'
+               ? [null]
+               : order.members.map((member) => member.id);
+         for (const memberId of targets) {
+            const existing = await tx.postRegistrationFormAssignment.findFirst({
+               where: {
+                  registrationOrderId: order.id,
+                  logicalFormKey: form.logicalKey!,
+                  orderMemberId: memberId,
+               },
+            });
+            if (existing) continue;
+            const responseId = randomUUID();
+            await tx.registrationFormSubmission.create({
+               data: {
+                  id: responseId,
+                  registrationFormId: form.id,
+                  registrationOrderId: order.id,
+                  orderMemberId: memberId,
+                  assignmentAudience: form.audience,
+                  assignmentRequired: form.isRequired,
+                  assignmentOrderIndex: form.orderIndex,
+               },
+            });
+            await tx.postRegistrationFormAssignment.create({
+               data: {
+                  registrationOrderId: order.id,
+                  registrationFormId: form.id,
+                  logicalFormKey: form.logicalKey!,
+                  orderMemberId: memberId,
+                  audience: form.audience,
+                  isRequired: form.isRequired,
+                  blocksCheckIn: form.blocksCheckIn,
+                  orderIndex: form.orderIndex,
+                  opensAt: form.opensAt,
+                  closesAt: form.closesAt,
+                  responseId,
+               },
+            });
+            created++;
          }
       }
    }

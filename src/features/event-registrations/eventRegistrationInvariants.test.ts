@@ -119,18 +119,23 @@ describe('free registration source invariants', () => {
       assert.match(submitSource, /order\.submissions\.flatMap/);
    });
 
-   it('self-heals only zero-submission drafts from current applicable assignments', () => {
+   it('uses one form-level registration snapshot for every package and zero-submission draft', () => {
       assert.match(repositorySource, /existing\.submissions\.length > 0/);
       assert.match(repositorySource, /registrationFormSubmission\.createMany/);
-      assert.match(
+      assert.doesNotMatch(
          repositorySource,
-         /assignmentAudience: assignment\.audience/,
+         /registrationFormAssignment\.findMany/,
       );
+      assert.match(repositorySource, /assignmentAudience: 'BUYER'/);
+      assert.match(repositorySource, /assignmentRequired: true/);
+      assert.match(repositorySource, /orderMemberId: null/);
       assert.match(repositorySource, /UNSUPPORTED_FILE_QUESTION/);
-      assert.match(
-         repositorySource,
-         /none:\s*\{[\s\S]*ticketPackageId:[\s\S]*existing\.ticketPackageId/,
+      const discoverySource = repositorySource.slice(
+         repositorySource.indexOf('async getAssignedForms('),
+         repositorySource.indexOf('async createOrResumeDraft('),
       );
+      assert.match(discoverySource, /registrationForm\.findMany/);
+      assert.doesNotMatch(discoverySource, /ticketPackageId/);
    });
 
    it('filters anonymous events and authorizes external destinations first', () => {

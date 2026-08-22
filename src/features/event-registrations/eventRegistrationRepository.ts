@@ -55,23 +55,19 @@ const packageSelect = {
    salesEndAt: true,
 } satisfies Prisma.TicketPackageSelect;
 
-const formInclude = {
-   form: {
+const currentRegistrationFormInclude = {
+   sections: { orderBy: { orderIndex: 'asc' as const } },
+   questions: {
+      where: { status: 'ACTIVE' as const },
+      orderBy: { orderIndex: 'asc' as const },
       include: {
-         sections: { orderBy: { orderIndex: 'asc' as const } },
-         questions: {
-            where: { status: 'ACTIVE' as const },
+         options: {
+            where: { isActive: true },
             orderBy: { orderIndex: 'asc' as const },
-            include: {
-               options: {
-                  where: { isActive: true },
-                  orderBy: { orderIndex: 'asc' as const },
-               },
-            },
          },
       },
    },
-} satisfies Prisma.RegistrationFormAssignmentInclude;
+} satisfies Prisma.RegistrationFormInclude;
 
 const detailInclude = {
    event: { select: { id: true, name: true } },
@@ -676,34 +672,16 @@ class EventRegistrationRepository {
       });
    }
 
-   async getAssignedForms(subEventId: string, packageId: string) {
-      const now = new Date();
-      return prisma.registrationFormAssignment.findMany({
+   async getAssignedForms(subEventId: string) {
+      return prisma.registrationForm.findMany({
          where: {
-            form: {
-               subEventId,
-               status: 'PUBLISHED',
-               stage: 'REGISTRATION',
-               deletedAt: null,
-            },
-            OR: [
-               { ticketPackageId: packageId },
-               {
-                  ticketPackageId: null,
-                  form: {
-                     assignments: {
-                        none: { ticketPackageId: packageId },
-                     },
-                  },
-               },
-            ],
-            AND: [
-               { OR: [{ opensAt: null }, { opensAt: { lte: now } }] },
-               { OR: [{ closesAt: null }, { closesAt: { gt: now } }] },
-            ],
+            subEventId,
+            status: 'PUBLISHED',
+            stage: 'REGISTRATION',
+            deletedAt: null,
          },
          orderBy: { orderIndex: 'asc' },
-         include: formInclude,
+         include: currentRegistrationFormInclude,
       });
    }
 
@@ -819,64 +797,27 @@ class EventRegistrationRepository {
                }
                if (existing.submissions.length > 0) return existing;
 
-               const now = new Date();
-               const assignments = await tx.registrationFormAssignment.findMany(
-                  {
-                     where: {
-                        form: {
-                           subEventId,
-                           status: 'PUBLISHED',
-                           stage: 'REGISTRATION',
-                           deletedAt: null,
-                        },
-                        OR: [
-                           { ticketPackageId: existing.ticketPackageId },
-                           {
-                              ticketPackageId: null,
-                              form: {
-                                 assignments: {
-                                    none: {
-                                       ticketPackageId:
-                                          existing.ticketPackageId,
-                                    },
-                                 },
-                              },
-                           },
-                        ],
-                        AND: [
-                           {
-                              OR: [
-                                 { opensAt: null },
-                                 { opensAt: { lte: now } },
-                              ],
-                           },
-                           {
-                              OR: [
-                                 { closesAt: null },
-                                 { closesAt: { gt: now } },
-                              ],
-                           },
-                        ],
-                     },
-                     select: {
-                        registrationFormId: true,
-                        audience: true,
-                        isRequired: true,
-                        orderIndex: true,
-                        form: {
-                           select: {
-                              questions: {
-                                 where: { status: 'ACTIVE' },
-                                 select: { fieldType: true },
-                              },
-                           },
-                        },
+               const forms = await tx.registrationForm.findMany({
+                  where: {
+                     subEventId,
+                     status: 'PUBLISHED',
+                     stage: 'REGISTRATION',
+                     deletedAt: null,
+                  },
+                  select: {
+                     id: true,
+                     audience: true,
+                     isRequired: true,
+                     orderIndex: true,
+                     questions: {
+                        where: { status: 'ACTIVE' },
+                        select: { fieldType: true },
                      },
                   },
-               );
+               });
                if (
-                  assignments.some((assignment) =>
-                     assignment.form.questions.some(
+                  forms.some((form) =>
+                     form.questions.some(
                         (question) => question.fieldType === 'FILE',
                      ),
                   )
@@ -884,28 +825,16 @@ class EventRegistrationRepository {
                   return {
                      unsupportedCode: 'UNSUPPORTED_FILE_QUESTION',
                   } as const;
-               const buyerMemberId = existing.members[0]?.id;
-               if (!buyerMemberId) return existing;
-               const uniqueAssignments = [
-                  ...new Map(
-                     assignments.map((assignment) => [
-                        `${assignment.registrationFormId}:${assignment.audience}`,
-                        assignment,
-                     ]),
-                  ).values(),
-               ];
-               if (uniqueAssignments.length > 0)
+               if (!existing.members[0]?.id) return existing;
+               if (forms.length > 0)
                   await tx.registrationFormSubmission.createMany({
-                     data: uniqueAssignments.map((assignment) => ({
-                        registrationFormId: assignment.registrationFormId,
+                     data: forms.map((form) => ({
+                        registrationFormId: form.id,
                         registrationOrderId: existing.id,
-                        orderMemberId:
-                           assignment.audience === 'BUYER'
-                              ? null
-                              : buyerMemberId,
-                        assignmentAudience: assignment.audience,
-                        assignmentRequired: assignment.isRequired,
-                        assignmentOrderIndex: assignment.orderIndex,
+                        orderMemberId: null,
+                        assignmentAudience: 'BUYER',
+                        assignmentRequired: true,
+                        assignmentOrderIndex: form.orderIndex,
                      })),
                   });
                return await tx.registrationOrder.findUniqueOrThrow({
@@ -958,62 +887,33 @@ class EventRegistrationRepository {
             const selectedPackage = eligiblePackages[0];
             if (!selectedPackage) return null;
 
-            const assignments = await tx.registrationFormAssignment.findMany({
+            const forms = await tx.registrationForm.findMany({
                where: {
-                  form: {
-                     subEventId,
-                     status: 'PUBLISHED',
-                     stage: 'REGISTRATION',
-                     deletedAt: null,
-                  },
-                  OR: [
-                     { ticketPackageId: selectedPackage.id },
-                     {
-                        ticketPackageId: null,
-                        form: {
-                           assignments: {
-                              none: { ticketPackageId: selectedPackage.id },
-                           },
-                        },
-                     },
-                  ],
-                  AND: [
-                     { OR: [{ opensAt: null }, { opensAt: { lte: now } }] },
-                     { OR: [{ closesAt: null }, { closesAt: { gt: now } }] },
-                  ],
+                  subEventId,
+                  status: 'PUBLISHED',
+                  stage: 'REGISTRATION',
+                  deletedAt: null,
                },
                select: {
-                  registrationFormId: true,
+                  id: true,
                   audience: true,
                   isRequired: true,
                   orderIndex: true,
-                  form: {
-                     select: {
-                        questions: {
-                           where: { status: 'ACTIVE' },
-                           select: { fieldType: true },
-                        },
-                     },
+                  questions: {
+                     where: { status: 'ACTIVE' },
+                     select: { fieldType: true },
                   },
                },
             });
             if (
-               assignments.some((assignment) =>
-                  assignment.form.questions.some(
+               forms.some((form) =>
+                  form.questions.some(
                      (question) => question.fieldType === 'FILE',
                   ),
                )
             )
                return { unsupportedCode: 'UNSUPPORTED_FILE_QUESTION' } as const;
             const memberId = randomUUID();
-            const uniqueAssignments = [
-               ...new Map(
-                  assignments.map((assignment) => [
-                     `${assignment.registrationFormId}:${assignment.audience}`,
-                     assignment,
-                  ]),
-               ).values(),
-            ];
             let invitationId: string | undefined;
             if (subEvent.visibility === 'INVITE_ONLY') {
                if (!inviteTokenHash || !identity.emailVerified)
@@ -1106,13 +1006,12 @@ class EventRegistrationRepository {
                      },
                   },
                   submissions: {
-                     create: uniqueAssignments.map((assignment) => ({
-                        registrationFormId: assignment.registrationFormId,
-                        assignmentAudience: assignment.audience,
-                        assignmentRequired: assignment.isRequired,
-                        assignmentOrderIndex: assignment.orderIndex,
-                        orderMemberId:
-                           assignment.audience === 'BUYER' ? null : memberId,
+                     create: forms.map((form) => ({
+                        registrationFormId: form.id,
+                        assignmentAudience: 'BUYER',
+                        assignmentRequired: true,
+                        assignmentOrderIndex: form.orderIndex,
+                        orderMemberId: null,
                      })),
                   },
                   capacityHolds: {

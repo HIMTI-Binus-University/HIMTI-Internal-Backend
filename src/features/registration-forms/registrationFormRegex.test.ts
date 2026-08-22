@@ -24,7 +24,12 @@ test('only text questions may carry pattern metadata', () => {
       revision: 1,
       name: 'Form',
       stage: 'REGISTRATION',
-      assignments: [],
+      audience: 'BUYER',
+      isRequired: true,
+      blocksCheckIn: false,
+      orderIndex: 0,
+      opensAt: null,
+      closesAt: null,
       sections: [
          {
             title: 'Details',

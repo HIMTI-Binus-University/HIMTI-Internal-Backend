@@ -123,30 +123,12 @@ export const CreateRegistrationFormV1Schema = z.object({
    name: z.string().trim().min(1).max(255),
    description: z.string().trim().max(5000).nullable().optional(),
    stage: z.enum(['REGISTRATION', 'POST_REGISTRATION']).default('REGISTRATION'),
-   assignments: z
-      .array(
-         z.object({
-            ticketPackageId: z.string().min(1).nullable().default(null),
-            audience: z.enum(['BUYER', 'EACH_ATTENDEE', 'ALL_ORDER_MEMBERS']),
-            isRequired: z.boolean().default(true),
-            blocksCheckIn: z.boolean().default(false),
-            orderIndex: z.number().int().min(0).default(0),
-            opensAt: z.iso.datetime().nullable().default(null),
-            closesAt: z.iso.datetime().nullable().default(null),
-         }),
-      )
-      .min(1)
-      .default([
-         {
-            ticketPackageId: null,
-            audience: 'EACH_ATTENDEE',
-            isRequired: true,
-            blocksCheckIn: false,
-            orderIndex: 0,
-            opensAt: null,
-            closesAt: null,
-         },
-      ]),
+   audience: z.enum(['BUYER', 'EACH_ATTENDEE']).default('BUYER'),
+   isRequired: z.boolean().default(true),
+   blocksCheckIn: z.boolean().default(false),
+   orderIndex: z.number().int().min(0).default(0),
+   opensAt: z.iso.datetime().nullable().default(null),
+   closesAt: z.iso.datetime().nullable().default(null),
 });
 
 export const SaveRegistrationFormDraftV1Schema = z.object({
@@ -154,7 +136,12 @@ export const SaveRegistrationFormDraftV1Schema = z.object({
    name: z.string().trim().min(1).max(255),
    description: z.string().trim().max(5000).nullable().optional(),
    stage: z.enum(['REGISTRATION', 'POST_REGISTRATION']),
-   assignments: CreateRegistrationFormV1Schema.shape.assignments,
+   audience: CreateRegistrationFormV1Schema.shape.audience,
+   isRequired: CreateRegistrationFormV1Schema.shape.isRequired,
+   blocksCheckIn: CreateRegistrationFormV1Schema.shape.blocksCheckIn,
+   orderIndex: CreateRegistrationFormV1Schema.shape.orderIndex,
+   opensAt: CreateRegistrationFormV1Schema.shape.opensAt,
+   closesAt: CreateRegistrationFormV1Schema.shape.closesAt,
    sections: z.array(DraftSectionSchema).min(1).max(50),
 });
 

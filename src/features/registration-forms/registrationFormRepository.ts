@@ -24,9 +24,6 @@ class RegistrationFormRepository {
             },
          },
       },
-      assignments: {
-         orderBy: [{ orderIndex: 'asc' as const }, { id: 'asc' as const }],
-      },
    };
 
    async findFormById(id: string) {
@@ -111,6 +108,12 @@ class RegistrationFormRepository {
          name: string;
          description?: string | null;
          stage: 'REGISTRATION' | 'POST_REGISTRATION';
+         audience: 'BUYER' | 'EACH_ATTENDEE';
+         isRequired: boolean;
+         blocksCheckIn: boolean;
+         orderIndex: number;
+         opensAt: Date | null;
+         closesAt: Date | null;
       },
       sections: Array<{
          id?: string;
@@ -126,15 +129,6 @@ class RegistrationFormRepository {
             validation: Prisma.InputJsonValue;
             options: Array<{ id?: string; label: string; value: string }>;
          }>;
-      }>,
-      assignments: Array<{
-         ticketPackageId: string | null;
-         audience: Prisma.RegistrationFormAssignmentCreateManyInput['audience'];
-         isRequired: boolean;
-         blocksCheckIn: boolean;
-         orderIndex: number;
-         opensAt: Date | null;
-         closesAt: Date | null;
       }>,
    ) {
       return await prisma.$transaction(async (tx) => {
@@ -237,16 +231,6 @@ class RegistrationFormRepository {
             where: { question: { registrationFormId: formId } },
             data: { isActive: false, updatedBy: userId },
          });
-         await tx.registrationFormAssignment.deleteMany({
-            where: { registrationFormId: formId },
-         });
-         await tx.registrationFormAssignment.createMany({
-            data: assignments.map((assignment) => ({
-               registrationFormId: formId,
-               ...assignment,
-            })),
-         });
-
          for (const [sectionIndex, section] of sections.entries()) {
             const savedSection = section.id
                ? await (async () => {
@@ -380,24 +364,16 @@ class RegistrationFormRepository {
                });
                if (!form) return null;
                if (status === 'PUBLISHED' && form.stage === 'REGISTRATION') {
-                  const assignmentCount =
-                     await tx.registrationFormAssignment.count({
-                        where: { registrationFormId: id },
-                     });
-                  if (assignmentCount === 0)
-                     await tx.registrationFormAssignment.create({
-                        data: {
-                           registrationFormId: id,
-                           ticketPackageId: null,
-                           audience: 'EACH_ATTENDEE',
-                           isRequired: true,
-                           orderIndex: 0,
-                           opensAt: null,
-                           closesAt: null,
-                        },
-                     });
-               }
-               if (status === 'PUBLISHED' && form.logicalKey) {
+                  await tx.registrationForm.updateMany({
+                     where: {
+                        subEventId: form.subEventId,
+                        stage: 'REGISTRATION',
+                        status: 'PUBLISHED',
+                        id: { not: id },
+                     },
+                     data: { status: 'CLOSED', updatedBy: userId },
+                  });
+               } else if (status === 'PUBLISHED' && form.logicalKey) {
                   await tx.registrationForm.updateMany({
                      where: {
                         logicalKey: form.logicalKey,
@@ -505,6 +481,12 @@ class RegistrationFormRepository {
                name,
                description: source.description,
                stage: source.stage,
+               audience: source.audience,
+               isRequired: source.isRequired,
+               blocksCheckIn: source.blocksCheckIn,
+               orderIndex: source.orderIndex,
+               opensAt: source.opensAt,
+               closesAt: source.closesAt,
                createdBy: userId,
                sections: {
                   create: source.sections
@@ -541,17 +523,6 @@ class RegistrationFormRepository {
                               })),
                         },
                      })),
-               },
-               assignments: {
-                  create: source.assignments.map((assignment) => ({
-                     ticketPackageId: assignment.ticketPackageId,
-                     audience: assignment.audience,
-                     isRequired: assignment.isRequired,
-                     blocksCheckIn: assignment.blocksCheckIn,
-                     orderIndex: assignment.orderIndex,
-                     opensAt: assignment.opensAt,
-                     closesAt: assignment.closesAt,
-                  })),
                },
             },
             include: this.builderInclude,

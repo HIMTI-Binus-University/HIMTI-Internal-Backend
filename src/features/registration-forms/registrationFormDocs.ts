@@ -89,6 +89,12 @@ const builderFormV1Schema = z.object({
    version: z.number().int().positive(),
    revision: z.number().int().positive(),
    stage: registrationFormStageV1Schema,
+   audience: z.enum(['BUYER', 'EACH_ATTENDEE']),
+   isRequired: z.boolean(),
+   blocksCheckIn: z.boolean(),
+   orderIndex: z.number().int().min(0),
+   opensAt: z.string().datetime().nullable(),
+   closesAt: z.string().datetime().nullable(),
    publishedAt: z.string().datetime().nullable(),
    supersedesId: z.string().nullable(),
    createdAt: z.string().datetime(),
@@ -97,21 +103,6 @@ const builderFormV1Schema = z.object({
    updatedBy: z.string().nullable(),
    subEvent: z.object({ eventId: z.string() }),
    sections: z.array(builderSectionV1Schema),
-   assignments: z.array(
-      z.object({
-         id: z.string(),
-         registrationFormId: z.string(),
-         ticketPackageId: z.string().nullable(),
-         audience: z.enum(['BUYER', 'EACH_ATTENDEE', 'ALL_ORDER_MEMBERS']),
-         isRequired: z.boolean(),
-         blocksCheckIn: z.boolean(),
-         orderIndex: z.number().int().min(0),
-         opensAt: z.string().datetime().nullable(),
-         closesAt: z.string().datetime().nullable(),
-         createdAt: z.string().datetime(),
-         updatedAt: z.string().datetime().nullable(),
-      }),
-   ),
 });
 const publishedOptionV1Schema = builderOptionV1Schema.pick({
    id: true,
@@ -493,7 +484,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
       operationId: 'cloneRegistrationFormV1',
       summary: 'Clone a form as an independent draft',
       description:
-         'Creates a fresh logical form with version 1 and no superseded version, while copying active sections, questions, options, and assignments.',
+         'Creates a fresh logical form with version 1 and no superseded version, while copying its form-level completion settings, active sections, questions, and options.',
       security: [protectedEndpoint],
       request: {
          params: idParamSchema,

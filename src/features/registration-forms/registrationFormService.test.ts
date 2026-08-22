@@ -142,6 +142,12 @@ describe('registration form Phase 4 contracts', () => {
          revision: 1,
          name: 'Empty',
          stage: 'REGISTRATION',
+         audience: 'BUYER',
+         isRequired: true,
+         blocksCheckIn: false,
+         orderIndex: 0,
+         opensAt: null,
+         closesAt: null,
          sections: [],
       } as unknown as Parameters<typeof validateRegistrationFormDraft>[0]);
       assert.equal(emptyIssues[0]?.code, 'FORM_EMPTY');
@@ -233,20 +239,15 @@ describe('registration form Phase 4 concurrency invariants', () => {
       assert.match(repositorySource, /LIFECYCLE_CONFLICT/);
    });
 
-   it('publishes registration defaults and independently clones assignment snapshots atomically', () => {
+   it('closes the prior registration form and clones form-level settings atomically', () => {
       assert.match(repositorySource, /form\.stage === 'REGISTRATION'/);
-      assert.match(repositorySource, /audience: 'EACH_ATTENDEE'/);
-      assert.match(repositorySource, /assignmentCount === 0/);
       assert.match(
          repositorySource,
-         /sections: \{[\s\S]*\},\s*assignments: \{\s*create: source\.assignments\.map/,
+         /stage: 'REGISTRATION',[\s\S]*status: 'PUBLISHED'/,
       );
-      assert.match(
-         repositorySource,
-         /ticketPackageId:\s*assignment\.ticketPackageId/,
-      );
-      assert.match(repositorySource, /opensAt: assignment\.opensAt/);
-      assert.match(repositorySource, /closesAt: assignment\.closesAt/);
+      assert.match(repositorySource, /audience: source\.audience/);
+      assert.match(repositorySource, /opensAt: source\.opensAt/);
+      assert.match(repositorySource, /closesAt: source\.closesAt/);
       assert.match(repositorySource, /logicalKey: randomUUID\(\)/);
       assert.match(repositorySource, /version: 1/);
       assert.match(repositorySource, /supersedesId: null/);
