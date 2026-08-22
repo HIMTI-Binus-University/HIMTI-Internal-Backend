@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
 import { assignPublishedPostRegistrationForms } from '@/features/post-registration-forms/postRegistrationFormRepository.js';
+import { issueTicketsForApprovedOrder } from '@/features/event-tickets/eventTicketService.js';
 import type { PaymentQueue, PaymentSettings } from './eventPaymentTypes.js';
 
 const paymentSelect = {
@@ -544,6 +545,11 @@ class EventPaymentRepository {
                   await assignPublishedPostRegistrationForms(tx, {
                      orderIds: [payment.registrationOrderId],
                   });
+               if (nextOrder === 'APPROVED')
+                  await issueTicketsForApprovedOrder(
+                     tx,
+                     payment.registrationOrderId,
+                  );
                return {
                   paymentId,
                   proofId: submittedProof.id,

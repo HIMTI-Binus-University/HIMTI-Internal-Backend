@@ -67,6 +67,7 @@ const createSubEventRequestSchema = z.object({
    registrationOpensAt: z.string().datetime().nullable().optional(),
    registrationClosesAt: z.string().datetime().nullable().optional(),
    cancellationClosesAt: z.string().datetime().nullable().optional(),
+   attendanceCheckoutEnabled: z.boolean().optional(),
    questions: z.array(formQuestionRequestSchema).optional(),
 });
 
@@ -96,6 +97,7 @@ const updateSubEventRequestSchema = z.object({
    registrationOpensAt: z.string().datetime().nullable().optional(),
    registrationClosesAt: z.string().datetime().nullable().optional(),
    cancellationClosesAt: z.string().datetime().nullable().optional(),
+   attendanceCheckoutEnabled: z.boolean().optional(),
    visibility: subeventVisibilitySchema.optional(),
    status: subeventStatusSchema.optional(),
 });
@@ -170,6 +172,7 @@ const subEventSchema = z.object({
    registrationOpensAt: z.string().datetime().nullable(),
    registrationClosesAt: z.string().datetime().nullable(),
    cancellationClosesAt: z.string().datetime().nullable(),
+   attendanceCheckoutEnabled: z.boolean(),
    visibility: subeventVisibilitySchema,
    status: subeventStatusSchema,
    createdAt: z.string().datetime(),

@@ -18,6 +18,7 @@ import {
    validateFreshSubmission,
 } from './eventRegistrationTypes.js';
 import { assignPublishedPostRegistrationForms } from '@/features/post-registration-forms/postRegistrationFormRepository.js';
+import { issueTicketsForApprovedOrder } from '@/features/event-tickets/eventTicketService.js';
 
 const createInvitationToken = () => {
    const token = randomBytes(32).toString('base64url');
@@ -550,6 +551,8 @@ class EventRegistrationRepository {
                   await assignPublishedPostRegistrationForms(tx, {
                      orderIds: [item.registrationId],
                   });
+               if (action === 'APPROVED')
+                  await issueTicketsForApprovedOrder(tx, item.registrationId);
             }
             return tx.registrationOrder.findMany({
                where: { id: { in: ids } },
@@ -1661,6 +1664,8 @@ class EventRegistrationRepository {
                await assignPublishedPostRegistrationForms(tx, {
                   orderIds: [order.id],
                });
+            if (nextStatus === 'APPROVED')
+               await issueTicketsForApprovedOrder(tx, order.id);
             return { order: updated, replay: false } as const;
          },
          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },

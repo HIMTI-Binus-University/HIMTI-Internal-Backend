@@ -102,6 +102,9 @@ async function main() {
       'view_event_answers',
       'review_event_payments',
       'view_payment_proofs',
+      'scan_event_tickets',
+      'view_event_attendance',
+      'correct_event_attendance',
    ];
 
    const permissions: Record<string, { id: string }> = {};
@@ -142,6 +145,9 @@ async function main() {
                permissions.view_event_answers.id,
                permissions.review_event_payments.id,
                permissions.view_payment_proofs.id,
+               permissions.scan_event_tickets.id,
+               permissions.view_event_attendance.id,
+               permissions.correct_event_attendance.id,
             ].includes(perm.id) &&
             roleName !== 'Admin'
          ) {

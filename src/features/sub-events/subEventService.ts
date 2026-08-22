@@ -124,6 +124,7 @@ class SubEventService {
          cancellationClosesAt: payload.cancellationClosesAt
             ? new Date(payload.cancellationClosesAt)
             : null,
+         attendanceCheckoutEnabled: payload.attendanceCheckoutEnabled,
          visibility: payload.visibility,
 
          // Build the regist form if exists

@@ -7624,6 +7624,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/internal/sub-events/{subEventId}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEventAttendanceV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/sub-events/{subEventId}/attendance/{attendanceId}/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkoutEventAttendanceV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/sub-events/{subEventId}/attendance/{attendanceId}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["voidEventAttendanceV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/internal/sub-events/{subEventId}/packages": {
         parameters: {
             query?: never;
@@ -7797,6 +7845,70 @@ export interface paths {
         };
         /** Get capacity summary */
         get: operations["getInternalRegistrationCapacityV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/sub-events/{subEventId}/tickets/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkInEventTicketCredentialV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/sub-events/{subEventId}/tickets/manual-check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkInEventTicketManuallyV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/sub-events/{subEventId}/tickets/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resolveEventTicketV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/sub-events/{subEventId}/tickets/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["searchEventTicketsV1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -8033,6 +8145,70 @@ export interface paths {
          * @description Buyer-only whole-order submit. Requires every fixed package seat to be claimed and every required response to be valid.
          */
         post: operations["submitEventRegistrationV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/event-tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyEventTicketsV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/event-tickets/{ticketId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyEventTicketV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/event-tickets/{ticketId}/credential": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyEventTicketCredentialV1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/event-tickets/{ticketId}/qr.png": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyEventTicketQrV1"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -8431,6 +8607,7 @@ export interface components {
         CreateSubEventRequest: {
             /** @enum {string} */
             approvalMode?: "AUTO_APPROVE" | "MANUAL_REVIEW";
+            attendanceCheckoutEnabled?: boolean;
             /** Format: date-time */
             cancellationClosesAt?: string | null;
             /** Format: date-time */
@@ -10850,6 +11027,7 @@ export interface components {
             data: {
                 /** @enum {string} */
                 approvalMode: "AUTO_APPROVE" | "MANUAL_REVIEW";
+                attendanceCheckoutEnabled: boolean;
                 autoAcceptRegistration: boolean;
                 /** Format: date-time */
                 cancellationClosesAt: string | null;
@@ -10990,6 +11168,7 @@ export interface components {
             data: {
                 /** @enum {string} */
                 approvalMode: "AUTO_APPROVE" | "MANUAL_REVIEW";
+                attendanceCheckoutEnabled: boolean;
                 autoAcceptRegistration: boolean;
                 /** Format: date-time */
                 cancellationClosesAt: string | null;
@@ -11149,6 +11328,7 @@ export interface components {
         UpdateSubEventRequest: {
             /** @enum {string} */
             approvalMode?: "AUTO_APPROVE" | "MANUAL_REVIEW";
+            attendanceCheckoutEnabled?: boolean;
             autoAcceptRegistration?: boolean;
             /** Format: date-time */
             cancellationClosesAt?: string | null;
@@ -12778,6 +12958,454 @@ export interface operations {
             };
         };
     };
+    listEventAttendanceV1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                search?: string;
+            };
+            header?: never;
+            path: {
+                subEventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        counts: {
+                            checkedOut: number;
+                            currentlyCheckedIn: number;
+                            totalRecords: number;
+                            voided: number;
+                        };
+                        data: ({
+                            /** Format: date-time */
+                            checkedInAt: string;
+                            /** Format: date-time */
+                            checkedOutAt: string | null;
+                            id: string;
+                            revision: number;
+                            source?: string | null;
+                            /** Format: date-time */
+                            voidedAt?: string | null;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        meta: {
+                            limit: number;
+                            page: number;
+                            totalPages: number;
+                            totalRecords: number;
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    checkoutEventAttendanceV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subEventId: string;
+                attendanceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            record: {
+                                /** Format: date-time */
+                                checkedInAt: string;
+                                /** Format: date-time */
+                                checkedOutAt: string | null;
+                                id: string;
+                                revision: number;
+                                source?: string | null;
+                                /** Format: date-time */
+                                voidedAt?: string | null;
+                            };
+                            replay: boolean;
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    voidEventAttendanceV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subEventId: string;
+                attendanceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            record: {
+                                /** Format: date-time */
+                                checkedInAt: string;
+                                /** Format: date-time */
+                                checkedOutAt: string | null;
+                                id: string;
+                                revision: number;
+                                source?: string | null;
+                                /** Format: date-time */
+                                voidedAt?: string | null;
+                            };
+                            replay: boolean;
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
     listEventPackagesV1: {
         parameters: {
             query?: never;
@@ -13911,6 +14539,623 @@ export interface operations {
             };
             /** @description Account or registration eligibility failed. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    checkInEventTicketCredentialV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subEventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    credential: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            orderNumber: string;
+                            participant: {
+                                /** Format: email */
+                                email: string;
+                                name: string;
+                            };
+                            record: {
+                                /** Format: date-time */
+                                checkedInAt: string;
+                                /** Format: date-time */
+                                checkedOutAt: string | null;
+                                id: string;
+                                revision: number;
+                                source?: string | null;
+                                /** Format: date-time */
+                                voidedAt?: string | null;
+                            };
+                            replay: boolean;
+                            /** @enum {string} */
+                            state: "CHECKED_IN" | "CHECKED_OUT";
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    checkInEventTicketManuallyV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subEventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    ticketId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            orderNumber: string;
+                            participant: {
+                                /** Format: email */
+                                email: string;
+                                name: string;
+                            };
+                            record: {
+                                /** Format: date-time */
+                                checkedInAt: string;
+                                /** Format: date-time */
+                                checkedOutAt: string | null;
+                                id: string;
+                                revision: number;
+                                source?: string | null;
+                                /** Format: date-time */
+                                voidedAt?: string | null;
+                            };
+                            replay: boolean;
+                            /** @enum {string} */
+                            state: "CHECKED_IN" | "CHECKED_OUT";
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    resolveEventTicketV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subEventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    credential: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            eligibility: {
+                                eligible: boolean;
+                                /** @enum {string|null} */
+                                reason: "TICKET_INELIGIBLE" | "REQUIRED_ATTENDEE_FORM_INCOMPLETE" | null;
+                            };
+                            orderNumber: string;
+                            participant: {
+                                /** Format: email */
+                                email: string;
+                                name: string;
+                            };
+                            /** @enum {string} */
+                            status: "PENDING" | "ACTIVE" | "USED" | "EXPIRED" | "REVOKED";
+                            ticketId: string;
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    searchEventTicketsV1: {
+        parameters: {
+            query: {
+                search: string;
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                subEventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            attendance: {
+                                /** Format: date-time */
+                                checkedInAt: string;
+                                /** Format: date-time */
+                                checkedOutAt: string | null;
+                                id: string;
+                                revision: number;
+                                source?: string | null;
+                                /** @enum {string} */
+                                state: "CHECKED_IN" | "CHECKED_OUT";
+                                /** Format: date-time */
+                                voidedAt?: string | null;
+                            } | null;
+                            eligibility: {
+                                eligible: boolean;
+                                /** @enum {string|null} */
+                                reason: "TICKET_INELIGIBLE" | "REQUIRED_ATTENDEE_FORM_INCOMPLETE" | null;
+                            };
+                            orderNumber: string;
+                            participant: {
+                                /** Format: email */
+                                email: string;
+                                name: string;
+                            };
+                            /** @enum {string} */
+                            status: "PENDING" | "ACTIVE" | "USED" | "EXPIRED" | "REVOKED";
+                            ticketId: string;
+                        }[];
+                        meta: {
+                            limit: number;
+                            page: number;
+                            totalPages: number;
+                            totalRecords: number;
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15155,6 +16400,480 @@ export interface operations {
                         success?: boolean;
                     };
                 };
+            };
+        };
+    };
+    listMyEventTicketsV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            checkInEligibility: {
+                                blockingForms: {
+                                    assignmentId: string;
+                                    /** @enum {string} */
+                                    availability: "OPEN" | "UPCOMING" | "OVERDUE" | "CORRECTION" | "COMPLETED";
+                                    canEdit: boolean;
+                                    canSubmit: boolean;
+                                    /** @enum {string} */
+                                    completion: "NOT_STARTED" | "DRAFT" | "NEEDS_CORRECTION" | "LOCKED";
+                                    formName: string;
+                                    registrationId: string;
+                                }[];
+                                canPresentQr: boolean;
+                                /** @enum {string} */
+                                state: "READY" | "BLOCKED_BY_FORMS" | "NOT_PRESENTABLE";
+                            };
+                            /** Format: date-time */
+                            expiresAt: string | null;
+                            id: string;
+                            /** Format: date-time */
+                            issuedAt: string | null;
+                            /** @enum {string} */
+                            status: "PENDING" | "ACTIVE" | "USED" | "EXPIRED" | "REVOKED";
+                            subEvent: {
+                                /** Format: date-time */
+                                date: string;
+                                id: string;
+                                name: string;
+                            };
+                        }[];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    getMyEventTicketV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            checkInEligibility: {
+                                blockingForms: {
+                                    assignmentId: string;
+                                    /** @enum {string} */
+                                    availability: "OPEN" | "UPCOMING" | "OVERDUE" | "CORRECTION" | "COMPLETED";
+                                    canEdit: boolean;
+                                    canSubmit: boolean;
+                                    /** @enum {string} */
+                                    completion: "NOT_STARTED" | "DRAFT" | "NEEDS_CORRECTION" | "LOCKED";
+                                    formName: string;
+                                    registrationId: string;
+                                }[];
+                                canPresentQr: boolean;
+                                /** @enum {string} */
+                                state: "READY" | "BLOCKED_BY_FORMS" | "NOT_PRESENTABLE";
+                            };
+                            /** Format: date-time */
+                            expiresAt: string | null;
+                            id: string;
+                            /** Format: date-time */
+                            issuedAt: string | null;
+                            /** @enum {string} */
+                            status: "PENDING" | "ACTIVE" | "USED" | "EXPIRED" | "REVOKED";
+                            subEvent: {
+                                /** Format: date-time */
+                                date: string;
+                                id: string;
+                                name: string;
+                            };
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    getMyEventTicketCredentialV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            credential: string;
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event scope denied. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Lifecycle or revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    getMyEventTicketQrV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PNG QR image. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ticket not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

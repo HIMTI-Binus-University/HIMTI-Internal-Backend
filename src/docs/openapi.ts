@@ -17,6 +17,7 @@ import { registerEventRegistrationDocs } from '@/features/event-registrations/ev
 import { registerEventPaymentDocs } from '@/features/event-payments/eventPaymentDocs.js';
 import { registerPostRegistrationFormDocs } from '@/features/post-registration-forms/postRegistrationFormDocs.js';
 import { registerEventPackageDocs } from '@/features/event-packages/eventPackageDocs.js';
+import { registerEventTicketDocs } from '@/features/event-tickets/eventTicketDocs.js';
 import {
    canonicalErrorResponseSchema,
    canonicalValidationErrorResponseSchema,
@@ -50,6 +51,7 @@ registerEventRegistrationDocs(registry);
 registerEventPaymentDocs(registry);
 registerPostRegistrationFormDocs(registry);
 registerEventPackageDocs(registry);
+registerEventTicketDocs(registry);
 
 export const generateOpenApiDocument = () => {
    const generator = new OpenApiGeneratorV3(registry.definitions);

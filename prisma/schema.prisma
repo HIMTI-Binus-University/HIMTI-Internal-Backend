@@ -395,6 +395,7 @@ model User {
   processedRefunds                    RegistrationRefund[]             @relation("RegistrationRefundProcessor")
   registrationHistory                 RegistrationStatusHistory[]
   attendanceCheckIns                  AttendanceCheckIn[]              @relation("AttendanceCheckInOperator")
+  attendanceAudits                    AttendanceAudit[]
   membershipPeriods                   UserMembershipPeriod[]
   createdUrls                         Url[]                            @relation("UrlCreator")
   updatedUrls                         Url[]                            @relation("UrlUpdater")
@@ -629,21 +630,22 @@ model Subevent {
   paymentProofMaxBytes          Int      @default(10485760)
 
   // Registration Rules
-  maxParticipants         Int?
-  maxTicketsPerUser       Int?
-  isRegistrationOpen      Boolean                  @default(false)
-  autoAcceptRegistration  Boolean                  @default(false)
-  checkOutToken           String?                  @db.VarChar(255)
-  registrationMode        RegistrationMode         @default(DISABLED)
-  approvalMode            RegistrationApprovalMode @default(MANUAL_REVIEW)
-  registrationOpensAt     DateTime?
-  registrationClosesAt    DateTime?
-  cancellationClosesAt    DateTime?
-  checkoutHoldMinutes     Int                      @default(15)
-  memberDeadlineHours     Int                      @default(24)
-  paymentDeadlineHours    Int                      @default(24)
-  correctionDeadlineHours Int                      @default(24)
-  waitlistOfferHours      Int                      @default(24)
+  maxParticipants           Int?
+  maxTicketsPerUser         Int?
+  isRegistrationOpen        Boolean                  @default(false)
+  autoAcceptRegistration    Boolean                  @default(false)
+  checkOutToken             String?                  @db.VarChar(255)
+  registrationMode          RegistrationMode         @default(DISABLED)
+  approvalMode              RegistrationApprovalMode @default(MANUAL_REVIEW)
+  registrationOpensAt       DateTime?
+  registrationClosesAt      DateTime?
+  cancellationClosesAt      DateTime?
+  attendanceCheckoutEnabled Boolean                  @default(false)
+  checkoutHoldMinutes       Int                      @default(15)
+  memberDeadlineHours       Int                      @default(24)
+  paymentDeadlineHours      Int                      @default(24)
+  correctionDeadlineHours   Int                      @default(24)
+  waitlistOfferHours        Int                      @default(24)
 
   visibility SubeventVisibility @default(PUBLIC)
   status     SubeventStatus     @default(DRAFT)
@@ -664,6 +666,8 @@ model Subevent {
   registrationInvites      RegistrationInvitation[]
   waitlistEntries          RegistrationWaitlistEntry[]
   tickets                  RegistrationTicket[]
+  attendanceCheckIns       AttendanceCheckIn[]
+  attendanceAudits         AttendanceAudit[]
   registrationOrders       RegistrationOrder[]
   registrationOrderMembers RegistrationOrderMember[]
 
@@ -1282,20 +1286,24 @@ model RegistrationWaitlistEntry {
 }
 
 model RegistrationTicket {
-  id            String       @id @default(nanoid())
-  orderMemberId String       @unique
-  subEventId    String
-  tokenHash     String       @unique @db.VarChar(128)
-  status        TicketStatus @default(PENDING)
-  issuedAt      DateTime?
-  expiresAt     DateTime?
-  revokedAt     DateTime?
-  createdAt     DateTime     @default(now()) @db.Timestamp(0)
-  updatedAt     DateTime?    @updatedAt
+  id              String       @id @default(nanoid())
+  orderMemberId   String       @unique
+  subEventId      String
+  tokenHash       String       @unique @db.VarChar(128)
+  tokenCiphertext String?      @db.Text
+  tokenIv         String?      @db.VarChar(64)
+  tokenAuthTag    String?      @db.VarChar(64)
+  keyVersion      String?      @db.VarChar(32)
+  status          TicketStatus @default(PENDING)
+  issuedAt        DateTime?
+  expiresAt       DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime     @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime?    @updatedAt
 
   orderMember RegistrationOrderMember @relation(fields: [orderMemberId], references: [id], onDelete: Restrict)
   subEvent    Subevent                @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-  checkIn     AttendanceCheckIn?
+  checkIns    AttendanceCheckIn[]
 
   @@index([subEventId, status])
   @@index([expiresAt, status])
@@ -1303,17 +1311,48 @@ model RegistrationTicket {
 }
 
 model AttendanceCheckIn {
-  id             String   @id @default(nanoid())
-  ticketId       String   @unique
-  operatorUserId String
-  checkedInAt    DateTime @default(now()) @db.Timestamp(0)
-  source         String?  @db.VarChar(100)
+  id               String    @id @default(nanoid())
+  ticketId         String
+  subEventId       String
+  operatorUserId   String
+  checkedInAt      DateTime  @default(now()) @db.Timestamp(0)
+  checkedOutAt     DateTime?
+  voidedAt         DateTime?
+  voidedBy         String?
+  voidReason       String?   @db.Text
+  correctionReason String?   @db.Text
+  revision         Int       @default(1)
+  source           String?   @db.VarChar(100)
 
   ticket   RegistrationTicket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
   operator User               @relation("AttendanceCheckInOperator", fields: [operatorUserId], references: [id], onDelete: Restrict)
+  subEvent Subevent           @relation(fields: [subEventId], references: [id], onDelete: Restrict)
+  audits   AttendanceAudit[]
 
   @@index([operatorUserId, checkedInAt])
+  @@index([subEventId, checkedInAt])
+  @@index([ticketId, voidedAt])
   @@map("attendance_check_ins")
+}
+
+model AttendanceAudit {
+  id                  String   @id @default(nanoid())
+  attendanceCheckInId String
+  subEventId          String
+  actorUserId         String
+  action              String   @db.VarChar(50)
+  reason              String?  @db.Text
+  revision            Int
+  metadata            Json?
+  createdAt           DateTime @default(now()) @db.Timestamp(0)
+
+  checkIn  AttendanceCheckIn @relation(fields: [attendanceCheckInId], references: [id], onDelete: Restrict)
+  subEvent Subevent          @relation(fields: [subEventId], references: [id], onDelete: Restrict)
+  actor    User              @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([attendanceCheckInId, createdAt])
+  @@index([subEventId, createdAt])
+  @@map("attendance_audits")
 }
 
 model RegistrationStatusHistory {

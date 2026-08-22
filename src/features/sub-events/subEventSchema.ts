@@ -94,6 +94,7 @@ export const CreateSubEventSchema = z.object({
    registrationOpensAt: z.string().datetime().optional().nullable(),
    registrationClosesAt: z.string().datetime().optional().nullable(),
    cancellationClosesAt: z.string().datetime().optional().nullable(),
+   attendanceCheckoutEnabled: z.boolean().default(false),
    visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).default('PUBLIC'),
 
    // Questions
@@ -126,6 +127,7 @@ export const UpdateSubEventSchema = z.object({
    registrationOpensAt: z.string().datetime().optional().nullable(),
    registrationClosesAt: z.string().datetime().optional().nullable(),
    cancellationClosesAt: z.string().datetime().optional().nullable(),
+   attendanceCheckoutEnabled: z.boolean().optional(),
    visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).optional(),
    status: z.enum(['DRAFT', 'OPEN', 'CLOSED', 'CANCELLED']).optional(),
 });

@@ -431,6 +431,9 @@
                   ],
                   "type": "string"
                },
+               "attendanceCheckoutEnabled": {
+                  "type": "boolean"
+               },
                "cancellationClosesAt": {
                   "format": "date-time",
                   "nullable": true,
@@ -10524,6 +10527,9 @@
                         ],
                         "type": "string"
                      },
+                     "attendanceCheckoutEnabled": {
+                        "type": "boolean"
+                     },
                      "autoAcceptRegistration": {
                         "type": "boolean"
                      },
@@ -10888,6 +10894,7 @@
                      "registrationOpensAt",
                      "registrationClosesAt",
                      "cancellationClosesAt",
+                     "attendanceCheckoutEnabled",
                      "visibility",
                      "status",
                      "createdAt",
@@ -11119,6 +11126,9 @@
                         ],
                         "type": "string"
                      },
+                     "attendanceCheckoutEnabled": {
+                        "type": "boolean"
+                     },
                      "autoAcceptRegistration": {
                         "type": "boolean"
                      },
@@ -11483,6 +11493,7 @@
                      "registrationOpensAt",
                      "registrationClosesAt",
                      "cancellationClosesAt",
+                     "attendanceCheckoutEnabled",
                      "visibility",
                      "status",
                      "createdAt",
@@ -11775,6 +11786,9 @@
                      "MANUAL_REVIEW"
                   ],
                   "type": "string"
+               },
+               "attendanceCheckoutEnabled": {
+                  "type": "boolean"
                },
                "autoAcceptRegistration": {
                   "type": "boolean"
@@ -28089,6 +28103,1214 @@
             ]
          }
       },
+      "/api/v1/internal/sub-events/{subEventId}/attendance": {
+         "get": {
+            "operationId": "listEventAttendanceV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 25,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 100,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "counts": {
+                                 "properties": {
+                                    "checkedOut": {
+                                       "type": "integer"
+                                    },
+                                    "currentlyCheckedIn": {
+                                       "type": "integer"
+                                    },
+                                    "totalRecords": {
+                                       "type": "integer"
+                                    },
+                                    "voided": {
+                                       "type": "integer"
+                                    }
+                                 },
+                                 "required": [
+                                    "currentlyCheckedIn",
+                                    "checkedOut",
+                                    "voided",
+                                    "totalRecords"
+                                 ],
+                                 "type": "object"
+                              },
+                              "data": {
+                                 "items": {
+                                    "additionalProperties": {
+                                       "nullable": true
+                                    },
+                                    "properties": {
+                                       "checkedInAt": {
+                                          "format": "date-time",
+                                          "type": "string"
+                                       },
+                                       "checkedOutAt": {
+                                          "format": "date-time",
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "id": {
+                                          "type": "string"
+                                       },
+                                       "revision": {
+                                          "type": "integer"
+                                       },
+                                       "source": {
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "voidedAt": {
+                                          "format": "date-time",
+                                          "nullable": true,
+                                          "type": "string"
+                                       }
+                                    },
+                                    "required": [
+                                       "id",
+                                       "checkedInAt",
+                                       "checkedOutAt",
+                                       "revision"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "meta": {
+                                 "properties": {
+                                    "limit": {
+                                       "type": "integer"
+                                    },
+                                    "page": {
+                                       "type": "integer"
+                                    },
+                                    "totalPages": {
+                                       "type": "integer"
+                                    },
+                                    "totalRecords": {
+                                       "type": "integer"
+                                    }
+                                 },
+                                 "required": [
+                                    "page",
+                                    "limit",
+                                    "totalRecords",
+                                    "totalPages"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data",
+                              "counts",
+                              "meta"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event attendance"
+            ]
+         }
+      },
+      "/api/v1/internal/sub-events/{subEventId}/attendance/{attendanceId}/checkout": {
+         "post": {
+            "operationId": "checkoutEventAttendanceV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "attendanceId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "reason": {
+                              "maxLength": 1000,
+                              "minLength": 3,
+                              "type": "string"
+                           },
+                           "revision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "revision",
+                           "reason"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "record": {
+                                       "properties": {
+                                          "checkedInAt": {
+                                             "format": "date-time",
+                                             "type": "string"
+                                          },
+                                          "checkedOutAt": {
+                                             "format": "date-time",
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "revision": {
+                                             "type": "integer"
+                                          },
+                                          "source": {
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "voidedAt": {
+                                             "format": "date-time",
+                                             "nullable": true,
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "checkedInAt",
+                                          "checkedOutAt",
+                                          "revision"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "replay": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "record",
+                                    "replay"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event attendance"
+            ]
+         }
+      },
+      "/api/v1/internal/sub-events/{subEventId}/attendance/{attendanceId}/void": {
+         "post": {
+            "operationId": "voidEventAttendanceV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "attendanceId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "reason": {
+                              "maxLength": 1000,
+                              "minLength": 3,
+                              "type": "string"
+                           },
+                           "revision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "revision",
+                           "reason"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "record": {
+                                       "properties": {
+                                          "checkedInAt": {
+                                             "format": "date-time",
+                                             "type": "string"
+                                          },
+                                          "checkedOutAt": {
+                                             "format": "date-time",
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "revision": {
+                                             "type": "integer"
+                                          },
+                                          "source": {
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "voidedAt": {
+                                             "format": "date-time",
+                                             "nullable": true,
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "checkedInAt",
+                                          "checkedOutAt",
+                                          "revision"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "replay": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "record",
+                                    "replay"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event attendance"
+            ]
+         }
+      },
       "/api/v1/internal/sub-events/{subEventId}/packages": {
          "get": {
             "operationId": "listEventPackagesV1",
@@ -31037,6 +32259,1686 @@
             ]
          }
       },
+      "/api/v1/internal/sub-events/{subEventId}/tickets/check-in": {
+         "post": {
+            "operationId": "checkInEventTicketCredentialV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "credential": {
+                              "maxLength": 512,
+                              "minLength": 32,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "credential"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "orderNumber": {
+                                       "type": "string"
+                                    },
+                                    "participant": {
+                                       "properties": {
+                                          "email": {
+                                             "format": "email",
+                                             "type": "string"
+                                          },
+                                          "name": {
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "name",
+                                          "email"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "record": {
+                                       "properties": {
+                                          "checkedInAt": {
+                                             "format": "date-time",
+                                             "type": "string"
+                                          },
+                                          "checkedOutAt": {
+                                             "format": "date-time",
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "revision": {
+                                             "type": "integer"
+                                          },
+                                          "source": {
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "voidedAt": {
+                                             "format": "date-time",
+                                             "nullable": true,
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "checkedInAt",
+                                          "checkedOutAt",
+                                          "revision"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "replay": {
+                                       "type": "boolean"
+                                    },
+                                    "state": {
+                                       "enum": [
+                                          "CHECKED_IN",
+                                          "CHECKED_OUT"
+                                       ],
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "participant",
+                                    "orderNumber",
+                                    "record",
+                                    "state",
+                                    "replay"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event attendance"
+            ]
+         }
+      },
+      "/api/v1/internal/sub-events/{subEventId}/tickets/manual-check-in": {
+         "post": {
+            "operationId": "checkInEventTicketManuallyV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "ticketId": {
+                              "minLength": 1,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "ticketId"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "orderNumber": {
+                                       "type": "string"
+                                    },
+                                    "participant": {
+                                       "properties": {
+                                          "email": {
+                                             "format": "email",
+                                             "type": "string"
+                                          },
+                                          "name": {
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "name",
+                                          "email"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "record": {
+                                       "properties": {
+                                          "checkedInAt": {
+                                             "format": "date-time",
+                                             "type": "string"
+                                          },
+                                          "checkedOutAt": {
+                                             "format": "date-time",
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "revision": {
+                                             "type": "integer"
+                                          },
+                                          "source": {
+                                             "nullable": true,
+                                             "type": "string"
+                                          },
+                                          "voidedAt": {
+                                             "format": "date-time",
+                                             "nullable": true,
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "checkedInAt",
+                                          "checkedOutAt",
+                                          "revision"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "replay": {
+                                       "type": "boolean"
+                                    },
+                                    "state": {
+                                       "enum": [
+                                          "CHECKED_IN",
+                                          "CHECKED_OUT"
+                                       ],
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "participant",
+                                    "orderNumber",
+                                    "record",
+                                    "state",
+                                    "replay"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event attendance"
+            ]
+         }
+      },
+      "/api/v1/internal/sub-events/{subEventId}/tickets/resolve": {
+         "post": {
+            "operationId": "resolveEventTicketV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "credential": {
+                              "maxLength": 512,
+                              "minLength": 32,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "credential"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "eligibility": {
+                                       "properties": {
+                                          "eligible": {
+                                             "type": "boolean"
+                                          },
+                                          "reason": {
+                                             "enum": [
+                                                "TICKET_INELIGIBLE",
+                                                "REQUIRED_ATTENDEE_FORM_INCOMPLETE",
+                                                null
+                                             ],
+                                             "nullable": true,
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "eligible",
+                                          "reason"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "orderNumber": {
+                                       "type": "string"
+                                    },
+                                    "participant": {
+                                       "properties": {
+                                          "email": {
+                                             "format": "email",
+                                             "type": "string"
+                                          },
+                                          "name": {
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "name",
+                                          "email"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "PENDING",
+                                          "ACTIVE",
+                                          "USED",
+                                          "EXPIRED",
+                                          "REVOKED"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "ticketId": {
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "ticketId",
+                                    "status",
+                                    "eligibility",
+                                    "participant",
+                                    "orderNumber"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event attendance"
+            ]
+         }
+      },
+      "/api/v1/internal/sub-events/{subEventId}/tickets/search": {
+         "get": {
+            "operationId": "searchEventTicketsV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "subEventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": true,
+                  "schema": {
+                     "maxLength": 100,
+                     "minLength": 2,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 20,
+                     "maximum": 50,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "properties": {
+                                       "attendance": {
+                                          "nullable": true,
+                                          "properties": {
+                                             "checkedInAt": {
+                                                "format": "date-time",
+                                                "type": "string"
+                                             },
+                                             "checkedOutAt": {
+                                                "format": "date-time",
+                                                "nullable": true,
+                                                "type": "string"
+                                             },
+                                             "id": {
+                                                "type": "string"
+                                             },
+                                             "revision": {
+                                                "type": "integer"
+                                             },
+                                             "source": {
+                                                "nullable": true,
+                                                "type": "string"
+                                             },
+                                             "state": {
+                                                "enum": [
+                                                   "CHECKED_IN",
+                                                   "CHECKED_OUT"
+                                                ],
+                                                "type": "string"
+                                             },
+                                             "voidedAt": {
+                                                "format": "date-time",
+                                                "nullable": true,
+                                                "type": "string"
+                                             }
+                                          },
+                                          "required": [
+                                             "id",
+                                             "checkedInAt",
+                                             "checkedOutAt",
+                                             "revision",
+                                             "state"
+                                          ],
+                                          "type": "object"
+                                       },
+                                       "eligibility": {
+                                          "properties": {
+                                             "eligible": {
+                                                "type": "boolean"
+                                             },
+                                             "reason": {
+                                                "enum": [
+                                                   "TICKET_INELIGIBLE",
+                                                   "REQUIRED_ATTENDEE_FORM_INCOMPLETE",
+                                                   null
+                                                ],
+                                                "nullable": true,
+                                                "type": "string"
+                                             }
+                                          },
+                                          "required": [
+                                             "eligible",
+                                             "reason"
+                                          ],
+                                          "type": "object"
+                                       },
+                                       "orderNumber": {
+                                          "type": "string"
+                                       },
+                                       "participant": {
+                                          "properties": {
+                                             "email": {
+                                                "format": "email",
+                                                "type": "string"
+                                             },
+                                             "name": {
+                                                "type": "string"
+                                             }
+                                          },
+                                          "required": [
+                                             "name",
+                                             "email"
+                                          ],
+                                          "type": "object"
+                                       },
+                                       "status": {
+                                          "enum": [
+                                             "PENDING",
+                                             "ACTIVE",
+                                             "USED",
+                                             "EXPIRED",
+                                             "REVOKED"
+                                          ],
+                                          "type": "string"
+                                       },
+                                       "ticketId": {
+                                          "type": "string"
+                                       }
+                                    },
+                                    "required": [
+                                       "ticketId",
+                                       "status",
+                                       "eligibility",
+                                       "participant",
+                                       "orderNumber",
+                                       "attendance"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "meta": {
+                                 "properties": {
+                                    "limit": {
+                                       "type": "integer"
+                                    },
+                                    "page": {
+                                       "type": "integer"
+                                    },
+                                    "totalPages": {
+                                       "type": "integer"
+                                    },
+                                    "totalRecords": {
+                                       "type": "integer"
+                                    }
+                                 },
+                                 "required": [
+                                    "page",
+                                    "limit",
+                                    "totalRecords",
+                                    "totalPages"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data",
+                              "meta"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event attendance"
+            ]
+         }
+      },
       "/api/v1/me/event-payments/{id}/proof": {
          "post": {
             "operationId": "submitMyEventPaymentProofV1",
@@ -33855,6 +36757,1234 @@
             "summary": "Submit or resubmit a one-seat registration",
             "tags": [
                "Event registrations V1"
+            ]
+         }
+      },
+      "/api/v1/me/event-tickets": {
+         "get": {
+            "operationId": "listMyEventTicketsV1",
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "properties": {
+                                       "checkInEligibility": {
+                                          "properties": {
+                                             "blockingForms": {
+                                                "items": {
+                                                   "properties": {
+                                                      "assignmentId": {
+                                                         "type": "string"
+                                                      },
+                                                      "availability": {
+                                                         "enum": [
+                                                            "OPEN",
+                                                            "UPCOMING",
+                                                            "OVERDUE",
+                                                            "CORRECTION",
+                                                            "COMPLETED"
+                                                         ],
+                                                         "type": "string"
+                                                      },
+                                                      "canEdit": {
+                                                         "type": "boolean"
+                                                      },
+                                                      "canSubmit": {
+                                                         "type": "boolean"
+                                                      },
+                                                      "completion": {
+                                                         "enum": [
+                                                            "NOT_STARTED",
+                                                            "DRAFT",
+                                                            "NEEDS_CORRECTION",
+                                                            "LOCKED"
+                                                         ],
+                                                         "type": "string"
+                                                      },
+                                                      "formName": {
+                                                         "type": "string"
+                                                      },
+                                                      "registrationId": {
+                                                         "type": "string"
+                                                      }
+                                                   },
+                                                   "required": [
+                                                      "assignmentId",
+                                                      "registrationId",
+                                                      "formName",
+                                                      "availability",
+                                                      "completion",
+                                                      "canEdit",
+                                                      "canSubmit"
+                                                   ],
+                                                   "type": "object"
+                                                },
+                                                "type": "array"
+                                             },
+                                             "canPresentQr": {
+                                                "type": "boolean"
+                                             },
+                                             "state": {
+                                                "enum": [
+                                                   "READY",
+                                                   "BLOCKED_BY_FORMS",
+                                                   "NOT_PRESENTABLE"
+                                                ],
+                                                "type": "string"
+                                             }
+                                          },
+                                          "required": [
+                                             "state",
+                                             "canPresentQr",
+                                             "blockingForms"
+                                          ],
+                                          "type": "object"
+                                       },
+                                       "expiresAt": {
+                                          "format": "date-time",
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "id": {
+                                          "type": "string"
+                                       },
+                                       "issuedAt": {
+                                          "format": "date-time",
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "status": {
+                                          "enum": [
+                                             "PENDING",
+                                             "ACTIVE",
+                                             "USED",
+                                             "EXPIRED",
+                                             "REVOKED"
+                                          ],
+                                          "type": "string"
+                                       },
+                                       "subEvent": {
+                                          "properties": {
+                                             "date": {
+                                                "format": "date-time",
+                                                "type": "string"
+                                             },
+                                             "id": {
+                                                "type": "string"
+                                             },
+                                             "name": {
+                                                "type": "string"
+                                             }
+                                          },
+                                          "required": [
+                                             "id",
+                                             "name",
+                                             "date"
+                                          ],
+                                          "type": "object"
+                                       }
+                                    },
+                                    "required": [
+                                       "id",
+                                       "status",
+                                       "issuedAt",
+                                       "expiresAt",
+                                       "subEvent",
+                                       "checkInEligibility"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event tickets"
+            ]
+         }
+      },
+      "/api/v1/me/event-tickets/{ticketId}": {
+         "get": {
+            "operationId": "getMyEventTicketV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "ticketId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "checkInEligibility": {
+                                       "properties": {
+                                          "blockingForms": {
+                                             "items": {
+                                                "properties": {
+                                                   "assignmentId": {
+                                                      "type": "string"
+                                                   },
+                                                   "availability": {
+                                                      "enum": [
+                                                         "OPEN",
+                                                         "UPCOMING",
+                                                         "OVERDUE",
+                                                         "CORRECTION",
+                                                         "COMPLETED"
+                                                      ],
+                                                      "type": "string"
+                                                   },
+                                                   "canEdit": {
+                                                      "type": "boolean"
+                                                   },
+                                                   "canSubmit": {
+                                                      "type": "boolean"
+                                                   },
+                                                   "completion": {
+                                                      "enum": [
+                                                         "NOT_STARTED",
+                                                         "DRAFT",
+                                                         "NEEDS_CORRECTION",
+                                                         "LOCKED"
+                                                      ],
+                                                      "type": "string"
+                                                   },
+                                                   "formName": {
+                                                      "type": "string"
+                                                   },
+                                                   "registrationId": {
+                                                      "type": "string"
+                                                   }
+                                                },
+                                                "required": [
+                                                   "assignmentId",
+                                                   "registrationId",
+                                                   "formName",
+                                                   "availability",
+                                                   "completion",
+                                                   "canEdit",
+                                                   "canSubmit"
+                                                ],
+                                                "type": "object"
+                                             },
+                                             "type": "array"
+                                          },
+                                          "canPresentQr": {
+                                             "type": "boolean"
+                                          },
+                                          "state": {
+                                             "enum": [
+                                                "READY",
+                                                "BLOCKED_BY_FORMS",
+                                                "NOT_PRESENTABLE"
+                                             ],
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "state",
+                                          "canPresentQr",
+                                          "blockingForms"
+                                       ],
+                                       "type": "object"
+                                    },
+                                    "expiresAt": {
+                                       "format": "date-time",
+                                       "nullable": true,
+                                       "type": "string"
+                                    },
+                                    "id": {
+                                       "type": "string"
+                                    },
+                                    "issuedAt": {
+                                       "format": "date-time",
+                                       "nullable": true,
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "PENDING",
+                                          "ACTIVE",
+                                          "USED",
+                                          "EXPIRED",
+                                          "REVOKED"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "subEvent": {
+                                       "properties": {
+                                          "date": {
+                                             "format": "date-time",
+                                             "type": "string"
+                                          },
+                                          "id": {
+                                             "type": "string"
+                                          },
+                                          "name": {
+                                             "type": "string"
+                                          }
+                                       },
+                                       "required": [
+                                          "id",
+                                          "name",
+                                          "date"
+                                       ],
+                                       "type": "object"
+                                    }
+                                 },
+                                 "required": [
+                                    "id",
+                                    "status",
+                                    "issuedAt",
+                                    "expiresAt",
+                                    "subEvent",
+                                    "checkInEligibility"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event tickets"
+            ]
+         }
+      },
+      "/api/v1/me/event-tickets/{ticketId}/credential": {
+         "get": {
+            "operationId": "getMyEventTicketCredentialV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "ticketId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "credential": {
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "credential"
+                                 ],
+                                 "type": "object"
+                              },
+                              "msg": {
+                                 "enum": [
+                                    "success"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "msg",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Success."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Permission or event scope denied."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Resource not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Lifecycle or revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event tickets"
+            ]
+         }
+      },
+      "/api/v1/me/event-tickets/{ticketId}/qr.png": {
+         "get": {
+            "operationId": "getMyEventTicketQrV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "ticketId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "image/png": {
+                        "schema": {
+                           "type": "string"
+                        }
+                     }
+                  },
+                  "description": "PNG QR image."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "404": {
+                  "description": "Ticket not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event tickets"
             ]
          }
       },
