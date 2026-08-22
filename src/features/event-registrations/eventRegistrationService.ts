@@ -275,6 +275,15 @@ const mapInternalSummary = (
    };
 };
 
+export const registrationReviewCapabilities = (status: string) => [
+   ...(['PENDING_APPROVAL'].includes(status)
+      ? ['approve', 'request-correction', 'reject']
+      : []),
+   ...(['PENDING_APPROVAL', 'APPROVED', 'NEEDS_CORRECTION'].includes(status)
+      ? ['admin-cancel']
+      : []),
+];
+
 const detailReadiness = (order: DetailOrder) => {
    const activeMembers = order.members.filter(
       (member) => member.status !== 'CANCELLED',
@@ -595,6 +604,7 @@ class EventRegistrationService {
             ...item,
             createdAt: item.createdAt.toISOString(),
          })),
+         reviewCapabilities: registrationReviewCapabilities(order.status),
       };
    }
 
@@ -640,9 +650,14 @@ class EventRegistrationService {
          );
       if ('conflict' in result)
          throw new AppError(
-            'Registration revision or lifecycle changed',
+            result.conflict === 'REVISION'
+               ? 'Registration revision changed'
+               : 'This review action is unavailable for the current registration status',
             409,
-            'REGISTRATION_CONFLICT',
+            result.conflict === 'REVISION'
+               ? 'REGISTRATION_REVISION_CONFLICT'
+               : 'REGISTRATION_ACTION_UNAVAILABLE',
+            { action },
          );
       return result[0];
    }

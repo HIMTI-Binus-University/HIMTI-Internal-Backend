@@ -9429,6 +9429,7 @@ export interface components {
                 /** @enum {string|null} */
                 responseStatus: "DRAFT" | "SUBMITTED" | "LOCKED" | "NEEDS_CORRECTION" | "SUPERSEDED" | null;
                 responseStatuses: ("DRAFT" | "SUBMITTED" | "LOCKED" | "NEEDS_CORRECTION" | "SUPERSEDED")[];
+                reviewCapabilities: ("approve" | "request-correction" | "reject" | "admin-cancel")[];
                 revision: number;
                 rosterSummary: {
                     activeMemberCount: number;

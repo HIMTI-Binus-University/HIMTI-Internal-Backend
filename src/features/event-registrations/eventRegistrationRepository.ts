@@ -460,15 +460,19 @@ class EventRegistrationRepository {
                   ? ['PENDING_APPROVAL', 'APPROVED', 'NEEDS_CORRECTION']
                   : ['PENDING_APPROVAL'];
             if (
-               payload.items.some((item) => {
-                  const order = byId.get(item.registrationId)!;
-                  return (
-                     order.revision !== item.revision ||
-                     !allowed.includes(order.status)
-                  );
-               })
+               payload.items.some(
+                  (item) =>
+                     byId.get(item.registrationId)!.revision !== item.revision,
+               )
             )
-               return { conflict: true } as const;
+               return { conflict: 'REVISION' } as const;
+            if (
+               payload.items.some(
+                  (item) =>
+                     !allowed.includes(byId.get(item.registrationId)!.status),
+               )
+            )
+               return { conflict: 'LIFECYCLE' } as const;
             const now = new Date();
             // Existing rows default to 24 hours; retain that safe fallback for
             // databases temporarily drifted to a nullable legacy column.

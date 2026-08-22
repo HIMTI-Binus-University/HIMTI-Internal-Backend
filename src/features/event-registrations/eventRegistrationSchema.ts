@@ -316,6 +316,9 @@ const internalSavedAnswerSchema = z.object({
 
 export const internalRegistrationDetailSchema =
    internalRegistrationSummarySchema.extend({
+      reviewCapabilities: z.array(
+         z.enum(['approve', 'request-correction', 'reject', 'admin-cancel']),
+      ),
       answersVisible: z.boolean(),
       sections: z.array(
          z.object({

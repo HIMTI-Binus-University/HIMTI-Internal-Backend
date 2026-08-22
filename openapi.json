@@ -3873,6 +3873,18 @@
                         },
                         "type": "array"
                      },
+                     "reviewCapabilities": {
+                        "items": {
+                           "enum": [
+                              "approve",
+                              "request-correction",
+                              "reject",
+                              "admin-cancel"
+                           ],
+                           "type": "string"
+                        },
+                        "type": "array"
+                     },
                      "revision": {
                         "type": "integer"
                      },
@@ -4047,6 +4059,7 @@
                      "subEvent",
                      "createdAt",
                      "submittedAt",
+                     "reviewCapabilities",
                      "answersVisible",
                      "sections",
                      "history"
