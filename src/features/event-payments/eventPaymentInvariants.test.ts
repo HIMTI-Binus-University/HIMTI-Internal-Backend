@@ -58,6 +58,18 @@ test('legacy payment snapshots normalize to upload defaults and hard cap', () =>
    assert.equal(unsafe.maxProofBytes, HARD_MAX_PROOF_BYTES);
 });
 
+test('payment proof response dates are serialized before schema parsing', async () => {
+   const serviceSource = await read('./eventPaymentService.ts');
+   assert.match(
+      serviceSource,
+      /submittedAt:\s*proof\.submittedAt\.toISOString\(\)/,
+   );
+   assert.match(
+      serviceSource,
+      /reviewedAt:\s*proof\.reviewedAt\?\.toISOString\(\)\s*\?\?\s*null/,
+   );
+});
+
 test('private upload responses never expose storage keys', async () => {
    const source = await read('./eventPaymentRepository.ts');
    const detailSelect = source.slice(

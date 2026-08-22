@@ -36,6 +36,8 @@ const mapProof = (proof: {
    } | null;
 }) => ({
    ...proof,
+   submittedAt: proof.submittedAt.toISOString(),
+   reviewedAt: proof.reviewedAt?.toISOString() ?? null,
    contentPath: `/api/v1/private/payment-proofs/${proof.id}/content`,
 });
 
