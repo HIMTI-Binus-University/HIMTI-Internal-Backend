@@ -3300,6 +3300,26 @@
                         "orderIndex": {
                            "type": "integer"
                         },
+                        "participant": {
+                           "properties": {
+                              "email": {
+                                 "format": "email",
+                                 "type": "string"
+                              },
+                              "id": {
+                                 "type": "string"
+                              },
+                              "name": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "name",
+                              "email"
+                           ],
+                           "type": "object"
+                        },
                         "registrationId": {
                            "type": "string"
                         },
@@ -3320,6 +3340,28 @@
                                     "properties": {
                                        "questionId": {
                                           "type": "string"
+                                       },
+                                       "selectedOptions": {
+                                          "items": {
+                                             "properties": {
+                                                "id": {
+                                                   "type": "string"
+                                                },
+                                                "label": {
+                                                   "type": "string"
+                                                },
+                                                "value": {
+                                                   "type": "string"
+                                                }
+                                             },
+                                             "required": [
+                                                "id",
+                                                "label",
+                                                "value"
+                                             ],
+                                             "type": "object"
+                                          },
+                                          "type": "array"
                                        },
                                        "type": {
                                           "type": "string"
@@ -3344,7 +3386,8 @@
                                     "required": [
                                        "questionId",
                                        "type",
-                                       "value"
+                                       "value",
+                                       "selectedOptions"
                                     ],
                                     "type": "object"
                                  },
@@ -3482,6 +3525,7 @@
                         "formDescription",
                         "version",
                         "memberId",
+                        "participant",
                         "audience",
                         "isRequired",
                         "blocksCheckIn",
@@ -5799,6 +5843,26 @@
                         "orderIndex": {
                            "type": "integer"
                         },
+                        "participant": {
+                           "properties": {
+                              "email": {
+                                 "format": "email",
+                                 "type": "string"
+                              },
+                              "id": {
+                                 "type": "string"
+                              },
+                              "name": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "name",
+                              "email"
+                           ],
+                           "type": "object"
+                        },
                         "registrationId": {
                            "type": "string"
                         },
@@ -5819,6 +5883,28 @@
                                     "properties": {
                                        "questionId": {
                                           "type": "string"
+                                       },
+                                       "selectedOptions": {
+                                          "items": {
+                                             "properties": {
+                                                "id": {
+                                                   "type": "string"
+                                                },
+                                                "label": {
+                                                   "type": "string"
+                                                },
+                                                "value": {
+                                                   "type": "string"
+                                                }
+                                             },
+                                             "required": [
+                                                "id",
+                                                "label",
+                                                "value"
+                                             ],
+                                             "type": "object"
+                                          },
+                                          "type": "array"
                                        },
                                        "type": {
                                           "type": "string"
@@ -5843,7 +5929,8 @@
                                     "required": [
                                        "questionId",
                                        "type",
-                                       "value"
+                                       "value",
+                                       "selectedOptions"
                                     ],
                                     "type": "object"
                                  },
@@ -5981,6 +6068,7 @@
                         "formDescription",
                         "version",
                         "memberId",
+                        "participant",
                         "audience",
                         "isRequired",
                         "blocksCheckIn",
@@ -6105,6 +6193,26 @@
                      "orderIndex": {
                         "type": "integer"
                      },
+                     "participant": {
+                        "properties": {
+                           "email": {
+                              "format": "email",
+                              "type": "string"
+                           },
+                           "id": {
+                              "type": "string"
+                           },
+                           "name": {
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "id",
+                           "name",
+                           "email"
+                        ],
+                        "type": "object"
+                     },
                      "registrationId": {
                         "type": "string"
                      },
@@ -6125,6 +6233,28 @@
                                  "properties": {
                                     "questionId": {
                                        "type": "string"
+                                    },
+                                    "selectedOptions": {
+                                       "items": {
+                                          "properties": {
+                                             "id": {
+                                                "type": "string"
+                                             },
+                                             "label": {
+                                                "type": "string"
+                                             },
+                                             "value": {
+                                                "type": "string"
+                                             }
+                                          },
+                                          "required": [
+                                             "id",
+                                             "label",
+                                             "value"
+                                          ],
+                                          "type": "object"
+                                       },
+                                       "type": "array"
                                     },
                                     "type": {
                                        "type": "string"
@@ -6149,7 +6279,8 @@
                                  "required": [
                                     "questionId",
                                     "type",
-                                    "value"
+                                    "value",
+                                    "selectedOptions"
                                  ],
                                  "type": "object"
                               },
@@ -6287,6 +6418,7 @@
                      "formDescription",
                      "version",
                      "memberId",
+                     "participant",
                      "audience",
                      "isRequired",
                      "blocksCheckIn",
@@ -6407,6 +6539,26 @@
                "orderIndex": {
                   "type": "integer"
                },
+               "participant": {
+                  "properties": {
+                     "email": {
+                        "format": "email",
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "name": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "name",
+                     "email"
+                  ],
+                  "type": "object"
+               },
                "registrationId": {
                   "type": "string"
                },
@@ -6427,6 +6579,28 @@
                            "properties": {
                               "questionId": {
                                  "type": "string"
+                              },
+                              "selectedOptions": {
+                                 "items": {
+                                    "properties": {
+                                       "id": {
+                                          "type": "string"
+                                       },
+                                       "label": {
+                                          "type": "string"
+                                       },
+                                       "value": {
+                                          "type": "string"
+                                       }
+                                    },
+                                    "required": [
+                                       "id",
+                                       "label",
+                                       "value"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
                               },
                               "type": {
                                  "type": "string"
@@ -6451,7 +6625,8 @@
                            "required": [
                               "questionId",
                               "type",
-                              "value"
+                              "value",
+                              "selectedOptions"
                            ],
                            "type": "object"
                         },
@@ -6589,6 +6764,7 @@
                "formDescription",
                "version",
                "memberId",
+               "participant",
                "audience",
                "isRequired",
                "blocksCheckIn",

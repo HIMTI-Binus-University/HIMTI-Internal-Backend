@@ -28,6 +28,11 @@ const mapAnswer = (
            : ['SELECT', 'RADIO', 'CHECKBOX'].includes(answer.question.fieldType)
              ? answer.selectedOptions.map((item) => item.optionId)
              : answer.textValue,
+   selectedOptions: answer.selectedOptions.map(({ option }) => ({
+      id: option.id,
+      label: option.label,
+      value: option.value,
+   })),
 });
 
 export const getPostRegistrationState = (
@@ -86,6 +91,7 @@ const mapAssignment = (assignment: Assignment, answersVisible = true) => ({
    formDescription: assignment.form.description,
    version: assignment.form.version,
    memberId: assignment.orderMemberId,
+   participant: assignment.orderMember?.user ?? assignment.order.buyer,
    audience: assignment.audience,
    isRequired: assignment.isRequired,
    blocksCheckIn: assignment.blocksCheckIn,

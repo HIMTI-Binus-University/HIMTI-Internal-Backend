@@ -9299,6 +9299,12 @@ export interface components {
                 /** Format: date-time */
                 opensAt: string | null;
                 orderIndex: number;
+                participant: {
+                    /** Format: email */
+                    email: string;
+                    id: string;
+                    name: string;
+                };
                 registrationId: string;
                 /** Format: date-time */
                 reopenDeadlineAt: string | null;
@@ -9306,6 +9312,11 @@ export interface components {
                 response: {
                     answers: {
                         questionId: string;
+                        selectedOptions: {
+                            id: string;
+                            label: string;
+                            value: string;
+                        }[];
                         type: string;
                         value: string | string[] | unknown;
                     }[];
@@ -9896,6 +9907,12 @@ export interface components {
                 /** Format: date-time */
                 opensAt: string | null;
                 orderIndex: number;
+                participant: {
+                    /** Format: email */
+                    email: string;
+                    id: string;
+                    name: string;
+                };
                 registrationId: string;
                 /** Format: date-time */
                 reopenDeadlineAt: string | null;
@@ -9903,6 +9920,11 @@ export interface components {
                 response: {
                     answers: {
                         questionId: string;
+                        selectedOptions: {
+                            id: string;
+                            label: string;
+                            value: string;
+                        }[];
                         type: string;
                         value: string | string[] | unknown;
                     }[];
@@ -9967,6 +9989,12 @@ export interface components {
                 /** Format: date-time */
                 opensAt: string | null;
                 orderIndex: number;
+                participant: {
+                    /** Format: email */
+                    email: string;
+                    id: string;
+                    name: string;
+                };
                 registrationId: string;
                 /** Format: date-time */
                 reopenDeadlineAt: string | null;
@@ -9974,6 +10002,11 @@ export interface components {
                 response: {
                     answers: {
                         questionId: string;
+                        selectedOptions: {
+                            id: string;
+                            label: string;
+                            value: string;
+                        }[];
                         type: string;
                         value: string | string[] | unknown;
                     }[];
@@ -10037,6 +10070,12 @@ export interface components {
             /** Format: date-time */
             opensAt: string | null;
             orderIndex: number;
+            participant: {
+                /** Format: email */
+                email: string;
+                id: string;
+                name: string;
+            };
             registrationId: string;
             /** Format: date-time */
             reopenDeadlineAt: string | null;
@@ -10044,6 +10083,11 @@ export interface components {
             response: {
                 answers: {
                     questionId: string;
+                    selectedOptions: {
+                        id: string;
+                        label: string;
+                        value: string;
+                    }[];
                     type: string;
                     value: string | string[] | unknown;
                 }[];

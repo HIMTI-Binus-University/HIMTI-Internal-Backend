@@ -30,7 +30,12 @@ const assignmentInclude = {
    },
    response: {
       include: {
-         answers: { include: { question: true, selectedOptions: true } },
+         answers: {
+            include: {
+               question: true,
+               selectedOptions: { include: { option: true } },
+            },
+         },
       },
    },
    order: {
@@ -38,11 +43,19 @@ const assignmentInclude = {
          id: true,
          status: true,
          buyerUserId: true,
+         buyer: { select: { id: true, name: true, email: true } },
          subEventId: true,
          ticketPackageId: true,
       },
    },
-   orderMember: { select: { id: true, userId: true, status: true } },
+   orderMember: {
+      select: {
+         id: true,
+         userId: true,
+         status: true,
+         user: { select: { id: true, name: true, email: true } },
+      },
+   },
 } satisfies Prisma.PostRegistrationFormAssignmentInclude;
 
 export const assignPublishedPostRegistrationForms = async (

@@ -42,6 +42,9 @@ const answerSchema = z.object({
    questionId: z.string(),
    type: z.string(),
    value: z.union([z.string(), z.array(z.string()), z.null()]),
+   selectedOptions: z.array(
+      z.object({ id: z.string(), label: z.string(), value: z.string() }),
+   ),
 });
 const optionSchema = z.object({
    id: z.string(),
@@ -76,6 +79,11 @@ export const postRegistrationAssignmentResponseSchema = z.object({
    formDescription: z.string().nullable(),
    version: z.number().int(),
    memberId: z.string().nullable(),
+   participant: z.object({
+      id: z.string(),
+      name: z.string(),
+      email: z.string().email(),
+   }),
    audience: z.enum(['BUYER', 'EACH_ATTENDEE', 'ALL_ORDER_MEMBERS']),
    isRequired: z.boolean(),
    blocksCheckIn: z.boolean(),
