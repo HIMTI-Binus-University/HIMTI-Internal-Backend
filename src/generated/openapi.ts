@@ -8085,7 +8085,11 @@ export interface paths {
         get: operations["getRegistrationFormV1"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Soft-delete a draft form
+         * @description Only DRAFT forms may be deleted. Uses revision for optimistic locking.
+         */
+        delete: operations["deleteRegistrationFormV1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -8100,7 +8104,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Clone a form as the next logical version */
+        /**
+         * Clone a form as an independent draft
+         * @description Creates a fresh logical form with version 1 and no superseded version, while copying active sections, questions, options, and assignments.
+         */
         post: operations["cloneRegistrationFormV1"];
         delete?: never;
         options?: never;
@@ -8554,6 +8561,9 @@ export interface components {
             /** Format: date-time */
             updatedAt: string | null;
             updatedBy: string | null;
+        };
+        DeleteRegistrationFormRequestV1: {
+            revision: number;
         };
         ErrorResponse: {
             msg: string;
@@ -15435,6 +15445,96 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful registration form operation. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationFormBuilderV1Response"];
+                };
+            };
+            /** @description Request or form-rule validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "VALIDATION_ERROR";
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                    } | {
+                        code: string;
+                        details?: unknown;
+                        errors?: unknown;
+                        message: string;
+                        msg: string;
+                        /** @enum {string} */
+                        status: "fail" | "error";
+                        success?: boolean;
+                    } | {
+                        errors?: unknown;
+                        message?: string;
+                        msg?: string;
+                        status?: string;
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or event object authorization failed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration form or sub-event not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Lifecycle or optimistic revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteRegistrationFormV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteRegistrationFormRequestV1"];
+            };
+        };
         responses: {
             /** @description Successful registration form operation. */
             200: {

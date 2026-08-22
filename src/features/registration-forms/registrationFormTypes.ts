@@ -11,6 +11,7 @@ import {
    CreateRegistrationFormV1Schema,
    SaveRegistrationFormDraftV1Schema,
    RegistrationFormLifecycleV1Schema,
+   DeleteRegistrationFormV1Schema,
 } from './registrationFormSchema.js';
 
 export type CreateRegistrationFormV1Request = z.infer<
@@ -24,6 +25,9 @@ export type CloneRegistrationFormV1Request = z.infer<
 >;
 export type RegistrationFormLifecycleV1Request = z.infer<
    typeof RegistrationFormLifecycleV1Schema
+>;
+export type DeleteRegistrationFormV1Request = z.infer<
+   typeof DeleteRegistrationFormV1Schema
 >;
 
 export type FormValidationIssue = {

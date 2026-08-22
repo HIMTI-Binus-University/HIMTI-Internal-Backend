@@ -326,8 +326,7 @@ const detailReadiness = (order: DetailOrder) => {
          .length,
       requiredResponseCount: requiredSubmissions.length,
       completedResponseCount,
-      responsesComplete:
-         completedResponseCount === requiredSubmissions.length,
+      responsesComplete: completedResponseCount === requiredSubmissions.length,
       submittable: blockerCodes.length === 0,
       blockerCodes,
       complete: activeMembers.length === order.seatCount,
@@ -386,7 +385,9 @@ const mapDetail = async (order: DetailOrder, viewerUserId?: string) => {
                  'SAVE_OWN_MEMBER',
                  'MANAGE_INVITATIONS',
                  'SUBMIT',
-                 'CANCEL',
+                 ...(order.status === 'APPROVED' || order.status === 'CANCELLED'
+                    ? []
+                    : ['CANCEL']),
               ]
             : ['SAVE_OWN_MEMBER'],
       },

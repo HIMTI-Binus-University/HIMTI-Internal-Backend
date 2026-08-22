@@ -20,6 +20,7 @@ import {
    publishRegistrationFormV1,
    saveRegistrationFormDraftV1,
    validateRegistrationFormV1,
+   deleteRegistrationFormV1,
 } from './registrationFormController.js';
 
 const router: Router = express.Router();
@@ -35,6 +36,11 @@ registrationFormV1Routes.get(
 registrationFormV1Routes.get('/', ...adminRead, listRegistrationFormsV1);
 registrationFormV1Routes.post('/', ...adminWrite, createRegistrationFormV1);
 registrationFormV1Routes.get('/:id', ...adminRead, getRegistrationFormV1);
+registrationFormV1Routes.delete(
+   '/:id',
+   ...adminWrite,
+   deleteRegistrationFormV1,
+);
 registrationFormV1Routes.put(
    '/:id/draft',
    ...adminWrite,

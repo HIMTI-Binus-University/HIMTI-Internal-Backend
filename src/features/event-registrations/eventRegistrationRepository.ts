@@ -684,6 +684,7 @@ class EventRegistrationRepository {
                subEventId,
                status: 'PUBLISHED',
                stage: 'REGISTRATION',
+               deletedAt: null,
             },
             OR: [
                { ticketPackageId: packageId },
@@ -826,6 +827,7 @@ class EventRegistrationRepository {
                            subEventId,
                            status: 'PUBLISHED',
                            stage: 'REGISTRATION',
+                           deletedAt: null,
                         },
                         OR: [
                            { ticketPackageId: existing.ticketPackageId },
@@ -962,6 +964,7 @@ class EventRegistrationRepository {
                      subEventId,
                      status: 'PUBLISHED',
                      stage: 'REGISTRATION',
+                     deletedAt: null,
                   },
                   OR: [
                      { ticketPackageId: selectedPackage.id },
@@ -1782,6 +1785,9 @@ class EventRegistrationRepository {
                   where: { id: order.id },
                   include: detailInclude,
                });
+            }
+            if (order.status === 'APPROVED') {
+               return { unavailable: true } as const;
             }
             if (
                !(['DRAFT', ...activeRegistrationStatuses] as string[]).includes(

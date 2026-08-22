@@ -233,7 +233,7 @@ describe('registration form Phase 4 concurrency invariants', () => {
       assert.match(repositorySource, /LIFECYCLE_CONFLICT/);
    });
 
-   it('publishes registration defaults and clones assignment snapshots atomically', () => {
+   it('publishes registration defaults and independently clones assignment snapshots atomically', () => {
       assert.match(repositorySource, /form\.stage === 'REGISTRATION'/);
       assert.match(repositorySource, /audience: 'EACH_ATTENDEE'/);
       assert.match(repositorySource, /assignmentCount === 0/);
@@ -247,6 +247,26 @@ describe('registration form Phase 4 concurrency invariants', () => {
       );
       assert.match(repositorySource, /opensAt: assignment\.opensAt/);
       assert.match(repositorySource, /closesAt: assignment\.closesAt/);
+      assert.match(repositorySource, /logicalKey: randomUUID\(\)/);
+      assert.match(repositorySource, /version: 1/);
+      assert.match(repositorySource, /supersedesId: null/);
+   });
+
+   it('soft-deletes only an unchanged draft and hides deleted current forms', () => {
+      assert.match(
+         repositorySource,
+         /status: 'DRAFT',[\s\S]*revision: expectedRevision,[\s\S]*deletedAt: null/,
+      );
+      assert.match(repositorySource, /deletedBy: userId/);
+      assert.match(repositorySource, /revision: \{ increment: 1 \}/);
+      assert.match(
+         repositorySource,
+         /findFormsBySubEventId[\s\S]*deletedAt: null/,
+      );
+      assert.match(
+         repositorySource,
+         /findPublishedVersion[\s\S]*deletedAt: null/,
+      );
    });
 
    it('revalidates child scope inside the complete-save transaction', () => {

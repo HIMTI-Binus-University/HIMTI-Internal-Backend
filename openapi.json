@@ -942,6 +942,19 @@
             ],
             "type": "object"
          },
+         "DeleteRegistrationFormRequestV1": {
+            "properties": {
+               "revision": {
+                  "exclusiveMinimum": true,
+                  "minimum": 0,
+                  "type": "integer"
+               }
+            },
+            "required": [
+               "revision"
+            ],
+            "type": "object"
+         },
          "ErrorResponse": {
             "properties": {
                "msg": {
@@ -34376,6 +34389,177 @@
          }
       },
       "/api/v1/registration-form/{id}": {
+         "delete": {
+            "description": "Only DRAFT forms may be deleted. Uses revision for optimistic locking.",
+            "operationId": "deleteRegistrationFormV1",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/DeleteRegistrationFormRequestV1"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/RegistrationFormBuilderV1Response"
+                        }
+                     }
+                  },
+                  "description": "Successful registration form operation."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Request or form-rule validation failed."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "Permission or event object authorization failed."
+               },
+               "404": {
+                  "description": "Registration form or sub-event not found."
+               },
+               "409": {
+                  "description": "Lifecycle or optimistic revision conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Soft-delete a draft form",
+            "tags": [
+               "Registration forms"
+            ]
+         },
          "get": {
             "operationId": "getRegistrationFormV1",
             "parameters": [
@@ -34539,6 +34723,7 @@
       },
       "/api/v1/registration-form/{id}/clone": {
          "post": {
+            "description": "Creates a fresh logical form with version 1 and no superseded version, while copying active sections, questions, options, and assignments.",
             "operationId": "cloneRegistrationFormV1",
             "parameters": [
                {
@@ -34712,7 +34897,7 @@
                   "sessionCookie": []
                }
             ],
-            "summary": "Clone a form as the next logical version",
+            "summary": "Clone a form as an independent draft",
             "tags": [
                "Registration forms"
             ]

@@ -14,6 +14,7 @@ import {
    CreateRegistrationFormV1Schema,
    FormValidationSchema,
    RegistrationFormLifecycleV1Schema,
+   DeleteRegistrationFormV1Schema,
    SaveRegistrationFormDraftV1Schema,
 } from './registrationFormSchema.js';
 
@@ -246,6 +247,10 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    const RegistrationFormLifecycleRequestV1 = registry.register(
       'RegistrationFormLifecycleRequestV1',
       RegistrationFormLifecycleV1Schema,
+   );
+   const DeleteRegistrationFormRequestV1 = registry.register(
+      'DeleteRegistrationFormRequestV1',
+      DeleteRegistrationFormV1Schema,
    );
    const RegistrationFormValidationMetadataV1 = registry.register(
       'RegistrationFormValidationMetadataV1',
@@ -486,7 +491,9 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
       path: '/api/v1/registration-form/{id}/clone',
       tags: [tag],
       operationId: 'cloneRegistrationFormV1',
-      summary: 'Clone a form as the next logical version',
+      summary: 'Clone a form as an independent draft',
+      description:
+         'Creates a fresh logical form with version 1 and no superseded version, while copying active sections, questions, options, and assignments.',
       security: [protectedEndpoint],
       request: {
          params: idParamSchema,
@@ -507,6 +514,26 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
             },
          },
       },
+   });
+   registry.registerPath({
+      method: 'delete',
+      path: '/api/v1/registration-form/{id}',
+      tags: [tag],
+      operationId: 'deleteRegistrationFormV1',
+      summary: 'Soft-delete a draft form',
+      description:
+         'Only DRAFT forms may be deleted. Uses revision for optimistic locking.',
+      security: [protectedEndpoint],
+      request: {
+         params: idParamSchema,
+         body: {
+            required: true,
+            content: {
+               'application/json': { schema: DeleteRegistrationFormRequestV1 },
+            },
+         },
+      },
+      responses: v1Responses,
    });
    for (const operation of [
       {

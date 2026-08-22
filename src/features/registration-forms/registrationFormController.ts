@@ -14,6 +14,7 @@ import {
    RegistrationFormListQuerySchema,
    RegistrationFormLifecycleV1Schema,
    SaveRegistrationFormDraftV1Schema,
+   DeleteRegistrationFormV1Schema,
 } from './registrationFormSchema.js';
 import { registrationFormService } from './registrationFormService.js';
 
@@ -92,6 +93,17 @@ export const cloneRegistrationFormV1 = async (req: Request, res: Response) => {
       res.locals.user,
    );
    res.status(201).json({ msg: 'success', data });
+};
+
+export const deleteRegistrationFormV1 = async (req: Request, res: Response) => {
+   const { id } = RegistrationFormIdParamsSchema.parse(req.params);
+   const payload = DeleteRegistrationFormV1Schema.parse(req.body);
+   const data = await registrationFormService.deleteV1(
+      id,
+      payload,
+      res.locals.user,
+   );
+   res.status(200).json({ msg: 'success', data });
 };
 
 export const publishRegistrationFormV1 = async (

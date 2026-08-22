@@ -24,6 +24,7 @@ import type {
    FormValidationIssue,
    SaveRegistrationFormDraftV1Request,
    RegistrationFormLifecycleV1Request,
+   DeleteRegistrationFormV1Request,
 } from './registrationFormTypes.js';
 
 const optionFieldTypes: readonly FormFieldType[] = [
@@ -497,11 +498,44 @@ class RegistrationFormService {
             409,
             'FORM_NOT_VERSIONED',
          );
-      return await registrationFormRepository.cloneAsNextVersion(
+      return await registrationFormRepository.cloneIndependent(
          form,
          payload.name ?? form.name,
          user.id,
       );
+   }
+
+   async deleteV1(
+      id: string,
+      payload: DeleteRegistrationFormV1Request,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const form = await this.getAuthorizedBuilderForm(id, user, true);
+      if (form.status !== 'DRAFT')
+         throw new AppError(
+            'Only draft forms can be deleted',
+            409,
+            'FORM_NOT_DRAFT',
+         );
+      const deleted = await registrationFormRepository.softDeleteDraft(
+         id,
+         payload.revision,
+         user.id,
+      );
+      if (!deleted) {
+         const current = await registrationFormRepository.findFormRevision(id);
+         throw new AppError(
+            'The draft changed since it was loaded',
+            409,
+            'REVISION_CONFLICT',
+            {
+               expectedRevision: payload.revision,
+               currentRevision: current?.revision,
+               currentStatus: current?.status,
+            },
+         );
+      }
+      return deleted;
    }
 
    async publishV1(

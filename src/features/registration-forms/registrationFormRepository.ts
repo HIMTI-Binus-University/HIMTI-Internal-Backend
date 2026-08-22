@@ -30,8 +30,8 @@ class RegistrationFormRepository {
    };
 
    async findFormById(id: string) {
-      return await prisma.registrationForm.findUnique({
-         where: { id },
+      return await prisma.registrationForm.findFirst({
+         where: { id, deletedAt: null },
          include: {
             subEvent: {
                select: {
@@ -64,15 +64,15 @@ class RegistrationFormRepository {
    }
 
    async findBuilderFormById(id: string) {
-      return await prisma.registrationForm.findUnique({
-         where: { id },
+      return await prisma.registrationForm.findFirst({
+         where: { id, deletedAt: null },
          include: this.builderInclude,
       });
    }
 
    async findFormsBySubEventId(subEventId: string) {
       return await prisma.registrationForm.findMany({
-         where: { subEventId, logicalKey: { not: null } },
+         where: { subEventId, logicalKey: { not: null }, deletedAt: null },
          orderBy: [{ logicalKey: 'asc' }, { version: 'desc' }],
          include: this.builderInclude,
       });
@@ -84,6 +84,7 @@ class RegistrationFormRepository {
             subEventId,
             logicalKey,
             status: 'PUBLISHED',
+            deletedAt: null,
             subEvent: {
                status: 'OPEN',
                registrationMode: { not: 'DISABLED' },
@@ -462,7 +463,30 @@ class RegistrationFormRepository {
       });
    }
 
-   async cloneAsNextVersion(
+   async softDeleteDraft(id: string, expectedRevision: number, userId: string) {
+      const deletedAt = new Date();
+      const result = await prisma.registrationForm.updateMany({
+         where: {
+            id,
+            status: 'DRAFT',
+            revision: expectedRevision,
+            deletedAt: null,
+         },
+         data: {
+            deletedAt,
+            deletedBy: userId,
+            updatedBy: userId,
+            revision: { increment: 1 },
+         },
+      });
+      if (result.count !== 1) return null;
+      return await prisma.registrationForm.findUnique({
+         where: { id },
+         include: this.builderInclude,
+      });
+   }
+
+   async cloneIndependent(
       source: NonNullable<
          Awaited<ReturnType<RegistrationFormRepository['findBuilderFormById']>>
       >,
@@ -470,21 +494,14 @@ class RegistrationFormRepository {
       userId: string,
    ) {
       return await prisma.$transaction(async (tx) => {
-         const latest = await tx.registrationForm.aggregate({
-            where: {
-               subEventId: source.subEventId,
-               logicalKey: source.logicalKey,
-            },
-            _max: { version: true },
-         });
          const cloneId = randomUUID();
          return await tx.registrationForm.create({
             data: {
                id: cloneId,
                subEventId: source.subEventId,
-               logicalKey: source.logicalKey,
-               version: (latest._max.version ?? source.version) + 1,
-               supersedesId: source.id,
+               logicalKey: randomUUID(),
+               version: 1,
+               supersedesId: null,
                name,
                description: source.description,
                stage: source.stage,

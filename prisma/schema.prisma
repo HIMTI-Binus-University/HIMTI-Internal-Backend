@@ -377,6 +377,7 @@ model User {
   updatedSubevents                    Subevent[]                       @relation("SubeventUpdater")
   createdForms                        RegistrationForm[]               @relation("FormCreator")
   updatedForms                        RegistrationForm[]               @relation("FormUpdater")
+  deletedForms                        RegistrationForm[]               @relation("FormDeleter")
   createdQuestions                    FormQuestion[]                   @relation("QuestionCreator")
   updatedQuestions                    FormQuestion[]                   @relation("QuestionUpdater")
   createdOptions                      FormQuestionOption[]             @relation("OptionCreator")
@@ -739,10 +740,13 @@ model RegistrationForm {
   createdBy String    @db.VarChar(100)
   updatedAt DateTime? @updatedAt
   updatedBy String?   @db.VarChar(100)
+  deletedAt DateTime? @db.Timestamp(0)
+  deletedBy String?   @db.VarChar(100)
 
   subEvent      Subevent           @relation(fields: [subEventId], references: [id], onDelete: Cascade)
   creator       User               @relation("FormCreator", fields: [createdBy], references: [id])
   updater       User?              @relation("FormUpdater", fields: [updatedBy], references: [id])
+  deleter       User?              @relation("FormDeleter", fields: [deletedBy], references: [id], onDelete: SetNull)
   supersedes    RegistrationForm?  @relation("RegistrationFormVersions", fields: [supersedesId], references: [id], onDelete: SetNull)
   newerVersions RegistrationForm[] @relation("RegistrationFormVersions")
 
@@ -755,6 +759,7 @@ model RegistrationForm {
 
   @@unique([subEventId, logicalKey, version])
   @@index([subEventId, stage, status])
+  @@index([deletedBy])
   @@map("registration_forms")
 }
 

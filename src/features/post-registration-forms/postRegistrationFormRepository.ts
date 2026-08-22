@@ -82,6 +82,7 @@ export const assignPublishedPostRegistrationForms = async (
             subEventId: order.subEventId,
             stage: 'POST_REGISTRATION',
             status: 'PUBLISHED',
+            deletedAt: null,
             logicalKey: { not: null },
          },
          include: {

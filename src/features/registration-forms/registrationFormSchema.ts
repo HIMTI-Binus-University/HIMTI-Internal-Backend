@@ -166,6 +166,8 @@ export const RegistrationFormLifecycleV1Schema = z.object({
    revision: z.number().int().positive(),
 });
 
+export const DeleteRegistrationFormV1Schema = RegistrationFormLifecycleV1Schema;
+
 export const RegistrationFormIdParamsSchema = z.object({
    id: z.string().min(1),
 });
