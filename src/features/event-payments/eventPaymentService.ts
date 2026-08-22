@@ -8,6 +8,11 @@ import {
    HARD_MAX_PROOF_BYTES,
 } from './eventPaymentSchema.js';
 import { eventPaymentRepository } from './eventPaymentRepository.js';
+import { normalizePaymentBankSnapshot } from './paymentBankSnapshot.js';
+import {
+   internalPaymentDetailSchema,
+   participantPaymentDetailSchema,
+} from './eventPaymentSchema.js';
 import type {
    PaymentDecision,
    PaymentQueue,
@@ -134,7 +139,7 @@ class EventPaymentService {
          !deadlineExpired &&
          payment.order.status === 'PENDING_PAYMENT' &&
          (payment.status === 'UNPAID' || payment.status === 'REJECTED');
-      return {
+      return participantPaymentDetailSchema.parse({
          id: payment.id,
          registrationOrderId: payment.registrationOrderId,
          orderNumber: payment.order.orderNumber,
@@ -143,7 +148,7 @@ class EventPaymentService {
          revision: payment.revision,
          currency: payment.currency,
          amountMinor: payment.amountMinor.toString(),
-         bankSnapshot: payment.bankSnapshot,
+         bankSnapshot: normalizePaymentBankSnapshot(payment.bankSnapshot),
          submittedAt: payment.submittedAt?.toISOString() ?? null,
          verifiedAt: payment.verifiedAt?.toISOString() ?? null,
          expiresAt: payment.expiresAt?.toISOString() ?? null,
@@ -155,7 +160,7 @@ class EventPaymentService {
             .filter((proof) => proof.upload !== null)
             .map(mapProof),
          history: mapHistory(payment.history),
-      };
+      });
    }
 
    async getDetail(paymentId: string, user: SessionUser) {
@@ -163,14 +168,14 @@ class EventPaymentService {
       if (!payment)
          throw new AppError('Payment not found', 404, 'PAYMENT_NOT_FOUND');
       await this.authorizeSubEvent(payment.order.subEventId, user);
-      return {
+      return internalPaymentDetailSchema.parse({
          id: payment.id,
          registrationOrderId: payment.registrationOrderId,
          status: payment.status,
          revision: payment.revision,
          currency: payment.currency,
          amountMinor: payment.amountMinor.toString(),
-         bankSnapshot: payment.bankSnapshot,
+         bankSnapshot: normalizePaymentBankSnapshot(payment.bankSnapshot),
          submittedAt: payment.submittedAt?.toISOString() ?? null,
          verifiedAt: payment.verifiedAt?.toISOString() ?? null,
          expiresAt: payment.expiresAt?.toISOString() ?? null,
@@ -182,7 +187,7 @@ class EventPaymentService {
             .filter((proof) => proof.upload !== null)
             .map(mapProof),
          history: mapHistory(payment.history),
-      };
+      });
    }
 
    async uploadProof(
@@ -208,14 +213,8 @@ class EventPaymentService {
       );
       if (!payment)
          throw new AppError('Payment not found', 404, 'PAYMENT_NOT_FOUND');
-      const snapshot = (payment.bankSnapshot ?? {}) as {
-         acceptedProofTypes?: string[];
-         maxProofBytes?: number;
-      };
-      const maxBytes = Math.min(
-         snapshot.maxProofBytes ?? HARD_MAX_PROOF_BYTES,
-         HARD_MAX_PROOF_BYTES,
-      );
+      const snapshot = normalizePaymentBankSnapshot(payment.bankSnapshot);
+      const maxBytes = snapshot.maxProofBytes;
       if (file.size > maxBytes)
          throw new AppError(
             'Payment proof exceeds the configured limit',
@@ -223,10 +222,10 @@ class EventPaymentService {
             'PROOF_TOO_LARGE',
          );
       const detected = await fileTypeFromBuffer(file.buffer);
-      const allowed = snapshot.acceptedProofTypes ?? [...acceptedProofTypes];
+      const allowed = snapshot.acceptedProofTypes;
       if (
          !detected ||
-         !allowed.includes(detected.mime) ||
+         !(allowed as readonly string[]).includes(detected.mime) ||
          !(acceptedProofTypes as readonly string[]).includes(detected.mime) ||
          detected.mime !== file.mimetype
       )

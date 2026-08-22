@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import {
+   acceptedProofTypes,
+   HARD_MAX_PROOF_BYTES,
    paymentQueueSchema,
    paymentSettingsSchema,
 } from './eventPaymentSchema.js';
+import { normalizePaymentBankSnapshot } from './paymentBankSnapshot.js';
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), 'utf8');
 
@@ -15,6 +18,44 @@ test('paid submit derives payment amount from the order snapshot', async () => {
    assert.match(source, /amountMinor: order\.totalMinor/);
    assert.doesNotMatch(source, /amountMinor: payload/);
    assert.match(source, /PENDING_PAYMENT/);
+});
+
+test('new payments snapshot proof upload settings from the sub-event', async () => {
+   const source = await read(
+      '../event-registrations/eventRegistrationRepository.ts',
+   );
+   assert.match(
+      source,
+      /acceptedProofTypes: order\.subEvent\.paymentProofTypes/,
+   );
+   assert.match(source, /maxProofBytes: order\.subEvent\.paymentProofMaxBytes/);
+});
+
+test('legacy payment snapshots normalize to upload defaults and hard cap', () => {
+   const legacy = normalizePaymentBankSnapshot({
+      bankName: 'Bank',
+      accountHolder: 'HIMTI',
+      accountNumber: '123',
+      instructions: null,
+   });
+   assert.deepEqual(legacy.acceptedProofTypes, [...acceptedProofTypes]);
+   assert.equal(legacy.maxProofBytes, HARD_MAX_PROOF_BYTES);
+
+   const complete = normalizePaymentBankSnapshot({
+      ...legacy,
+      acceptedProofTypes: ['application/pdf'],
+      maxProofBytes: 1024,
+   });
+   assert.deepEqual(complete.acceptedProofTypes, ['application/pdf']);
+   assert.equal(complete.maxProofBytes, 1024);
+
+   const unsafe = normalizePaymentBankSnapshot({
+      ...legacy,
+      acceptedProofTypes: ['text/plain'],
+      maxProofBytes: HARD_MAX_PROOF_BYTES + 1,
+   });
+   assert.deepEqual(unsafe.acceptedProofTypes, [...acceptedProofTypes]);
+   assert.equal(unsafe.maxProofBytes, HARD_MAX_PROOF_BYTES);
 });
 
 test('private upload responses never expose storage keys', async () => {

@@ -1708,6 +1708,8 @@ class EventRegistrationRepository {
                   accountHolder: order.subEvent.paymentAccountHolder,
                   accountNumber: order.subEvent.paymentAccountNumberCanonical,
                   instructions: order.subEvent.paymentInstructions,
+                  acceptedProofTypes: order.subEvent.paymentProofTypes,
+                  maxProofBytes: order.subEvent.paymentProofMaxBytes,
                } satisfies Prisma.InputJsonObject;
                if (
                   !bankSnapshot.bankName ||
