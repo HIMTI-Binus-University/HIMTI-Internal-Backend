@@ -283,6 +283,57 @@ const mapInternalSummary = (
    };
 };
 
+const detailReadiness = (order: DetailOrder) => {
+   const activeMembers = order.members.filter(
+      (member) => member.status !== 'CANCELLED',
+   );
+   const requiredSubmissions = order.submissions.filter(
+      (submission) => submission.assignmentRequired,
+   );
+   const completedResponseCount = requiredSubmissions.filter(
+      (submission) =>
+         validateFreshSubmission(
+            submission.form.questions,
+            submission.answers,
+            true,
+         ).length === 0,
+   ).length;
+   const blockerCodes = [
+      ...(activeMembers.length !== order.seatCount ? ['SEATS_UNCLAIMED'] : []),
+      ...(completedResponseCount !== requiredSubmissions.length
+         ? ['REQUIRED_RESPONSES_INCOMPLETE']
+         : []),
+      ...(order.invitations.some(
+         (invitation) => invitation.status === 'PENDING',
+      )
+         ? ['INVITATIONS_PENDING']
+         : []),
+      ...(![
+         'DRAFT',
+         'AWAITING_MEMBERS',
+         'HOLDING',
+         'NEEDS_CORRECTION',
+      ].includes(order.status)
+         ? ['ORDER_NOT_SUBMITTABLE']
+         : []),
+   ];
+   return {
+      seatCount: order.seatCount,
+      claimedSeatCount: activeMembers.length,
+      activeMemberCount: activeMembers.length,
+      pendingSlotCount: Math.max(0, order.seatCount - activeMembers.length),
+      readyMemberCount: activeMembers.filter((item) => item.status === 'READY')
+         .length,
+      requiredResponseCount: requiredSubmissions.length,
+      completedResponseCount,
+      responsesComplete:
+         completedResponseCount === requiredSubmissions.length,
+      submittable: blockerCodes.length === 0,
+      blockerCodes,
+      complete: activeMembers.length === order.seatCount,
+   };
+};
+
 const mapDetail = async (order: DetailOrder, viewerUserId?: string) => {
    const ownMemberIds = new Set(
       order.members
@@ -361,15 +412,7 @@ const mapDetail = async (order: DetailOrder, viewerUserId?: string) => {
             invitationId: isBuyer ? (invitation?.id ?? null) : null,
          };
       }),
-      readiness: {
-         seatCount: order.seatCount,
-         activeMemberCount: activeMembers.length,
-         pendingSlotCount: Math.max(0, order.seatCount - activeMembers.length),
-         readyMemberCount: activeMembers.filter(
-            (item) => item.status === 'READY',
-         ).length,
-         complete: activeMembers.length === order.seatCount,
-      },
+      readiness: detailReadiness(order),
    };
 };
 

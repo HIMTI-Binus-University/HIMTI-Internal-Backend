@@ -57,4 +57,8 @@ describe('fixed bundle registration invariants', () => {
       assert.doesNotMatch(paymentRepository, /data: \{ status: 'INACTIVE' \}/);
       assert.doesNotMatch(paymentRepository, /update: \{[\s\S]*seatCount: 1/);
    });
+   it('preserves authoritative readiness fields in participant detail', () => {
+      assert.match(service, /const detailReadiness = \(order: DetailOrder\)/);
+      assert.match(service, /readiness: detailReadiness\(order\)/);
+   });
 });
