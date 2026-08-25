@@ -50,6 +50,7 @@ export const globalErrorHandler = (
       return res.status(err.statusCode).json({
          status: err.status,
          msg: err.message,
+         ...(err.code && { code: err.code }),
       });
    }
 
