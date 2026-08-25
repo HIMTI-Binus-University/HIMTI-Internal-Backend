@@ -1,28 +1,57 @@
 services:
   app:
-    image: ghcr.io/himti-binus-university/himti-internal-backend:${IMAGE_TAG}
-    container_name: himti_backend_${IMAGE_TAG} # Biar nama container gak bentrok
-    restart: always
+    build: .
+    image: himti-internal-backend:local
+    restart: unless-stopped
     ports:
-      - "${APP_PORT}:8000"
-
-    env_file: .env
+      - "${APP_PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-himtiadmin}:${DB_PASSWORD:-himtiadmin}@db:5432/${DB_NAME:-himti-internal}?schema=public
     depends_on:
-      - db
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:8000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build: .
+    image: himti-internal-backend:local
+    command: ["npx", "prisma", "migrate", "deploy"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-himtiadmin}:${DB_PASSWORD:-himtiadmin}@db:5432/${DB_NAME:-himti-internal}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
 
   db:
-    image: postgres:15-alpine
-    ports: 
-      - "127.0.0.1:5432:5432"
-    container_name: himti_db_${IMAGE_TAG} # Biar nama container gak bentrok
-    restart: always
+    image: postgres:17
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: himti-db
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER:-himtiadmin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-himtiadmin}
+      POSTGRES_DB: ${DB_NAME:-himti-internal}
     volumes:
-      - pgdata_${IMAGE_TAG}:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-himtiadmin} -d ${DB_NAME:-himti-internal}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
-  pgdata_latest:
-  pgdata_dev:
+  postgres_data:
