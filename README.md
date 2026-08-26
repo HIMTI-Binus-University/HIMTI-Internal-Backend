@@ -177,7 +177,13 @@ profile field.
 4. Update the signed-in `User` record:
 
    - Set `status` to `ACTIVE`.
-   - Set `registrationCompletedAt` to the current date and time.
+   - Set `registrationCompletedAt` to the current UTC date and time in ISO 8601
+     format, for example `2026-08-26T12:00:00.000Z`. Generate a value to paste
+     into Prisma Studio with:
+
+     ```bash
+     date -u +"%Y-%m-%dT%H:%M:%S.000Z"
+     ```
    - For a BINUS user, set `institutionType` to `BINUS` and
      `outlookEmailVerified` to `true`.
    - For a development-only non-BINUS user, set `institutionType` to
