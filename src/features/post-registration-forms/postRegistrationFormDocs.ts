@@ -37,7 +37,7 @@ export const registerPostRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/me/event-registrations/{registrationId}/post-registration-assignments',
+      path: '/api/me/event-registrations/{registrationId}/post-registration-assignments',
       operationId: 'listMyPostRegistrationAssignmentsV1',
       tags: ['Post-registration forms'],
       security: [protectedEndpoint],
@@ -53,7 +53,7 @@ export const registerPostRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}',
+      path: '/api/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}',
       operationId: 'getMyPostRegistrationAssignmentV1',
       tags: ['Post-registration forms'],
       security: [protectedEndpoint],
@@ -69,7 +69,7 @@ export const registerPostRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'put',
-      path: '/api/v1/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}/response',
+      path: '/api/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}/response',
       operationId: 'saveMyPostRegistrationResponseV1',
       tags: ['Post-registration forms'],
       security: [protectedEndpoint],
@@ -95,7 +95,7 @@ export const registerPostRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}/submit',
+      path: '/api/me/event-registrations/{registrationId}/post-registration-assignments/{assignmentId}/submit',
       operationId: 'submitMyPostRegistrationResponseV1',
       tags: ['Post-registration forms'],
       security: [protectedEndpoint],
@@ -125,7 +125,7 @@ export const registerPostRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/sub-events/{subEventId}/post-registration-assignments',
+      path: '/api/internal/sub-events/{subEventId}/post-registration-assignments',
       operationId: 'listInternalPostRegistrationAssignmentsV1',
       tags: ['Post-registration forms'],
       security: [protectedEndpoint],
@@ -143,7 +143,7 @@ export const registerPostRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/post-registration-assignments/{assignmentId}',
+      path: '/api/internal/post-registration-assignments/{assignmentId}',
       operationId: 'getInternalPostRegistrationAssignmentV1',
       tags: ['Post-registration forms'],
       security: [protectedEndpoint],
@@ -166,7 +166,7 @@ export const registerPostRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    ])
       registry.registerPath({
          method: 'post',
-         path: `/api/v1/internal/post-registration-assignments/{assignmentId}/${operation.suffix}`,
+         path: `/api/internal/post-registration-assignments/{assignmentId}/${operation.suffix}`,
          operationId: operation.operationId,
          tags: ['Post-registration forms'],
          security: [protectedEndpoint],

@@ -20,14 +20,15 @@ describe('OpenAPI contract', () => {
       );
    });
 
-   it('keeps legacy routes and exposes an explicit V1 boundary', () => {
+   it('exposes legacy and registration routes under one API boundary', () => {
       const document = generateOpenApiDocument();
 
       assert.ok(document.paths['/api/event/published']);
-      assert.ok(document.paths['/api/v1/health']);
+      assert.ok(document.paths['/api/health']);
+      assert.ok(document.paths['/api/me/event-registrations']);
       assert.equal(
-         document.paths['/api/v1/health']?.get?.operationId,
-         'getApiV1Health',
+         document.paths['/api/health']?.get?.operationId,
+         'getApiHealth',
       );
    });
 

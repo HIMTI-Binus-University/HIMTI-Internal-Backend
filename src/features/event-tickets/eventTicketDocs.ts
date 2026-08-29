@@ -121,7 +121,7 @@ const responses = (schema: z.ZodType) => ({
 export const registerEventTicketDocs = (registry: OpenAPIRegistry) => {
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/me/event-tickets',
+      path: '/api/me/event-tickets',
       operationId: 'listMyEventTicketsV1',
       tags: ['Event tickets'],
       security: [protectedEndpoint],
@@ -130,7 +130,7 @@ export const registerEventTicketDocs = (registry: OpenAPIRegistry) => {
    for (const suffix of ['', '/credential'] as const)
       registry.registerPath({
          method: 'get',
-         path: `/api/v1/me/event-tickets/{ticketId}${suffix}`,
+         path: `/api/me/event-tickets/{ticketId}${suffix}`,
          operationId: suffix
             ? 'getMyEventTicketCredentialV1'
             : 'getMyEventTicketV1',
@@ -143,7 +143,7 @@ export const registerEventTicketDocs = (registry: OpenAPIRegistry) => {
       });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/me/event-tickets/{ticketId}/qr.png',
+      path: '/api/me/event-tickets/{ticketId}/qr.png',
       operationId: 'getMyEventTicketQrV1',
       tags: ['Event tickets'],
       security: [protectedEndpoint],
@@ -180,7 +180,7 @@ export const registerEventTicketDocs = (registry: OpenAPIRegistry) => {
    for (const command of commands)
       registry.registerPath({
          method: 'post',
-         path: `/api/v1/internal/sub-events/{subEventId}/tickets/${command.path}`,
+         path: `/api/internal/sub-events/{subEventId}/tickets/${command.path}`,
          operationId: command.operationId,
          tags: ['Event attendance'],
          security: [protectedEndpoint],
@@ -195,7 +195,7 @@ export const registerEventTicketDocs = (registry: OpenAPIRegistry) => {
       });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/sub-events/{subEventId}/tickets/search',
+      path: '/api/internal/sub-events/{subEventId}/tickets/search',
       operationId: 'searchEventTicketsV1',
       tags: ['Event attendance'],
       security: [protectedEndpoint],
@@ -216,7 +216,7 @@ export const registerEventTicketDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/sub-events/{subEventId}/attendance',
+      path: '/api/internal/sub-events/{subEventId}/attendance',
       operationId: 'listEventAttendanceV1',
       tags: ['Event attendance'],
       security: [protectedEndpoint],
@@ -238,7 +238,7 @@ export const registerEventTicketDocs = (registry: OpenAPIRegistry) => {
    for (const action of ['checkout', 'void'] as const)
       registry.registerPath({
          method: 'post',
-         path: `/api/v1/internal/sub-events/{subEventId}/attendance/{attendanceId}/${action}`,
+         path: `/api/internal/sub-events/{subEventId}/attendance/{attendanceId}/${action}`,
          operationId:
             action === 'checkout'
                ? 'checkoutEventAttendanceV1'

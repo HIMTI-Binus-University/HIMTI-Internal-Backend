@@ -69,7 +69,7 @@ export const registerEventPaymentDocs = (registry: OpenAPIRegistry) => {
 
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/sub-events/{subEventId}/payment-settings',
+      path: '/api/internal/sub-events/{subEventId}/payment-settings',
       operationId: 'getSubEventPaymentSettingsV1',
       tags: ['Event Payments'],
       summary: 'Get sub-event payment settings',
@@ -82,7 +82,7 @@ export const registerEventPaymentDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'put',
-      path: '/api/v1/internal/sub-events/{subEventId}/payment-settings',
+      path: '/api/internal/sub-events/{subEventId}/payment-settings',
       operationId: 'updateSubEventPaymentSettingsV1',
       tags: ['Event Payments'],
       summary: 'Update payment settings',
@@ -103,7 +103,7 @@ export const registerEventPaymentDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/sub-events/{subEventId}/payments',
+      path: '/api/internal/sub-events/{subEventId}/payments',
       operationId: 'listSubEventPaymentsV1',
       tags: ['Event Payments'],
       summary: 'List the deterministic sub-event payment queue',
@@ -123,7 +123,7 @@ export const registerEventPaymentDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/event-payments/{id}',
+      path: '/api/internal/event-payments/{id}',
       operationId: 'getInternalEventPaymentDetailV1',
       tags: ['Event Payments'],
       summary: 'Get payment, proof metadata, and history',
@@ -148,7 +148,7 @@ export const registerEventPaymentDocs = (registry: OpenAPIRegistry) => {
    ] as const)
       registry.registerPath({
          method: 'post',
-         path: `/api/v1/internal/event-payments/{id}/${decision.action}`,
+         path: `/api/internal/event-payments/{id}/${decision.action}`,
          operationId: decision.operationId,
          tags: ['Event Payments'],
          summary: `${decision.action === 'verify' ? 'Verify' : 'Reject'} the latest submitted proof`,
@@ -167,7 +167,7 @@ export const registerEventPaymentDocs = (registry: OpenAPIRegistry) => {
       });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/me/event-registrations/{registrationId}/payment',
+      path: '/api/me/event-registrations/{registrationId}/payment',
       operationId: 'getMyEventPaymentV1',
       tags: ['Event Payments'],
       summary: 'Get my authoritative registration payment state',
@@ -180,7 +180,7 @@ export const registerEventPaymentDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/me/event-payments/{id}/proof',
+      path: '/api/me/event-payments/{id}/proof',
       operationId: 'submitMyEventPaymentProofV1',
       tags: ['Event Payments'],
       summary: 'Upload and submit one private payment proof',
@@ -219,7 +219,7 @@ export const registerEventPaymentDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/private/payment-proofs/{id}/content',
+      path: '/api/private/payment-proofs/{id}/content',
       operationId: 'getPrivatePaymentProofContentV1',
       tags: ['Event Payments'],
       summary: 'Stream authorized private proof content',

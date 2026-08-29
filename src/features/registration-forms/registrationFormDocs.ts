@@ -353,7 +353,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
 
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/registration-form',
+      path: '/api/registration-form',
       tags: [tag],
       operationId: 'listRegistrationFormsV1',
       summary: 'List versioned registration forms',
@@ -373,7 +373,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/registration-form',
+      path: '/api/registration-form',
       tags: [tag],
       operationId: 'createRegistrationFormV1',
       summary: 'Create a versioned form draft',
@@ -400,7 +400,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/registration-form/{id}',
+      path: '/api/registration-form/{id}',
       tags: [tag],
       operationId: 'getRegistrationFormV1',
       summary: 'Get a form builder version',
@@ -410,7 +410,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'put',
-      path: '/api/v1/registration-form/{id}/draft',
+      path: '/api/registration-form/{id}/draft',
       tags: [tag],
       operationId: 'saveRegistrationFormDraftV1',
       summary: 'Atomically save and reorder a complete draft',
@@ -439,7 +439,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    };
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/registration-form/{id}/validate',
+      path: '/api/registration-form/{id}/validate',
       operationId: 'validateRegistrationFormV1',
       summary: 'Validate a complete draft',
       tags: [tag],
@@ -459,7 +459,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/registration-form/{id}/preview',
+      path: '/api/registration-form/{id}/preview',
       operationId: 'previewRegistrationFormV1',
       summary: 'Preview a complete draft',
       tags: [tag],
@@ -479,7 +479,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/registration-form/{id}/clone',
+      path: '/api/registration-form/{id}/clone',
       tags: [tag],
       operationId: 'cloneRegistrationFormV1',
       summary: 'Clone a form as an independent draft',
@@ -508,7 +508,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'delete',
-      path: '/api/v1/registration-form/{id}',
+      path: '/api/registration-form/{id}',
       tags: [tag],
       operationId: 'deleteRegistrationFormV1',
       summary: 'Soft-delete a draft form',
@@ -528,12 +528,12 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
    });
    for (const operation of [
       {
-         path: '/api/v1/registration-form/{id}/publish',
+         path: '/api/registration-form/{id}/publish',
          operationId: 'publishRegistrationFormV1',
          summary: 'Publish a draft version',
       },
       {
-         path: '/api/v1/registration-form/{id}/close',
+         path: '/api/registration-form/{id}/close',
          operationId: 'closeRegistrationFormV1',
          summary: 'Close a published version',
       },
@@ -558,7 +558,7 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
       });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/registration-form/published/{subEventId}/{logicalKey}',
+      path: '/api/registration-form/published/{subEventId}/{logicalKey}',
       tags: [tag],
       operationId: 'getPublishedRegistrationFormV1',
       summary: 'Get the stable participant form contract',

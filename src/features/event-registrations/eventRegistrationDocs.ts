@@ -99,7 +99,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    );
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/sub-events/{subEventId}/registrations',
+      path: '/api/internal/sub-events/{subEventId}/registrations',
       operationId: 'listInternalEventRegistrationsV1',
       tags: [tag],
       summary: 'List scoped internal registrations',
@@ -119,7 +119,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/sub-events/{subEventId}/registrations/capacity',
+      path: '/api/internal/sub-events/{subEventId}/registrations/capacity',
       operationId: 'getInternalRegistrationCapacityV1',
       tags: [tag],
       summary: 'Get capacity summary',
@@ -136,7 +136,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/event-registrations/{registrationId}',
+      path: '/api/internal/event-registrations/{registrationId}',
       operationId: 'getInternalEventRegistrationV1',
       tags: [tag],
       summary: 'Get permission-aware registration detail',
@@ -156,7 +156,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/sub-events/{subEventId}/registrations/{registrationId}/neighbors',
+      path: '/api/internal/sub-events/{subEventId}/registrations/{registrationId}/neighbors',
       operationId: 'getInternalRegistrationQueueNeighborsV1',
       tags: [tag],
       summary: 'Get stable filtered queue neighbors',
@@ -203,7 +203,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    for (const [action, operationId, body] of actions) {
       registry.registerPath({
          method: 'post',
-         path: `/api/v1/internal/event-registrations/{registrationId}/${action}`,
+         path: `/api/internal/event-registrations/{registrationId}/${action}`,
          operationId,
          tags: [tag],
          summary: `${action} a registration`,
@@ -250,7 +250,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    for (const [action, operationId, body] of bulkActions) {
       registry.registerPath({
          method: 'post',
-         path: `/api/v1/internal/sub-events/{subEventId}/registrations/${action}`,
+         path: `/api/internal/sub-events/{subEventId}/registrations/${action}`,
          operationId,
          tags: [tag],
          summary: `${action} atomically`,
@@ -310,7 +310,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
 
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/events',
+      path: '/api/events',
       operationId: 'listPublicEventsV1',
       tags: [tag],
       summary: 'List published events',
@@ -325,7 +325,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/events/{eventId}',
+      path: '/api/events/{eventId}',
       operationId: 'getPublicEventV1',
       tags: [tag],
       summary: 'Get published event detail',
@@ -343,7 +343,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/sub-events/{subEventId}/registration-context',
+      path: '/api/sub-events/{subEventId}/registration-context',
       operationId: 'getRegistrationContextV1',
       tags: [tag],
       summary: 'Resolve registration context',
@@ -368,7 +368,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/sub-events/{subEventId}/registrations',
+      path: '/api/sub-events/{subEventId}/registrations',
       operationId: 'createEventRegistrationV1',
       tags: [tag],
       summary: 'Create or resume a draft registration',
@@ -395,7 +395,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/me/event-registrations',
+      path: '/api/me/event-registrations',
       operationId: 'listMyEventRegistrationsV1',
       tags: [tag],
       summary: 'List owned/member registrations',
@@ -412,7 +412,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/me/event-registrations/{registrationId}',
+      path: '/api/me/event-registrations/{registrationId}',
       operationId: 'getMyEventRegistrationV1',
       tags: [tag],
       summary: 'Get owned registration detail',
@@ -430,7 +430,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'put',
-      path: '/api/v1/me/event-registrations/{registrationId}/response',
+      path: '/api/me/event-registrations/{registrationId}/response',
       operationId: 'replaceEventRegistrationResponsesV1',
       tags: [tag],
       summary: 'Replace submission responses',
@@ -457,7 +457,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/me/event-registrations/{registrationId}/submit',
+      path: '/api/me/event-registrations/{registrationId}/submit',
       operationId: 'submitEventRegistrationV1',
       tags: [tag],
       summary: 'Submit or resubmit a one-seat registration',
@@ -483,7 +483,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/me/event-registrations/{registrationId}/cancel',
+      path: '/api/me/event-registrations/{registrationId}/cancel',
       operationId: 'cancelEventRegistrationV1',
       tags: [tag],
       summary: 'Cancel the whole registration order',
@@ -516,7 +516,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    } as const;
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/registration-invitations/context',
+      path: '/api/registration-invitations/context',
       operationId: 'getRegistrationInvitationContextV1',
       tags: [tag],
       security,
@@ -536,7 +536,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    for (const action of ['accept', 'decline'] as const) {
       registry.registerPath({
          method: 'post',
-         path: `/api/v1/registration-invitations/${action}`,
+         path: `/api/registration-invitations/${action}`,
          operationId: `${action}RegistrationInvitationV1`,
          tags: [tag],
          security,
@@ -559,7 +559,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    }
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/me/event-registrations/{registrationId}/invitations',
+      path: '/api/me/event-registrations/{registrationId}/invitations',
       operationId: 'createRegistrationInvitationV1',
       tags: [tag],
       security,
@@ -585,7 +585,7 @@ export const registerEventRegistrationDocs = (registry: OpenAPIRegistry) => {
    for (const action of ['resend', 'revoke'] as const) {
       registry.registerPath({
          method: 'post',
-         path: `/api/v1/me/event-registrations/{registrationId}/invitations/{invitationId}/${action}`,
+         path: `/api/me/event-registrations/{registrationId}/invitations/{invitationId}/${action}`,
          operationId: `${action}RegistrationInvitationV1`,
          tags: [tag],
          security,

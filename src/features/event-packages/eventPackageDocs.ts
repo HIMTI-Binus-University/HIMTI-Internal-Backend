@@ -29,7 +29,7 @@ export const registerEventPackageDocs = (registry: OpenAPIRegistry) => {
    };
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/internal/sub-events/{subEventId}/packages',
+      path: '/api/internal/sub-events/{subEventId}/packages',
       operationId: 'listEventPackagesV1',
       tags: [tag],
       security,
@@ -51,7 +51,7 @@ export const registerEventPackageDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/internal/sub-events/{subEventId}/packages',
+      path: '/api/internal/sub-events/{subEventId}/packages',
       operationId: 'createEventPackageV1',
       tags: [tag],
       security,
@@ -74,7 +74,7 @@ export const registerEventPackageDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'put',
-      path: '/api/v1/internal/event-packages/{packageId}',
+      path: '/api/internal/event-packages/{packageId}',
       operationId: 'updateEventPackageV1',
       tags: [tag],
       security,

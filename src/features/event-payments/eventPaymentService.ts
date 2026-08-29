@@ -38,7 +38,7 @@ const mapProof = (proof: {
    ...proof,
    submittedAt: proof.submittedAt.toISOString(),
    reviewedAt: proof.reviewedAt?.toISOString() ?? null,
-   contentPath: `/api/v1/private/payment-proofs/${proof.id}/content`,
+   contentPath: `/api/private/payment-proofs/${proof.id}/content`,
 });
 
 const mapHistory = (history: { createdAt: Date }[]) =>
