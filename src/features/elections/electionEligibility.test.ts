@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { getElectionEligibilityReason } from './electionPolicy.js';
+import { getElectionEligibilityReason } from './electionTypes.js';
 
 const eligibleStudent = {
    status: 'ACTIVE' as const,

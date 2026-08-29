@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { AppError } from '@/utils/appError.js';
 import { electionRepository } from './electionRepository.js';
-import { getElectionEligibilityReason } from './electionPolicy.js';
+import { getElectionEligibilityReason } from './electionTypes.js';
 import type {
    CastVoteRequest,
    CreateCandidateRequest,
