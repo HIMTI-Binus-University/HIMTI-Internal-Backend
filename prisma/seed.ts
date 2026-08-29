@@ -105,6 +105,7 @@ async function main() {
       'scan_event_tickets',
       'view_event_attendance',
       'correct_event_attendance',
+      'manage_certificates',
    ];
 
    const permissions: Record<string, { id: string }> = {};

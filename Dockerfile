@@ -25,9 +25,10 @@ RUN apk add --no-cache openssl
 ENV NODE_ENV=production
 
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
+COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
 RUN mkdir -p /var/lib/himti/private-uploads \
    && chown -R node:node /var/lib/himti/private-uploads
