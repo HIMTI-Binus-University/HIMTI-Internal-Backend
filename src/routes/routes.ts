@@ -35,8 +35,8 @@ router.get('/health', (_req: Request, res: Response) => {
 router.use('/url', urlRoutes);
 router.use('/link-workspaces', linkWorkspaceRoutes);
 router.use('/membership', membershipRoutes);
-router.use('/v1/elections', electionRouter);
-router.use('/v1/internal/elections', internalElectionRouter);
+router.use('/elections', electionRouter);
+router.use('/internal/elections', internalElectionRouter);
 router.use('/event', eventRoutes);
 router.use('/event-committee', eventCommitteeRoutes);
 router.use('/sub-event', subEventRoutes);
