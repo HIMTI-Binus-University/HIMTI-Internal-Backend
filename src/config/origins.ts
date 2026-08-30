@@ -13,4 +13,6 @@ export const trustedOrigins = [
    'https://dev-admin.himtibinus.or.id',
    'https://admin.himtibinus.or.id',
    'https://api-tester.himtibinus.or.id',
+   'https://dev-election.himtibinus.or.id',
+   'https://election.himtibinus.or.id',
 ];
