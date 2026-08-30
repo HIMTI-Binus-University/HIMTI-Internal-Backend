@@ -275,6 +275,13 @@ enum LinkWorkspaceStatus {
   ARCHIVED
 }
 
+enum ElectionStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  PUBLISHED
+}
+
 // ==========================================
 // ACADEMIC & INSTITUTION
 // ==========================================
@@ -413,6 +420,9 @@ model User {
   registrationPaymentHistories        RegistrationPaymentHistory[]
   privateUploads                      PrivateUpload[]
   reopenedPostRegistrationAssignments PostRegistrationFormAssignment[] @relation("PostRegistrationAssignmentReopener")
+  createdElections                    Election[]                       @relation("ElectionCreator")
+  updatedElections                    Election[]                       @relation("ElectionUpdater")
+  electionParticipations              ElectionParticipation[]
 
   @@map("users")
 }
@@ -1470,4 +1480,89 @@ model UrlDetail {
   url Url @relation(fields: [urlId], references: [id])
 
   @@map("url_details")
+}
+
+// ==========================================
+// ELECTIONS
+// ==========================================
+
+model Election {
+  id          String         @id @default(nanoid())
+  slug        String         @unique @db.VarChar(100)
+  title       String         @db.VarChar(255)
+  description String?        @db.Text
+  status      ElectionStatus @default(DRAFT)
+  startsAt    DateTime       @db.Timestamp(0)
+  endsAt      DateTime       @db.Timestamp(0)
+  debateAt    DateTime?      @db.Timestamp(0)
+  openedAt    DateTime?      @db.Timestamp(0)
+  closedAt    DateTime?      @db.Timestamp(0)
+  publishedAt DateTime?      @db.Timestamp(0)
+  createdAt   DateTime       @default(now()) @db.Timestamp(0)
+  createdBy   String         @db.VarChar(100)
+  updatedAt   DateTime?      @updatedAt
+  updatedBy   String?        @db.VarChar(100)
+
+  creator        User                    @relation("ElectionCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  updater        User?                   @relation("ElectionUpdater", fields: [updatedBy], references: [id], onDelete: Restrict)
+  candidates     ElectionCandidate[]
+  participations ElectionParticipation[]
+  ballots        ElectionBallot[]
+
+  @@index([status, startsAt])
+  @@map("elections")
+}
+
+model ElectionCandidate {
+  id           String    @id @default(nanoid())
+  electionId   String
+  ballotNumber Int
+  name         String    @db.VarChar(255)
+  photoUrl     String?   @db.Text
+  biography    String?   @db.Text
+  slogan       String?   @db.Text
+  vision       String    @db.Text
+  mission      String    @db.Text
+  videoUrl     String?   @db.Text
+  workPrograms String[]  @default([])
+  experiences  String[]  @default([])
+  position     Int       @default(0)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime? @updatedAt
+
+  election Election         @relation(fields: [electionId], references: [id], onDelete: Restrict)
+  ballots  ElectionBallot[]
+
+  @@unique([electionId, ballotNumber])
+  @@unique([id, electionId])
+  @@index([electionId, isActive, position])
+  @@map("election_candidates")
+}
+
+model ElectionParticipation {
+  electionId  String
+  userId      String
+  receiptCode String   @unique @db.VarChar(64)
+  votedAt     DateTime @default(now()) @db.Timestamp(0)
+
+  election Election @relation(fields: [electionId], references: [id], onDelete: Restrict)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([electionId, userId])
+  @@index([userId])
+  @@map("election_participations")
+}
+
+model ElectionBallot {
+  id          String @id @default(nanoid())
+  electionId  String
+  candidateId String
+
+  election  Election          @relation(fields: [electionId], references: [id], onDelete: Restrict)
+  candidate ElectionCandidate @relation(fields: [candidateId, electionId], references: [id, electionId], onDelete: Restrict)
+
+  @@index([electionId])
+  @@index([candidateId])
+  @@map("election_ballots")
 }

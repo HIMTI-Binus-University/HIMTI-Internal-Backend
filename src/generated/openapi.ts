@@ -8467,6 +8467,2709 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/elections/{electionId}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List public election candidates */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Candidates returned. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionCandidateListResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/elections/{electionId}/eligibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Check current voter eligibility */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Eligibility returned. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionEligibilityResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/elections/{electionId}/my-vote-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current voter ballot status */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Status returned without candidate choice. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionVoteStatusResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/elections/{electionId}/results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get published results */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Published results returned. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionTallyResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/elections/{electionId}/vote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cast one final anonymous ballot */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        candidateId: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Vote accepted. The receipt does not identify the candidate. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionVoteResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/elections/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current election */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Current election or null. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                candidates: {
+                                    ballotNumber: number;
+                                    biography: string | null;
+                                    electionId: string;
+                                    experiences: string[];
+                                    id: string;
+                                    isActive: boolean;
+                                    mission: string;
+                                    name: string;
+                                    photoUrl: string | null;
+                                    position: number;
+                                    slogan: string | null;
+                                    videoUrl: string | null;
+                                    vision: string;
+                                    workPrograms: string[];
+                                }[];
+                                /** Format: date-time */
+                                closedAt: string | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                debateAt: string | null;
+                                description: string | null;
+                                /** Format: date-time */
+                                endsAt: string;
+                                id: string;
+                                /** Format: date-time */
+                                openedAt: string | null;
+                                /** Format: date-time */
+                                publishedAt: string | null;
+                                slug: string;
+                                /** Format: date-time */
+                                startsAt: string;
+                                /** @enum {string} */
+                                status: "DRAFT" | "OPEN" | "CLOSED" | "PUBLISHED";
+                                title: string;
+                                /** Format: date-time */
+                                updatedAt: string | null;
+                            } | null;
+                            /** @enum {string} */
+                            msg: "success";
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/elections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List elections */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                candidates: {
+                                    ballotNumber: number;
+                                    biography: string | null;
+                                    electionId: string;
+                                    experiences: string[];
+                                    id: string;
+                                    isActive: boolean;
+                                    mission: string;
+                                    name: string;
+                                    photoUrl: string | null;
+                                    position: number;
+                                    slogan: string | null;
+                                    videoUrl: string | null;
+                                    vision: string;
+                                    workPrograms: string[];
+                                }[];
+                                /** Format: date-time */
+                                closedAt: string | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                debateAt: string | null;
+                                description: string | null;
+                                /** Format: date-time */
+                                endsAt: string;
+                                id: string;
+                                /** Format: date-time */
+                                openedAt: string | null;
+                                /** Format: date-time */
+                                publishedAt: string | null;
+                                slug: string;
+                                /** Format: date-time */
+                                startsAt: string;
+                                /** @enum {string} */
+                                status: "DRAFT" | "OPEN" | "CLOSED" | "PUBLISHED";
+                                title: string;
+                                /** Format: date-time */
+                                updatedAt: string | null;
+                            }[];
+                            /** @enum {string} */
+                            msg: "success";
+                        };
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create an election */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: date-time */
+                        debateAt?: string | null;
+                        description?: string | null;
+                        /** Format: date-time */
+                        endsAt: string;
+                        slug: string;
+                        /** Format: date-time */
+                        startsAt: string;
+                        title: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Operation completed. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/elections/{electionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an election */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        /** Update a draft election */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: date-time */
+                        debateAt?: string | null;
+                        description?: string | null;
+                        /** Format: date-time */
+                        endsAt?: string;
+                        slug?: string;
+                        /** Format: date-time */
+                        startsAt?: string;
+                        title?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/elections/{electionId}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a draft candidate */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        ballotNumber: number;
+                        biography?: string | null;
+                        experiences?: string[];
+                        isActive?: boolean;
+                        mission: string;
+                        name: string;
+                        /** Format: uri */
+                        photoUrl?: string | null;
+                        position?: number;
+                        slogan?: string | null;
+                        /** Format: uri */
+                        videoUrl?: string | null;
+                        vision: string;
+                        workPrograms?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Operation completed. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                ballotNumber: number;
+                                biography: string | null;
+                                electionId: string;
+                                experiences: string[];
+                                id: string;
+                                isActive: boolean;
+                                mission: string;
+                                name: string;
+                                photoUrl: string | null;
+                                position: number;
+                                slogan: string | null;
+                                videoUrl: string | null;
+                                vision: string;
+                                workPrograms: string[];
+                            };
+                            /** @enum {string} */
+                            msg: "success";
+                        };
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/elections/{electionId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close an election */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/elections/{electionId}/debate-schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a draft or open election debate schedule */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: date-time */
+                        debateAt: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/internal/elections/{electionId}/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open an election */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/elections/{electionId}/public-details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update draft or open election public details */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        description: string | null;
+                        slug: string;
+                        title: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/internal/elections/{electionId}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish verified results */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/elections/{electionId}/tally": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a closed-election tally */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionTallyResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/elections/{electionId}/turnout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get aggregate turnout */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                ballotCount: number;
+                                participationCount: number;
+                                valid: boolean;
+                            };
+                            /** @enum {string} */
+                            msg: "success";
+                        };
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/elections/candidates/{candidateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update a draft candidate */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    candidateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        ballotNumber?: number;
+                        biography?: string | null;
+                        experiences?: string[];
+                        isActive?: boolean;
+                        mission?: string;
+                        name?: string;
+                        /** Format: uri */
+                        photoUrl?: string | null;
+                        position?: number;
+                        slogan?: string | null;
+                        /** Format: uri */
+                        videoUrl?: string | null;
+                        vision?: string;
+                        workPrograms?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                ballotNumber: number;
+                                biography: string | null;
+                                electionId: string;
+                                experiences: string[];
+                                id: string;
+                                isActive: boolean;
+                                mission: string;
+                                name: string;
+                                photoUrl: string | null;
+                                position: number;
+                                slogan: string | null;
+                                videoUrl: string | null;
+                                vision: string;
+                                workPrograms: string[];
+                            };
+                            /** @enum {string} */
+                            msg: "success";
+                        };
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -8710,6 +11413,129 @@ export interface components {
         };
         DeleteRegistrationFormRequestV1: {
             revision: number;
+        };
+        ElectionCandidateListResponse: {
+            data: {
+                ballotNumber: number;
+                biography: string | null;
+                electionId: string;
+                experiences: string[];
+                id: string;
+                isActive: boolean;
+                mission: string;
+                name: string;
+                photoUrl: string | null;
+                position: number;
+                slogan: string | null;
+                videoUrl: string | null;
+                vision: string;
+                workPrograms: string[];
+            }[];
+            /** @enum {string} */
+            msg: "success";
+        };
+        ElectionEligibilityResponse: {
+            data: {
+                eligible: boolean;
+                hasVoted: boolean;
+                /** @enum {string|null} */
+                reason: "ACCOUNT_INACTIVE" | "PROFILE_INCOMPLETE" | "OUTLOOK_NOT_VERIFIED" | "OUTLOOK_DOMAIN_NOT_ALLOWED" | "NOT_COMPUTER_SCIENCE" | "ELECTION_NOT_OPEN" | "ALREADY_VOTED" | null;
+            };
+            /** @enum {string} */
+            msg: "success";
+        };
+        ElectionResponse: {
+            data: {
+                candidates: {
+                    ballotNumber: number;
+                    biography: string | null;
+                    electionId: string;
+                    experiences: string[];
+                    id: string;
+                    isActive: boolean;
+                    mission: string;
+                    name: string;
+                    photoUrl: string | null;
+                    position: number;
+                    slogan: string | null;
+                    videoUrl: string | null;
+                    vision: string;
+                    workPrograms: string[];
+                }[];
+                /** Format: date-time */
+                closedAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                debateAt: string | null;
+                description: string | null;
+                /** Format: date-time */
+                endsAt: string;
+                id: string;
+                /** Format: date-time */
+                openedAt: string | null;
+                /** Format: date-time */
+                publishedAt: string | null;
+                slug: string;
+                /** Format: date-time */
+                startsAt: string;
+                /** @enum {string} */
+                status: "DRAFT" | "OPEN" | "CLOSED" | "PUBLISHED";
+                title: string;
+                /** Format: date-time */
+                updatedAt: string | null;
+            };
+            /** @enum {string} */
+            msg: "success";
+        };
+        ElectionTallyResponse: {
+            data: {
+                ballotCount: number;
+                isTie: boolean;
+                participationCount: number;
+                results: {
+                    candidate: {
+                        ballotNumber: number;
+                        biography: string | null;
+                        electionId: string;
+                        experiences: string[];
+                        id: string;
+                        isActive: boolean;
+                        mission: string;
+                        name: string;
+                        photoUrl: string | null;
+                        position: number;
+                        slogan: string | null;
+                        videoUrl: string | null;
+                        vision: string;
+                        workPrograms: string[];
+                    };
+                    votes: number;
+                }[];
+                valid: boolean;
+                winnerCandidateId: string | null;
+            };
+            /** @enum {string} */
+            msg: "success";
+        };
+        ElectionVoteResponse: {
+            data: {
+                receiptCode: string;
+                /** Format: date-time */
+                votedAt: string;
+            };
+            /** @enum {string} */
+            msg: "success";
+        };
+        ElectionVoteStatusResponse: {
+            data: {
+                hasVoted: boolean;
+                receiptCode: string | null;
+                /** Format: date-time */
+                votedAt: string | null;
+            };
+            /** @enum {string} */
+            msg: "success";
         };
         ErrorResponse: {
             msg: string;

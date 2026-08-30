@@ -105,6 +105,8 @@ async function main() {
       'scan_event_tickets',
       'view_event_attendance',
       'correct_event_attendance',
+      'manage_elections',
+      'view_election_results',
       'manage_certificates',
    ];
 
@@ -137,7 +139,7 @@ async function main() {
          },
       });
 
-      // Batch configuration is restricted to administrators.
+      // Batch and election administration are restricted to administrators.
       for (const perm of Object.values(permissions)) {
          if (
             [
@@ -149,6 +151,8 @@ async function main() {
                permissions.scan_event_tickets.id,
                permissions.view_event_attendance.id,
                permissions.correct_event_attendance.id,
+               permissions.manage_elections.id,
+               permissions.view_election_results.id,
             ].includes(perm.id) &&
             roleName !== 'Admin'
          ) {

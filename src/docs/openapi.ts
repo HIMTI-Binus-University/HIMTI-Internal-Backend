@@ -3,7 +3,6 @@ import {
    OpenApiGeneratorV3,
 } from '@asteasolutions/zod-to-openapi';
 import { registerHealthDocs } from '@/docs/healthDocs.js';
-import { registerEventCommitteeDocs } from '@/features/event-committee/eventCommitteeDocs.js';
 import { registerEventDocs } from '@/features/events/eventDocs.js';
 import { registerMembershipDocs } from '@/features/membership/membershipDocs.js';
 import { registerPermissionDocs } from '@/features/permissions/permissionDocs.js';
@@ -13,6 +12,7 @@ import { registerSubEventDocs } from '@/features/sub-events/subEventDocs.js';
 import { registerUrlShortenerDocs } from '@/features/url-shortener/urlDocs.js';
 import { registerUserDocs } from '@/features/users/userDocs.js';
 import { registerLinkWorkspaceDocs } from '@/features/link-workspaces/linkWorkspaceDocs.js';
+import { registerEventCommitteeDocs } from '@/features/event-committee/eventCommitteeDocs.js';
 import { registerEventRegistrationDocs } from '@/features/event-registrations/eventRegistrationDocs.js';
 import { registerEventPaymentDocs } from '@/features/event-payments/eventPaymentDocs.js';
 import { registerPostRegistrationFormDocs } from '@/features/post-registration-forms/postRegistrationFormDocs.js';
@@ -22,6 +22,7 @@ import {
    canonicalErrorResponseSchema,
    canonicalValidationErrorResponseSchema,
 } from '@/docs/commonSchemas.js';
+import { registerElectionDocs } from '@/features/elections/electionDocs.js';
 
 const registry = new OpenAPIRegistry();
 
@@ -52,6 +53,7 @@ registerEventPaymentDocs(registry);
 registerPostRegistrationFormDocs(registry);
 registerEventPackageDocs(registry);
 registerEventTicketDocs(registry);
+registerElectionDocs(registry);
 
 export const generateOpenApiDocument = () => {
    const generator = new OpenApiGeneratorV3(registry.definitions);

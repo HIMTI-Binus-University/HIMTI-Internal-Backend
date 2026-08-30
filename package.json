@@ -4,7 +4,7 @@
    "description": "Internal tools for himti",
    "main": "index.js",
    "scripts": {
-      "test": "tsx --test src/docs/*.test.ts src/features/users/*.test.ts src/features/membership/*.test.ts src/features/events/*.test.ts src/features/event-committee/*.test.ts src/features/sub-events/*.test.ts src/features/registration-forms/*.test.ts src/features/event-packages/*.test.ts src/features/event-registrations/*.test.ts src/features/event-payments/*.test.ts src/features/event-tickets/*.test.ts src/features/post-registration-forms/*.test.ts src/features/link-workspaces/*.test.ts",
+      "test": "tsx --test src/docs/*.test.ts src/features/users/*.test.ts src/features/membership/*.test.ts src/features/events/*.test.ts src/features/event-committee/*.test.ts src/features/sub-events/*.test.ts src/features/registration-forms/*.test.ts src/features/event-packages/*.test.ts src/features/event-registrations/*.test.ts src/features/event-payments/*.test.ts src/features/event-tickets/*.test.ts src/features/post-registration-forms/*.test.ts src/features/link-workspaces/*.test.ts src/features/elections/*.test.ts",
       "contract:openapi": "tsx src/scripts/generateOpenApi.ts",
       "contract:types": "openapi-typescript openapi.json -o src/generated/openapi.ts",
       "contract:distribute": "tsx src/scripts/distributeOpenApiTypes.ts",
