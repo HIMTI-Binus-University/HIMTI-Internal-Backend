@@ -11306,12 +11306,14 @@ export interface components {
             maxParticipants?: number;
             maxTicketsPerUser?: number;
             name: string;
+            /** @description Creates an active fixed one-seat individual package at the supplied price. */
             paid?: boolean;
             paymentAccountBank?: string;
             paymentAccountName?: string;
             paymentAccountNumber?: number;
             paymentDesc?: string;
             posterUrl?: string | null;
+            /** @description Individual ticket price in IDR; must be 0 when free. */
             price?: number;
             priceModifier?: number;
             privateDescription?: string;

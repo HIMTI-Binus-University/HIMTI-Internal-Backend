@@ -105,6 +105,8 @@ class SubEventService {
          destinationUrl: payload.destinationUrl,
          price: payload.price,
          paid: payload.paid,
+         paymentCurrency: 'IDR',
+         paymentAmountMinor: BigInt(payload.price),
          paymentAccountBank: payload.paymentAccountBank || '',
          paymentAccountNumber: payload.paymentAccountNumber || null,
          paymentAccountName: payload.paymentAccountName || null,
@@ -126,6 +128,22 @@ class SubEventService {
             : null,
          attendanceCheckoutEnabled: payload.attendanceCheckoutEnabled,
          visibility: payload.visibility,
+
+         ticketPackages: {
+            create: {
+               event: { connect: { id: payload.eventId } },
+               code: 'DEFAULT-INDIVIDUAL',
+               name:
+                  payload.price > 0
+                     ? 'Individual ticket'
+                     : 'Free individual ticket',
+               description: 'Default one-seat registration package',
+               status: 'ACTIVE',
+               seatCount: 1,
+               currency: 'IDR',
+               priceMinor: BigInt(payload.price),
+            },
+         },
 
          // Build the regist form if exists
          registrationForms:

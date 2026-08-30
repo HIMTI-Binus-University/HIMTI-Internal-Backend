@@ -54,52 +54,66 @@ const FormQuestionSchema = z.object({
    options: z.array(QuestionOptionSchema).optional(),
 });
 
-export const CreateSubEventSchema = z.object({
-   eventId: z.string(),
-   name: z.string().min(1, 'Sub-event name is required'),
-   publicDescription: z.string().optional(),
-   privateDescription: z.string().optional(),
-   date: z.string().datetime(),
-   type: SubeventTypeEnum,
-   locationName: z.string().optional(),
-   locationUrl: optionalHttpUrlSchema
-      .optional()
-      .transform((value) => value ?? null),
-   posterUrl: optionalHttpUrlSchema
-      .optional()
-      .transform((value) => value ?? null),
-   destinationUrl: optionalHttpUrlSchema
-      .optional()
-      .transform((value) => value ?? null),
-   price: z.number().int().min(0).default(0),
+export const CreateSubEventSchema = z
+   .object({
+      eventId: z.string(),
+      name: z.string().min(1, 'Sub-event name is required'),
+      publicDescription: z.string().optional(),
+      privateDescription: z.string().optional(),
+      date: z.string().datetime(),
+      type: SubeventTypeEnum,
+      locationName: z.string().optional(),
+      locationUrl: optionalHttpUrlSchema
+         .optional()
+         .transform((value) => value ?? null),
+      posterUrl: optionalHttpUrlSchema
+         .optional()
+         .transform((value) => value ?? null),
+      destinationUrl: optionalHttpUrlSchema
+         .optional()
+         .transform((value) => value ?? null),
+      price: z.number().int().min(0).default(0),
 
-   // Payment Info (Optional, default false)
-   paid: z.boolean().default(false),
-   paymentAccountBank: z.string().optional(),
-   paymentAccountNumber: z.int().optional(),
-   paymentAccountName: z.string().optional(),
-   priceModifier: z.number().int().optional(),
-   paymentDesc: z.string().optional(),
+      // Payment Info (Optional, default false)
+      paid: z.boolean().default(false),
+      paymentAccountBank: z.string().optional(),
+      paymentAccountNumber: z.int().optional(),
+      paymentAccountName: z.string().optional(),
+      priceModifier: z.number().int().optional(),
+      paymentDesc: z.string().optional(),
 
-   // Registration Rules
-   maxParticipants: z.number().int().positive().optional().nullable(),
-   maxTicketsPerUser: z.number().int().optional(),
-   isRegistrationOpen: z.boolean().default(false),
-   registrationMode: z
-      .enum(['INTERNAL', 'EXTERNAL', 'DISABLED'])
-      .default('DISABLED'),
-   approvalMode: z
-      .enum(['AUTO_APPROVE', 'MANUAL_REVIEW'])
-      .default('MANUAL_REVIEW'),
-   registrationOpensAt: z.string().datetime().optional().nullable(),
-   registrationClosesAt: z.string().datetime().optional().nullable(),
-   cancellationClosesAt: z.string().datetime().optional().nullable(),
-   attendanceCheckoutEnabled: z.boolean().default(false),
-   visibility: z.enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY']).default('PUBLIC'),
+      // Registration Rules
+      maxParticipants: z.number().int().positive().optional().nullable(),
+      maxTicketsPerUser: z.number().int().optional(),
+      isRegistrationOpen: z.boolean().default(false),
+      registrationMode: z
+         .enum(['INTERNAL', 'EXTERNAL', 'DISABLED'])
+         .default('DISABLED'),
+      approvalMode: z
+         .enum(['AUTO_APPROVE', 'MANUAL_REVIEW'])
+         .default('MANUAL_REVIEW'),
+      registrationOpensAt: z.string().datetime().optional().nullable(),
+      registrationClosesAt: z.string().datetime().optional().nullable(),
+      cancellationClosesAt: z.string().datetime().optional().nullable(),
+      attendanceCheckoutEnabled: z.boolean().default(false),
+      visibility: z
+         .enum(['PUBLIC', 'INTERNAL', 'INVITE_ONLY'])
+         .default('PUBLIC'),
 
-   // Questions
-   questions: z.array(FormQuestionSchema).optional(),
-});
+      // Questions
+      questions: z.array(FormQuestionSchema).optional(),
+   })
+   .superRefine((value, context) => {
+      if (value.paid !== value.price > 0) {
+         context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['price'],
+            message: value.paid
+               ? 'Paid sub-events require a price greater than 0'
+               : 'Free sub-events must have a price of 0',
+         });
+      }
+   });
 
 export const UpdateSubEventSchema = z.object({
    name: z.string().min(1, 'Sub-event name is required').optional(),

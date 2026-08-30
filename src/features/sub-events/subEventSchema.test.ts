@@ -44,4 +44,31 @@ describe('sub-event hub schemas', () => {
          false,
       );
    });
+
+   it('requires paid and price to agree', () => {
+      assert.equal(
+         CreateSubEventSchema.safeParse({
+            ...requiredSubEvent,
+            paid: true,
+            price: 50000,
+         }).success,
+         true,
+      );
+      assert.equal(
+         CreateSubEventSchema.safeParse({
+            ...requiredSubEvent,
+            paid: true,
+            price: 0,
+         }).success,
+         false,
+      );
+      assert.equal(
+         CreateSubEventSchema.safeParse({
+            ...requiredSubEvent,
+            paid: false,
+            price: 50000,
+         }).success,
+         false,
+      );
+   });
 });

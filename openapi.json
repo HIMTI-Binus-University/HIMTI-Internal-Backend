@@ -471,6 +471,7 @@
                   "type": "string"
                },
                "paid": {
+                  "description": "Creates an active fixed one-seat individual package at the supplied price.",
                   "type": "boolean"
                },
                "paymentAccountBank": {
@@ -490,6 +491,7 @@
                   "type": "string"
                },
                "price": {
+                  "description": "Individual ticket price in IDR; must be 0 when free.",
                   "minimum": 0,
                   "type": "integer"
                },

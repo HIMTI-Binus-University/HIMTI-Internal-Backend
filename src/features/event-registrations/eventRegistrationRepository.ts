@@ -864,30 +864,6 @@ class EventRegistrationRepository {
                });
             }
 
-            if (subEvent.registrationMode === 'INTERNAL') {
-               await tx.ticketPackage.upsert({
-                  where: {
-                     subEventId_code: {
-                        subEventId,
-                        code: 'FREE-INDIVIDUAL',
-                     },
-                  },
-                  create: {
-                     id: `free-default-${subEventId}`,
-                     eventId: subEvent.eventId,
-                     subEventId,
-                     code: 'FREE-INDIVIDUAL',
-                     name: 'Free individual registration',
-                     description: 'Default one-seat free registration package',
-                     status: 'ACTIVE',
-                     seatCount: 1,
-                     currency: 'IDR',
-                     priceMinor: 0,
-                  },
-                  update: {},
-               });
-            }
-
             const now = new Date();
             const eligiblePackages = await tx.ticketPackage.findMany({
                where: {

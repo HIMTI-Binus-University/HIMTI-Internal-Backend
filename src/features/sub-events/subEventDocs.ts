@@ -51,8 +51,18 @@ const createSubEventRequestSchema = z.object({
    locationUrl: z.string().nullable().optional(),
    posterUrl: z.string().nullable().optional(),
    destinationUrl: z.string().nullable().optional(),
-   price: z.number().int().min(0).optional(),
-   paid: z.boolean().optional(),
+   price: z
+      .number()
+      .int()
+      .min(0)
+      .optional()
+      .describe('Individual ticket price in IDR; must be 0 when free.'),
+   paid: z
+      .boolean()
+      .optional()
+      .describe(
+         'Creates an active fixed one-seat individual package at the supplied price.',
+      ),
    paymentAccountBank: z.string().optional(),
    paymentAccountNumber: z.number().int().optional(),
    paymentAccountName: z.string().optional(),
