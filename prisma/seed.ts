@@ -100,6 +100,7 @@ async function main() {
       'manage_batch',
       'manage_elections',
       'view_election_results',
+      'manage_certificates',
    ];
 
    const permissions: Record<string, { id: string }> = {};
