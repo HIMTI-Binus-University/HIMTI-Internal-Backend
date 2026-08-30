@@ -146,7 +146,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
 
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/elections/current',
+      path: '/api/elections/current',
       tags: [tag],
       summary: 'Get the current election',
       responses: {
@@ -158,7 +158,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/elections/{electionId}/candidates',
+      path: '/api/elections/{electionId}/candidates',
       tags: [tag],
       summary: 'List public election candidates',
       request: { params },
@@ -172,7 +172,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/elections/{electionId}/eligibility',
+      path: '/api/elections/{electionId}/eligibility',
       tags: [tag],
       summary: 'Check current voter eligibility',
       security: [protectedEndpoint],
@@ -187,7 +187,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/elections/{electionId}/my-vote-status',
+      path: '/api/elections/{electionId}/my-vote-status',
       tags: [tag],
       summary: 'Get current voter ballot status',
       security: [protectedEndpoint],
@@ -202,7 +202,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'post',
-      path: '/api/v1/elections/{electionId}/vote',
+      path: '/api/elections/{electionId}/vote',
       tags: [tag],
       summary: 'Cast one final anonymous ballot',
       security: [protectedEndpoint],
@@ -221,7 +221,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
    });
    registry.registerPath({
       method: 'get',
-      path: '/api/v1/elections/{electionId}/results',
+      path: '/api/elections/{electionId}/results',
       tags: [tag],
       summary: 'Get published results',
       request: { params },
@@ -237,54 +237,54 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
    const internalPaths = [
       {
          method: 'get' as const,
-         path: '/api/v1/internal/elections',
+         path: '/api/internal/elections',
          summary: 'List elections',
          responseSchema: response(z.array(electionSchema)),
       },
       {
          method: 'patch' as const,
-         path: '/api/v1/internal/elections/{electionId}/debate-schedule',
+         path: '/api/internal/elections/{electionId}/debate-schedule',
          summary: 'Update a draft or open election debate schedule',
          body: UpdateDebateScheduleSchema,
          responseSchema: ElectionResponse,
       },
       {
          method: 'patch' as const,
-         path: '/api/v1/internal/elections/{electionId}/public-details',
+         path: '/api/internal/elections/{electionId}/public-details',
          summary: 'Update draft or open election public details',
          body: UpdateElectionPublicDetailsSchema,
          responseSchema: ElectionResponse,
       },
       {
          method: 'post' as const,
-         path: '/api/v1/internal/elections',
+         path: '/api/internal/elections',
          summary: 'Create an election',
          body: CreateElectionSchema,
          responseSchema: ElectionResponse,
       },
       {
          method: 'get' as const,
-         path: '/api/v1/internal/elections/{electionId}',
+         path: '/api/internal/elections/{electionId}',
          summary: 'Get an election',
          responseSchema: ElectionResponse,
       },
       {
          method: 'put' as const,
-         path: '/api/v1/internal/elections/{electionId}',
+         path: '/api/internal/elections/{electionId}',
          summary: 'Update a draft election',
          body: UpdateElectionSchema,
          responseSchema: ElectionResponse,
       },
       {
          method: 'post' as const,
-         path: '/api/v1/internal/elections/{electionId}/candidates',
+         path: '/api/internal/elections/{electionId}/candidates',
          summary: 'Create a draft candidate',
          body: CreateCandidateSchema,
          responseSchema: response(candidateSchema),
       },
       {
          method: 'put' as const,
-         path: '/api/v1/internal/elections/candidates/{candidateId}',
+         path: '/api/internal/elections/candidates/{candidateId}',
          summary: 'Update a draft candidate',
          body: UpdateCandidateSchema,
          responseSchema: response(candidateSchema),
@@ -292,19 +292,19 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
       },
       {
          method: 'post' as const,
-         path: '/api/v1/internal/elections/{electionId}/open',
+         path: '/api/internal/elections/{electionId}/open',
          summary: 'Open an election',
          responseSchema: ElectionResponse,
       },
       {
          method: 'post' as const,
-         path: '/api/v1/internal/elections/{electionId}/close',
+         path: '/api/internal/elections/{electionId}/close',
          summary: 'Close an election',
          responseSchema: ElectionResponse,
       },
       {
          method: 'get' as const,
-         path: '/api/v1/internal/elections/{electionId}/turnout',
+         path: '/api/internal/elections/{electionId}/turnout',
          summary: 'Get aggregate turnout',
          responseSchema: response(
             z.object({
@@ -316,13 +316,13 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
       },
       {
          method: 'get' as const,
-         path: '/api/v1/internal/elections/{electionId}/tally',
+         path: '/api/internal/elections/{electionId}/tally',
          summary: 'Get a closed-election tally',
          responseSchema: TallyResponse,
       },
       {
          method: 'post' as const,
-         path: '/api/v1/internal/elections/{electionId}/publish',
+         path: '/api/internal/elections/{electionId}/publish',
          summary: 'Publish verified results',
          responseSchema: ElectionResponse,
       },
