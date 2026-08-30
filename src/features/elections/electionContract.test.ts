@@ -7,19 +7,19 @@ describe('election OpenAPI contract', () => {
       const document = generateOpenApiDocument();
 
       for (const path of [
-         '/api/v1/elections/current',
-         '/api/v1/elections/{electionId}/vote',
-         '/api/v1/elections/{electionId}/my-vote-status',
-         '/api/v1/internal/elections',
-         '/api/v1/internal/elections/{electionId}/debate-schedule',
-         '/api/v1/internal/elections/{electionId}/public-details',
-         '/api/v1/internal/elections/{electionId}/tally',
+         '/api/elections/current',
+         '/api/elections/{electionId}/vote',
+         '/api/elections/{electionId}/my-vote-status',
+         '/api/internal/elections',
+         '/api/internal/elections/{electionId}/debate-schedule',
+         '/api/internal/elections/{electionId}/public-details',
+         '/api/internal/elections/{electionId}/tally',
       ]) {
          assert.ok(document.paths?.[path], `${path} is missing`);
       }
 
       const voteSchema =
-         document.paths?.['/api/v1/elections/{electionId}/vote']?.post
+         document.paths?.['/api/elections/{electionId}/vote']?.post
             ?.responses?.['201'];
       assert.ok(voteSchema);
       assert.doesNotMatch(JSON.stringify(voteSchema), /candidateId/);
