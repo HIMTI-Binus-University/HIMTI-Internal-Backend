@@ -149,6 +149,18 @@ enum LinkWorkspaceStatus {
   ARCHIVED
 }
 
+enum MajorHIMTIKit {
+  COMPUTER_SCIENCE_REGULAR
+  COMPUTER_SCIENCE_AND_MATHEMATICS
+  COMPUTER_SCIENCE_AND_STATISTIC
+  COMPUTER_SCIENCE_SOFTWARE_ENGINEERING
+  ARTIFICIAL_INTELLIGENCE
+  CYBER_SECURITY
+  DATA_SCIENCE
+  GAME_APPLICATION_AND_TECHNOLOGY
+  MOBILE_APPLICATION_AND_TECHNOLOGY
+}
+
 // ==========================================
 // ACADEMIC & INSTITUTION
 // ==========================================
@@ -752,4 +764,32 @@ model UrlDetail {
   url Url @relation(fields: [urlId], references: [id])
 
   @@map("url_details")
+}
+
+// ==========================================
+// HIMTI Kit
+// ==========================================
+
+model HimtiKitResource {
+  id            String  @id @default(nanoid())
+  title         String
+  description   String
+  downloadUrl   String
+  coverImageUrl String? @db.Text
+  semester      Int
+  major         MajorHIMTIKit
+
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+}
+
+model HimtiKitSfotware {
+  id            String  @id @default(nanoid())
+  name          String
+  description   String
+  downloadUrl   String
+  coverImageUrl String? @db.Text
+
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
 }
