@@ -20,16 +20,20 @@ const optionalHttpUrlSchema = z
    });
 
 export const MajorEnum = z.enum([
-  "COMPUTER_SCIENCE-REGULAR",
+  "COMPUTER_SCIENCE_REGULAR",
   "COMPUTER_SCIENCE_AND_MATHEMATICS",
   "COMPUTER_SCIENCE_AND_STATISTIC",
-  "COMPUTER_SCIENCE-SOFTWARE_ENGINEERING",
+  "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING",
   "ARTIFICIAL_INTELLIGENCE",
   "CYBER_SECURITY",
   "DATA_SCIENCE",
   "GAME_APPLICATION_AND_TECHNOLOGY",
   "MOBILE_APPLICATION_AND_TECHNOLOGY"
 ]);
+
+// ==========================================
+// SCHEMA UNTUK RESOURCES
+// ==========================================
 
 export const CreateKitResourcesSchema = z.object ({
    title : z.string().min(1),
@@ -49,6 +53,10 @@ export const DeleteKitResourcesSchema = z.object({});
 export const GetKitResourcesSchema = z.object({
    major : MajorEnum.optional()
 })
+
+// ==========================================
+// SCHEMA UNTUK SOFTWARE
+// ==========================================
 
 export const CreateKitSoftwareSchema = z.object ({
    name : z.string().min(1),

@@ -878,7 +878,7 @@ model HimtiKitResource {
   updatedAt DateTime? @updatedAt
 }
 
-model HimtiKitSfotware {
+model HimtiKitSoftware {
   id            String  @id @default(nanoid())
   name          String
   description   String
