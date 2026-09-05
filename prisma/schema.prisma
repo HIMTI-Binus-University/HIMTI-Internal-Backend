@@ -54,6 +54,12 @@ enum RoleStatus {
   INACTIVE
 }
 
+enum EventGroupStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 enum EventStatus {
   DRAFT
   PUBLISHED
@@ -61,73 +67,13 @@ enum EventStatus {
   CANCELLED
 }
 
-enum SubeventType {
-  MAIN_EVENT
-  WORKSHOP
-  SEMINAR
-  COMPETITION
-  WELCOMING_PARTY
-  DOMESTIC_STUDY_TOUR
-  INTERNATIONAL_STUDY_TOUR
-  COMPANY_VISIT
-  OTHER
+enum OrganizerRole {
+  MANAGER
+  ORGANIZER
 }
 
-enum CommitteeRole {
-  ADVISOR
-  CHAIRPERSON
-  VICE_CHAIRPERSON
-  SECRETARY
-  TREASURER
-  COORDINATOR
-  STAFF
-}
-
-enum SubeventVisibility {
-  PUBLIC
-  INTERNAL
-  INVITE_ONLY // ?
-}
-
-enum SubeventStatus {
+enum TicketPackageStatus {
   DRAFT
-  OPEN
-  CLOSED
-  CANCELLED
-}
-
-enum RegistrationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  UNPAID
-  SUBMITTED
-  VERIFIED
-  REJECTED
-}
-
-enum RegistrationResponseStatus {
-  DRAFT
-  SUBMITTED
-  LOCKED
-}
-
-enum FormFieldType {
-  TEXT
-  TEXTAREA
-  NUMBER
-  DATE
-  SELECT
-  RADIO
-  CHECKBOX
-  FILE
-}
-
-enum FormQuestionStatus {
   ACTIVE
   INACTIVE
 }
@@ -138,44 +84,32 @@ enum RegistrationFormStatus {
   CLOSED
 }
 
-enum RegistrationMode {
-  INTERNAL
-  EXTERNAL
-  DISABLED
-}
-
-enum RegistrationApprovalMode {
-  AUTO_APPROVE
-  MANUAL_REVIEW
-}
-
-enum TicketPackageStatus {
-  DRAFT
-  ACTIVE
-  INACTIVE
+enum FormQuestionType {
+  TEXT
+  TEXTAREA
+  NUMBER
+  DATE
+  SELECT
+  RADIO
+  CHECKBOX
+  FILE
 }
 
 enum RegistrationOrderStatus {
-  DRAFT
-  AWAITING_MEMBERS
-  HOLDING
-  SUBMITTED
+  ASSEMBLING
   PENDING_PAYMENT
   PAYMENT_REVIEW
-  PENDING_APPROVAL
-  APPROVED
-  NEEDS_CORRECTION
-  WAITLISTED
-  REJECTED
+  CONFIRMED
   EXPIRED
   CANCELLED
+  REJECTED
 }
 
-enum OrderMemberStatus {
-  INVITED
-  ACCEPTED
-  READY
-  CANCELLED
+enum RegistrationMemberStatus {
+  ACTIVE
+  LEFT
+  REMOVED
+  LOCKED
 }
 
 enum CapacityHoldStatus {
@@ -185,41 +119,37 @@ enum CapacityHoldStatus {
   EXPIRED
 }
 
-enum RegistrationFormStage {
-  REGISTRATION
-  POST_SUBMISSION
-  POST_APPROVAL
-  POST_REGISTRATION
-}
-
-enum RegistrationFormAudience {
-  BUYER
-  EACH_ATTENDEE
-  ALL_ORDER_MEMBERS
-}
-
 enum FormSubmissionStatus {
   DRAFT
   SUBMITTED
   LOCKED
-  NEEDS_CORRECTION
-  SUPERSEDED
 }
 
-enum OrderPaymentStatus {
-  UNPAID
-  PROOF_SUBMITTED
+enum RegistrationPaymentStatus {
+  COLLECTING
+  REVIEW
   VERIFIED
   REJECTED
   EXPIRED
   CANCELLED
 }
 
-enum PaymentProofStatus {
-  SUBMITTED
-  ACCEPTED
-  REJECTED
+enum RegistrationProofStatus {
+  CURRENT
   SUPERSEDED
+}
+
+enum RegistrationTicketStatus {
+  ACTIVE
+  USED
+  REVOKED
+  EXPIRED
+}
+
+enum BundleMembershipAction {
+  JOINED
+  LEFT
+  REMOVED_BY_ORGANIZER
 }
 
 enum PrivateUploadStatus {
@@ -230,38 +160,6 @@ enum PrivateUploadStatus {
 
 enum PrivateUploadPurpose {
   PAYMENT_PROOF
-}
-
-enum RefundStatus {
-  NOT_REQUIRED
-  REQUIRED
-  PROCESSING
-  COMPLETED
-  DENIED
-}
-
-enum RegistrationInvitationStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-  EXPIRED
-  REVOKED
-}
-
-enum WaitlistStatus {
-  WAITING
-  OFFERED
-  CONVERTED
-  EXPIRED
-  CANCELLED
-}
-
-enum TicketStatus {
-  PENDING
-  ACTIVE
-  USED
-  EXPIRED
-  REVOKED
 }
 
 enum LinkWorkspaceRole {
@@ -372,57 +270,45 @@ model User {
   studyProgram StudyProgram? @relation(fields: [studyProgramId], references: [id])
   region       Region?       @relation(fields: [regionId], references: [id])
 
-  sessions             Session[]
-  accounts             Account[]
-  userHasRoles         UserHasRole[]
-  eventHasParticipants EventHasParticipant[]
+  sessions     Session[]
+  accounts     Account[]
+  userHasRoles UserHasRole[]
 
-  // Ownership Relations (CreatedBy/UpdatedBy refs)
-  createdEvents                       Event[]                          @relation("EventCreator")
-  updatedEvents                       Event[]                          @relation("EventUpdater")
-  createdSubevents                    Subevent[]                       @relation("SubeventCreator")
-  updatedSubevents                    Subevent[]                       @relation("SubeventUpdater")
-  createdForms                        RegistrationForm[]               @relation("FormCreator")
-  updatedForms                        RegistrationForm[]               @relation("FormUpdater")
-  deletedForms                        RegistrationForm[]               @relation("FormDeleter")
-  createdQuestions                    FormQuestion[]                   @relation("QuestionCreator")
-  updatedQuestions                    FormQuestion[]                   @relation("QuestionUpdater")
-  createdOptions                      FormQuestionOption[]             @relation("OptionCreator")
-  updatedOptions                      FormQuestionOption[]             @relation("OptionUpdater")
-  approvedParticipants                EventHasParticipant[]            @relation("ParticipantApprover")
-  verifiedPayments                    EventHasParticipant[]            @relation("PaymentVerifier")
-  registrationResponses               RegistrationResponse[]
-  eventComittees                      EventComittee[]
-  registrationOrders                  RegistrationOrder[]              @relation("RegistrationOrderBuyer")
-  registrationMembers                 RegistrationOrderMember[]
-  sentEventInvitations                RegistrationInvitation[]         @relation("RegistrationInvitationSender")
-  claimedInvitations                  RegistrationInvitation[]         @relation("RegistrationInvitationClaimant")
-  reviewedPaymentProofs               RegistrationPaymentProof[]       @relation("RegistrationPaymentProofReviewer")
-  reviewedRegistrationPayments        RegistrationPayment[]            @relation("RegistrationPaymentReviewer")
-  processedRefunds                    RegistrationRefund[]             @relation("RegistrationRefundProcessor")
-  registrationHistory                 RegistrationStatusHistory[]
-  attendanceCheckIns                  AttendanceCheckIn[]              @relation("AttendanceCheckInOperator")
-  attendanceAudits                    AttendanceAudit[]
-  membershipPeriods                   UserMembershipPeriod[]
-  createdUrls                         Url[]                            @relation("UrlCreator")
-  updatedUrls                         Url[]                            @relation("UrlUpdater")
-  createdLinkWorkspaces               LinkWorkspace[]                  @relation("LinkWorkspaceCreator")
-  updatedLinkWorkspaces               LinkWorkspace[]                  @relation("LinkWorkspaceUpdater")
-  linkWorkspaceMembers                LinkWorkspaceMember[]
-  createdWorkspaceLinks               LinkWorkspaceLink[]              @relation("LinkWorkspaceLinkCreator")
-  updatedWorkspaceLinks               LinkWorkspaceLink[]              @relation("LinkWorkspaceLinkUpdater")
-  createdRoles                        Role[]                           @relation("RoleCreator")
-  updatedRoles                        Role[]                           @relation("RoleUpdater")
-  createdPermissions                  Permission[]                     @relation("PermissionCreator")
-  updatedPermissions                  Permission[]                     @relation("PermissionUpdater")
-  updatedUser                         User[]                           @relation("UserUpdater")
-  user                                User?                            @relation("UserUpdater", fields: [createdBy], references: [id])
-  registrationPaymentHistories        RegistrationPaymentHistory[]
-  privateUploads                      PrivateUpload[]
-  reopenedPostRegistrationAssignments PostRegistrationFormAssignment[] @relation("PostRegistrationAssignmentReopener")
-  createdElections                    Election[]                       @relation("ElectionCreator")
-  updatedElections                    Election[]                       @relation("ElectionUpdater")
-  electionParticipations              ElectionParticipation[]
+  // Event relations are inverse declarations only; they do not alter users.
+  createdEvents                  Event[]                     @relation("EventCreator")
+  updatedEvents                  Event[]                     @relation("EventUpdater")
+  createdEventGroups             EventGroup[]                @relation("EventGroupCreator")
+  updatedEventGroups             EventGroup[]                @relation("EventGroupUpdater")
+  eventOrganizerAssignments      EventOrganizer[]            @relation("EventOrganizerUser")
+  assignedEventOrganizers        EventOrganizer[]            @relation("EventOrganizerAssigner")
+  eventGroupOrganizerAssignments EventGroupOrganizer[]       @relation("EventGroupOrganizerUser")
+  assignedEventGroupOrganizers   EventGroupOrganizer[]       @relation("EventGroupOrganizerAssigner")
+  membershipPeriods              UserMembershipPeriod[]
+  createdUrls                    Url[]                       @relation("UrlCreator")
+  updatedUrls                    Url[]                       @relation("UrlUpdater")
+  createdLinkWorkspaces          LinkWorkspace[]             @relation("LinkWorkspaceCreator")
+  updatedLinkWorkspaces          LinkWorkspace[]             @relation("LinkWorkspaceUpdater")
+  linkWorkspaceMembers           LinkWorkspaceMember[]
+  createdWorkspaceLinks          LinkWorkspaceLink[]         @relation("LinkWorkspaceLinkCreator")
+  updatedWorkspaceLinks          LinkWorkspaceLink[]         @relation("LinkWorkspaceLinkUpdater")
+  createdRoles                   Role[]                      @relation("RoleCreator")
+  updatedRoles                   Role[]                      @relation("RoleUpdater")
+  createdPermissions             Permission[]                @relation("PermissionCreator")
+  updatedPermissions             Permission[]                @relation("PermissionUpdater")
+  updatedUser                    User[]                      @relation("UserUpdater")
+  user                           User?                       @relation("UserUpdater", fields: [createdBy], references: [id])
+  privateUploads                 PrivateUpload[]
+  registrationMembers            RegistrationOrderMember[]
+  uploadedPaymentProofs          RegistrationPaymentProof[]  @relation("PaymentProofUploader")
+  requestedPaymentCorrections    PaymentCorrectionTarget[]   @relation("PaymentCorrectionRequester")
+  operatedAttendanceCheckIns     AttendanceCheckIn[]         @relation("AttendanceOperator")
+  attendanceAudits               AttendanceAudit[]
+  registrationStatusHistory      RegistrationStatusHistory[]
+  bundleMembershipSubjects       BundleMembershipAudit[]     @relation("BundleMembershipSubject")
+  bundleMembershipActors         BundleMembershipAudit[]     @relation("BundleMembershipActor")
+  createdElections               Election[]                  @relation("ElectionCreator")
+  updatedElections               Election[]                  @relation("ElectionUpdater")
+  electionParticipations         ElectionParticipation[]
 
   @@map("users")
 }
@@ -580,307 +466,118 @@ model RoleHasPermission {
 }
 
 // ==========================================
-// EVENTS & SUBEVENTS
+// EVENT FOUNDATION
 // ==========================================
 
-model Event {
-  id                String      @id @default(nanoid())
-  name              String      @db.VarChar(255)
-  publicDescription String?     @db.Text
-  coverImageUrl     String?     @db.Text
-  status            EventStatus @default(DRAFT)
+model EventGroup {
+  id                  String           @id @default(nanoid())
+  name                String           @db.VarChar(255)
+  publicDescription   String?          @db.Text
+  internalDescription String?          @db.Text
+  coverImageUrl       String?          @db.Text
+  primaryColor        String?          @db.VarChar(20)
+  secondaryColor      String?          @db.VarChar(20)
+  status              EventGroupStatus @default(DRAFT)
+  createdAt           DateTime         @default(now()) @db.Timestamp(0)
+  createdBy           String           @db.VarChar(100)
+  updatedAt           DateTime?        @updatedAt
+  updatedBy           String?          @db.VarChar(100)
 
-  createdAt DateTime  @default(now()) @db.Timestamp(0)
-  createdBy String    @db.VarChar(100)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(100)
+  creator    User                  @relation("EventGroupCreator", fields: [createdBy], references: [id])
+  updater    User?                 @relation("EventGroupUpdater", fields: [updatedBy], references: [id])
+  organizers EventGroupOrganizer[]
+  events     Event[]
 
-  creator User  @relation("EventCreator", fields: [createdBy], references: [id])
-  updater User? @relation("EventUpdater", fields: [updatedBy], references: [id])
-
-  subevents            Subevent[]
-  eventHasParticipants EventHasParticipant[]
-  eventComittees       EventComittee[]
-  ticketPackages       TicketPackage[]
-  registrationOrders   RegistrationOrder[]
-  registrationInvites  RegistrationInvitation[]
-
-  @@map("events")
+  @@index([status, createdAt])
+  @@map("event_groups")
 }
 
-model Subevent {
-  id                 String       @id @default(nanoid())
-  eventId            String
-  name               String       @db.VarChar(255)
-  publicDescription  String?      @db.Text
-  privateDescription String?      @db.Text
-  date               DateTime
-  type               SubeventType
-  locationName       String?      @db.VarChar(255)
-  locationUrl        String?      @db.Text
-  posterUrl          String?      @db.Text
-  destinationUrl     String?      @db.Text
-  position           Int          @default(0)
-  price              Int          @default(0)
+model EventGroupOrganizer {
+  eventGroupId String
+  userId       String
+  role         OrganizerRole @default(ORGANIZER)
+  assignedAt   DateTime      @default(now()) @db.Timestamp(0)
+  assignedBy   String?
 
-  // Payment fields
-  paid                          Boolean  @default(false)
-  paymentAccountBank            String   @db.VarChar(100)
-  paymentAccountNumber          Int?
-  paymentAccountName            String?  @db.VarChar(100)
-  priceModifier                 Int?
-  paymentDesc                   String   @db.VarChar(255)
-  paymentCurrency               String   @default("IDR") @db.Char(3)
-  paymentAmountMinor            BigInt   @default(0)
-  paymentBankName               String?  @db.VarChar(100)
-  paymentAccountHolder          String?  @db.VarChar(150)
-  paymentAccountNumberCanonical String?  @db.VarChar(100)
-  paymentInstructions           String?  @db.Text
-  paymentProofTypes             String[] @default(["image/jpeg", "image/png", "image/webp", "application/pdf"])
-  paymentProofMaxBytes          Int      @default(10485760)
+  eventGroup EventGroup @relation(fields: [eventGroupId], references: [id], onDelete: Cascade)
+  user       User       @relation("EventGroupOrganizerUser", fields: [userId], references: [id], onDelete: Cascade)
+  assigner   User?      @relation("EventGroupOrganizerAssigner", fields: [assignedBy], references: [id], onDelete: SetNull)
 
-  // Registration Rules
-  maxParticipants           Int?
-  maxTicketsPerUser         Int?
-  isRegistrationOpen        Boolean                  @default(false)
-  autoAcceptRegistration    Boolean                  @default(false)
-  checkOutToken             String?                  @db.VarChar(255)
-  registrationMode          RegistrationMode         @default(DISABLED)
-  approvalMode              RegistrationApprovalMode @default(MANUAL_REVIEW)
+  @@id([eventGroupId, userId])
+  @@index([userId])
+  @@map("event_group_organizers")
+}
+
+model Event {
+  id                        String      @id @default(nanoid())
+  eventGroupId              String?
+  name                      String      @db.VarChar(255)
+  publicDescription         String?     @db.Text
+  internalDescription       String?     @db.Text
+  startsAt                  DateTime?
+  endsAt                    DateTime?
+  locationName              String?     @db.VarChar(255)
+  locationAddress           String?     @db.Text
+  locationUrl               String?     @db.Text
+  coverImageUrl             String?     @db.Text
+  primaryColor              String?     @db.VarChar(20)
+  secondaryColor            String?     @db.VarChar(20)
+  status                    EventStatus @default(DRAFT)
+  isRegistrationOpen        Boolean     @default(false)
   registrationOpensAt       DateTime?
   registrationClosesAt      DateTime?
   cancellationClosesAt      DateTime?
-  attendanceCheckoutEnabled Boolean                  @default(false)
-  checkoutHoldMinutes       Int                      @default(15)
-  memberDeadlineHours       Int                      @default(24)
-  paymentDeadlineHours      Int                      @default(24)
-  correctionDeadlineHours   Int                      @default(24)
-  waitlistOfferHours        Int                      @default(24)
+  capacity                  Int?
+  paymentCurrency           String      @default("IDR") @db.Char(3)
+  paymentBankName           String?     @db.VarChar(100)
+  paymentAccountNumber      String?     @db.VarChar(100)
+  paymentAccountHolder      String?     @db.VarChar(150)
+  paymentInstructions       String?     @db.Text
+  paymentProofTypes         String[]    @default(["image/jpeg", "image/png", "image/webp", "application/pdf"])
+  paymentProofMaxBytes      Int         @default(10485760)
+  attendanceEnabled         Boolean     @default(false)
+  attendanceCheckoutEnabled Boolean     @default(false)
+  createdAt                 DateTime    @default(now()) @db.Timestamp(0)
+  createdBy                 String      @db.VarChar(100)
+  updatedAt                 DateTime?   @updatedAt
+  updatedBy                 String?     @db.VarChar(100)
 
-  visibility SubeventVisibility @default(PUBLIC)
-  status     SubeventStatus     @default(DRAFT)
-
-  createdAt DateTime  @default(now()) @db.Timestamp(0)
-  createdBy String    @db.VarChar(100)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(100)
-
-  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  creator User  @relation("SubeventCreator", fields: [createdBy], references: [id])
-  updater User? @relation("SubeventUpdater", fields: [updatedBy], references: [id])
-
-  participants             EventHasParticipant[]
-  registrationForms        RegistrationForm[]
+  eventGroup               EventGroup?                @relation(fields: [eventGroupId], references: [id], onDelete: SetNull)
+  creator                  User                       @relation("EventCreator", fields: [createdBy], references: [id])
+  updater                  User?                      @relation("EventUpdater", fields: [updatedBy], references: [id])
+  organizers               EventOrganizer[]
   ticketPackages           TicketPackage[]
+  registrationForms        RegistrationForm[]
+  registrationOrders       RegistrationOrder[]
   capacityHolds            RegistrationCapacityHold[]
-  registrationInvites      RegistrationInvitation[]
-  waitlistEntries          RegistrationWaitlistEntry[]
   tickets                  RegistrationTicket[]
   attendanceCheckIns       AttendanceCheckIn[]
-  attendanceAudits         AttendanceAudit[]
-  registrationOrders       RegistrationOrder[]
   registrationOrderMembers RegistrationOrderMember[]
 
-  @@unique([id, eventId], map: "subevents_id_eventId_key")
-  @@index([eventId, position])
-  @@map("subevents")
+  @@index([eventGroupId, status])
+  @@index([status, startsAt])
+  @@map("events")
 }
 
-model EventHasParticipant {
-  id          String @id @default(nanoid())
-  eventId     String
-  eventModeId String
-  userId      String
-
-  // Status
-  registrationStatus RegistrationStatus @default(PENDING)
-  approvedAt         DateTime?
-  approvedBy         String?            @db.VarChar(100)
-
-  // Payment
-  paymentStatus      PaymentStatus @default(UNPAID)
-  paymentProofUrl    String?       @db.Text
-  paymentSubmittedAt DateTime?
-  paymentVerifiedAt  DateTime?
-  paymentVerifiedBy  String?       @db.VarChar(100)
-
-  createdAt DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt DateTime? @updatedAt
-
-  event    Event    @relation(fields: [eventId], references: [id])
-  subevent Subevent @relation(fields: [eventModeId], references: [id])
-  user     User     @relation(fields: [userId], references: [id])
-
-  approver User? @relation("ParticipantApprover", fields: [approvedBy], references: [id])
-  verifier User? @relation("PaymentVerifier", fields: [paymentVerifiedBy], references: [id])
-
-  registrationResponses RegistrationResponse[]
-
-  @@unique([eventId, userId, eventModeId])
-  @@map("event_has_participants")
-}
-
-model EventComittee {
+model EventOrganizer {
   eventId    String
   userId     String
-  role       CommitteeRole @default(STAFF)
+  role       OrganizerRole @default(ORGANIZER)
   assignedAt DateTime      @default(now()) @db.Timestamp(0)
+  assignedBy String?
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event    Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user     User  @relation("EventOrganizerUser", fields: [userId], references: [id], onDelete: Cascade)
+  assigner User? @relation("EventOrganizerAssigner", fields: [assignedBy], references: [id], onDelete: SetNull)
 
   @@id([eventId, userId])
-  @@map("event_committees")
+  @@index([userId])
+  @@map("event_organizers")
 }
-
-// ==========================================
-// REGISTRATION FORM BUILDER
-// ==========================================
-
-model RegistrationForm {
-  id            String                   @id @default(nanoid())
-  subEventId    String
-  status        RegistrationFormStatus   @default(DRAFT)
-  name          String                   @default("Registration") @db.VarChar(255)
-  description   String?                  @db.Text
-  logicalKey    String?                  @db.VarChar(100)
-  version       Int                      @default(1)
-  revision      Int                      @default(1)
-  stage         RegistrationFormStage    @default(REGISTRATION)
-  audience      RegistrationFormAudience @default(BUYER)
-  isRequired    Boolean                  @default(true)
-  opensAt       DateTime?
-  closesAt      DateTime?
-  blocksCheckIn Boolean                  @default(false)
-  orderIndex    Int                      @default(0)
-  publishedAt   DateTime?
-  supersedesId  String?
-
-  createdAt DateTime  @default(now()) @db.Timestamp(0)
-  createdBy String    @db.VarChar(100)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(100)
-  deletedAt DateTime? @db.Timestamp(0)
-  deletedBy String?   @db.VarChar(100)
-
-  subEvent      Subevent           @relation(fields: [subEventId], references: [id], onDelete: Cascade)
-  creator       User               @relation("FormCreator", fields: [createdBy], references: [id])
-  updater       User?              @relation("FormUpdater", fields: [updatedBy], references: [id])
-  deleter       User?              @relation("FormDeleter", fields: [deletedBy], references: [id], onDelete: SetNull)
-  supersedes    RegistrationForm?  @relation("RegistrationFormVersions", fields: [supersedesId], references: [id], onDelete: SetNull)
-  newerVersions RegistrationForm[] @relation("RegistrationFormVersions")
-
-  questions                   FormQuestion[]
-  registrationResponses       RegistrationResponse[]
-  sections                    RegistrationFormSection[]
-  assignments                 RegistrationFormAssignment[]
-  submissions                 RegistrationFormSubmission[]
-  postRegistrationAssignments PostRegistrationFormAssignment[]
-
-  @@unique([subEventId, logicalKey, version])
-  @@index([subEventId, stage, status])
-  @@index([deletedBy])
-  @@map("registration_forms")
-}
-
-model FormQuestion {
-  id                 String             @id @default(nanoid())
-  registrationFormId String
-  sectionId          String?
-  label              String             @db.VarChar(255)
-  fieldKey           String             @db.VarChar(100)
-  fieldType          FormFieldType
-  isRequired         Boolean            @default(true)
-  helpText           String?            @db.Text
-  validation         Json               @default("{}")
-  orderIndex         Int                @default(0)
-  status             FormQuestionStatus @default(ACTIVE)
-
-  createdAt DateTime  @default(now()) @db.Timestamp(0)
-  createdBy String    @db.VarChar(100)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(100)
-
-  form    RegistrationForm         @relation(fields: [registrationFormId], references: [id], onDelete: Cascade)
-  section RegistrationFormSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
-  creator User                     @relation("QuestionCreator", fields: [createdBy], references: [id])
-  updater User?                    @relation("QuestionUpdater", fields: [updatedBy], references: [id])
-
-  options           FormQuestionOption[]
-  formAnswers       FormAnswer[]
-  submissionAnswers RegistrationFormSubmissionAnswer[]
-
-  @@index([registrationFormId, sectionId, orderIndex])
-  @@map("form_questions")
-}
-
-model FormQuestionOption {
-  id             String  @id @default(nanoid())
-  formQuestionId String
-  label          String  @db.VarChar(255)
-  value          String  @db.VarChar(255)
-  isActive       Boolean @default(true)
-  orderIndex     Int     @default(0)
-
-  createdAt DateTime  @default(now()) @db.Timestamp(0)
-  createdBy String    @db.VarChar(100)
-  updatedAt DateTime? @updatedAt
-  updatedBy String?   @db.VarChar(100)
-
-  question        FormQuestion                     @relation(fields: [formQuestionId], references: [id], onDelete: Cascade)
-  creator         User                             @relation("OptionCreator", fields: [createdBy], references: [id])
-  updater         User?                            @relation("OptionUpdater", fields: [updatedBy], references: [id])
-  selectedAnswers RegistrationFormSelectedOption[]
-
-  @@index([formQuestionId, orderIndex])
-  @@map("form_question_options")
-}
-
-model RegistrationResponse {
-  id                    String                     @id @default(nanoid())
-  eventHasParticipantId String
-  registrationFormId    String
-  userId                String
-  status                RegistrationResponseStatus @default(DRAFT)
-  submittedAt           DateTime?
-
-  createdAt DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt DateTime? @updatedAt
-
-  participant      EventHasParticipant @relation(fields: [eventHasParticipantId], references: [id], onDelete: Cascade)
-  registrationForm RegistrationForm    @relation(fields: [registrationFormId], references: [id])
-  user             User                @relation(fields: [userId], references: [id])
-
-  answers FormAnswer[]
-
-  @@map("registration_responses")
-}
-
-model FormAnswer {
-  id                     String  @id @default(nanoid())
-  registrationResponseId String
-  formQuestionId         String
-  value                  String? @db.Text
-  selectedOptionValue    String? @db.VarChar(255)
-  fileUrl                String? @db.Text
-
-  createdAt DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt DateTime? @updatedAt
-
-  response RegistrationResponse @relation(fields: [registrationResponseId], references: [id], onDelete: Cascade)
-  question FormQuestion         @relation(fields: [formQuestionId], references: [id])
-
-  @@map("form_answers")
-}
-
-// ==========================================
-// EVENT REGISTRATION V1
-// ==========================================
 
 model TicketPackage {
   id           String              @id @default(nanoid())
   eventId      String
-  subEventId   String
   code         String              @db.VarChar(100)
   name         String              @db.VarChar(255)
   description  String?             @db.Text
@@ -888,300 +585,349 @@ model TicketPackage {
   seatCount    Int
   currency     String              @default("IDR") @db.Char(3)
   priceMinor   BigInt
-  revision     Int                 @default(1)
   salesStartAt DateTime?
   salesEndAt   DateTime?
   createdAt    DateTime            @default(now()) @db.Timestamp(0)
   updatedAt    DateTime?           @updatedAt
+  event        Event               @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  orders       RegistrationOrder[]
 
-  event           Event                        @relation(fields: [eventId], references: [id], onDelete: Restrict)
-  subEvent        Subevent                     @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-  orders          RegistrationOrder[]
-  formAssignments RegistrationFormAssignment[]
-  waitlistEntries RegistrationWaitlistEntry[]
-
-  @@unique([id, eventId, subEventId], map: "ticket_packages_id_eventId_subEventId_key")
-  @@unique([subEventId, code])
-  @@index([eventId, status])
-  @@index([subEventId, status, salesStartAt, salesEndAt])
+  @@unique([eventId, code])
+  @@unique([id, eventId])
+  @@index([eventId, status, salesStartAt, salesEndAt])
   @@map("ticket_packages")
 }
 
+model RegistrationForm {
+  id          String                       @id @default(nanoid())
+  eventId     String
+  name        String                       @db.VarChar(255)
+  description String?                      @db.Text
+  status      RegistrationFormStatus       @default(DRAFT)
+  version     Int                          @default(1)
+  publishedAt DateTime?
+  createdAt   DateTime                     @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime?                    @updatedAt
+  event       Event                        @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  sections    RegistrationFormSection[]
+  submissions RegistrationFormSubmission[]
+
+  @@unique([eventId, version])
+  @@index([eventId, status])
+  @@map("registration_forms")
+}
+
+model RegistrationFormSection {
+  id                 String           @id @default(nanoid())
+  registrationFormId String
+  title              String           @db.VarChar(255)
+  description        String?          @db.Text
+  orderIndex         Int
+  form               RegistrationForm @relation(fields: [registrationFormId], references: [id], onDelete: Cascade)
+  questions          FormQuestion[]
+
+  @@unique([registrationFormId, orderIndex])
+  @@map("registration_form_sections")
+}
+
+model FormQuestion {
+  id         String                             @id @default(nanoid())
+  sectionId  String
+  fieldKey   String                             @db.VarChar(100)
+  label      String                             @db.VarChar(255)
+  type       FormQuestionType
+  isRequired Boolean                            @default(true)
+  orderIndex Int
+  validation Json                               @default("{}")
+  section    RegistrationFormSection            @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  options    FormQuestionOption[]
+  answers    RegistrationFormSubmissionAnswer[]
+
+  @@unique([sectionId, fieldKey])
+  @@unique([sectionId, orderIndex])
+  @@map("form_questions")
+}
+
+model FormQuestionOption {
+  id              String                           @id @default(nanoid())
+  questionId      String
+  label           String                           @db.VarChar(255)
+  value           String                           @db.VarChar(255)
+  orderIndex      Int
+  question        FormQuestion                     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptions RegistrationFormSelectedOption[]
+
+  @@unique([questionId, value])
+  @@unique([questionId, orderIndex])
+  @@map("form_question_options")
+}
+
 model RegistrationOrder {
-  id                     String                  @id @default(nanoid())
-  orderNumber            String                  @unique @db.VarChar(50)
-  eventId                String
-  subEventId             String
-  ticketPackageId        String
-  buyerUserId            String
-  status                 RegistrationOrderStatus @default(DRAFT)
-  revision               Int                     @default(1)
-  seatCount              Int
-  currency               String                  @default("IDR") @db.Char(3)
-  subtotalMinor          BigInt
-  totalMinor             BigInt
-  idempotencyKey         String?                 @unique @db.VarChar(255)
-  idempotencyFingerprint String?                 @db.VarChar(128)
-  memberDeadlineAt       DateTime?
-  paymentDeadlineAt      DateTime?
-  correctionDeadlineAt   DateTime?
-  submittedAt            DateTime?
-  approvedAt             DateTime?
-  cancelledAt            DateTime?
-  cancellationReason     String?                 @db.Text
-  createdAt              DateTime                @default(now()) @db.Timestamp(0)
-  updatedAt              DateTime?               @updatedAt
+  id                String                      @id @default(nanoid())
+  orderNumber       String                      @unique @db.VarChar(50)
+  eventId           String
+  ticketPackageId   String
+  status            RegistrationOrderStatus     @default(ASSEMBLING)
+  revision          Int                         @default(1)
+  seatCount         Int
+  currency          String                      @db.Char(3)
+  subtotalMinor     BigInt
+  totalMinor        BigInt
+  bundleCodeHash    String?                     @unique @db.VarChar(64)
+  paymentDeadlineAt DateTime?
+  confirmedAt       DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime                    @default(now()) @db.Timestamp(0)
+  updatedAt         DateTime?                   @updatedAt
+  event             Event                       @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  ticketPackage     TicketPackage               @relation(fields: [ticketPackageId, eventId], references: [id, eventId], onDelete: Restrict)
+  members           RegistrationOrderMember[]
+  capacityHold      RegistrationCapacityHold?
+  payment           RegistrationPayment?
+  history           RegistrationStatusHistory[]
+  membershipAudits  BundleMembershipAudit[]
 
-  event                       Event                            @relation(fields: [eventId], references: [id], onDelete: Restrict)
-  subEvent                    Subevent                         @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-  ticketPackage               TicketPackage                    @relation(fields: [ticketPackageId], references: [id], onDelete: Restrict)
-  buyer                       User                             @relation("RegistrationOrderBuyer", fields: [buyerUserId], references: [id], onDelete: Restrict)
-  members                     RegistrationOrderMember[]
-  capacityHolds               RegistrationCapacityHold[]
-  submissions                 RegistrationFormSubmission[]
-  payment                     RegistrationPayment?
-  refund                      RegistrationRefund?
-  history                     RegistrationStatusHistory[]
-  waitlistEntry               RegistrationWaitlistEntry?
-  postRegistrationAssignments PostRegistrationFormAssignment[]
-  invitations                 RegistrationInvitation[]
-
-  @@unique([id, eventId, subEventId], map: "registration_orders_id_eventId_subEventId_key")
-  @@unique([id, subEventId], map: "registration_orders_id_subEventId_key")
   @@index([eventId, status, createdAt])
-  @@index([subEventId, status, createdAt])
-  @@index([buyerUserId, createdAt])
-  @@index([buyerUserId, subEventId, status])
-  @@index([paymentDeadlineAt, status])
+  @@index([ticketPackageId, status])
   @@map("registration_orders")
 }
 
 model RegistrationOrderMember {
-  id                  String            @id @default(nanoid())
-  registrationOrderId String
-  subEventId          String
-  userId              String
-  status              OrderMemberStatus @default(INVITED)
-  isBuyer             Boolean           @default(false)
-  position            Int
-  invitedAt           DateTime          @default(now()) @db.Timestamp(0)
-  acceptedAt          DateTime?
-  readyAt             DateTime?
-  createdAt           DateTime          @default(now()) @db.Timestamp(0)
-  updatedAt           DateTime?         @updatedAt
+  id                   String                       @id @default(nanoid())
+  registrationOrderId  String
+  eventId              String
+  userId               String
+  status               RegistrationMemberStatus     @default(ACTIVE)
+  position             Int
+  snapshotName         String?                      @db.VarChar(255)
+  snapshotNim          String?                      @db.VarChar(50)
+  snapshotOutlookEmail String?                      @db.VarChar(100)
+  snapshotEmail        String?                      @db.VarChar(100)
+  snapshotUniversity   String?                      @db.VarChar(255)
+  snapshotStudyProgram String?                      @db.VarChar(255)
+  snapshotRegion       String?                      @db.VarChar(255)
+  snapshotPhoneNumber  String?                      @db.VarChar(20)
+  snapshotAt           DateTime?
+  createdAt            DateTime                     @default(now()) @db.Timestamp(0)
+  updatedAt            DateTime?                    @updatedAt
+  order                RegistrationOrder            @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
+  event                Event                        @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  user                 User                         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  submissions          RegistrationFormSubmission[]
+  paymentProofs        RegistrationPaymentProof[]
+  correctionTargets    PaymentCorrectionTarget[]
+  ticket               RegistrationTicket?
+  membershipAudits     BundleMembershipAudit[]      @relation("BundleMembershipMember")
 
-  order                       RegistrationOrder                @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
-  subEvent                    Subevent                         @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-  user                        User                             @relation(fields: [userId], references: [id], onDelete: Restrict)
-  submissions                 RegistrationFormSubmission[]
-  ticket                      RegistrationTicket?
-  claimedInvitation           RegistrationInvitation?          @relation("RegistrationInvitationMember")
-  postRegistrationAssignments PostRegistrationFormAssignment[]
-
-  @@unique([id, subEventId], map: "registration_order_members_id_subEventId_key")
   @@unique([registrationOrderId, userId])
   @@unique([registrationOrderId, position])
-  @@index([userId, status])
+  @@unique([id, registrationOrderId])
+  @@index([eventId, userId, status])
   @@map("registration_order_members")
 }
 
 model RegistrationCapacityHold {
   id                  String             @id @default(nanoid())
-  registrationOrderId String
-  subEventId          String
+  registrationOrderId String             @unique
+  eventId             String
   quantity            Int
   status              CapacityHoldStatus @default(ACTIVE)
   expiresAt           DateTime
   consumedAt          DateTime?
   releasedAt          DateTime?
   createdAt           DateTime           @default(now()) @db.Timestamp(0)
-  updatedAt           DateTime?          @updatedAt
+  order               RegistrationOrder  @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
+  event               Event              @relation(fields: [eventId], references: [id], onDelete: Restrict)
 
-  order    RegistrationOrder @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
-  subEvent Subevent          @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-
-  @@index([subEventId, status, expiresAt])
-  @@index([registrationOrderId, status])
+  @@index([eventId, status, expiresAt])
   @@map("registration_capacity_holds")
 }
 
-model RegistrationFormSection {
-  id                 String             @id @default(nanoid())
-  registrationFormId String
-  title              String             @db.VarChar(255)
-  description        String?            @db.Text
-  orderIndex         Int
-  status             FormQuestionStatus @default(ACTIVE)
-  createdAt          DateTime           @default(now()) @db.Timestamp(0)
-  updatedAt          DateTime?          @updatedAt
-
-  form      RegistrationForm @relation(fields: [registrationFormId], references: [id], onDelete: Cascade)
-  questions FormQuestion[]
-
-  @@unique([registrationFormId, orderIndex])
-  @@map("registration_form_sections")
-}
-
-model RegistrationFormAssignment {
-  id                 String                   @id @default(nanoid())
-  registrationFormId String
-  ticketPackageId    String?
-  audience           RegistrationFormAudience
-  isRequired         Boolean                  @default(true)
-  blocksCheckIn      Boolean                  @default(false)
-  orderIndex         Int                      @default(0)
-  opensAt            DateTime?
-  closesAt           DateTime?
-  createdAt          DateTime                 @default(now()) @db.Timestamp(0)
-  updatedAt          DateTime?                @updatedAt
-
-  form          RegistrationForm @relation(fields: [registrationFormId], references: [id], onDelete: Cascade)
-  ticketPackage TicketPackage?   @relation(fields: [ticketPackageId], references: [id], onDelete: Cascade)
-
-  @@index([ticketPackageId, audience, orderIndex])
-  @@map("registration_form_assignments")
-}
-
 model RegistrationFormSubmission {
-  id                             String                   @id @default(nanoid())
-  registrationFormId             String
-  registrationOrderId            String
-  orderMemberId                  String?
-  assignmentAudience             RegistrationFormAudience
-  assignmentRequired             Boolean                  @default(true)
-  assignmentOrderIndex           Int                      @default(0)
-  status                         FormSubmissionStatus     @default(DRAFT)
-  revision                       Int                      @default(1)
-  submittedAt                    DateTime?
-  lockedAt                       DateTime?
-  correctionReason               String?                  @db.Text
-  correctionDeadlineAt           DateTime?
-  responseIdempotencyKey         String?                  @db.VarChar(255)
-  responseIdempotencyFingerprint String?                  @db.VarChar(128)
-  createdAt                      DateTime                 @default(now()) @db.Timestamp(0)
-  updatedAt                      DateTime?                @updatedAt
+  id                  String                             @id @default(nanoid())
+  registrationFormId  String
+  registrationOrderId String
+  orderMemberId       String
+  formVersion         Int
+  status              FormSubmissionStatus               @default(DRAFT)
+  submittedAt         DateTime?
+  lockedAt            DateTime?
+  createdAt           DateTime                           @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime?                          @updatedAt
+  form                RegistrationForm                   @relation(fields: [registrationFormId], references: [id], onDelete: Restrict)
+  orderMember         RegistrationOrderMember            @relation(fields: [orderMemberId, registrationOrderId], references: [id, registrationOrderId], onDelete: Cascade)
+  answers             RegistrationFormSubmissionAnswer[]
 
-  form                       RegistrationForm                   @relation(fields: [registrationFormId], references: [id], onDelete: Restrict)
-  order                      RegistrationOrder                  @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
-  orderMember                RegistrationOrderMember?           @relation(fields: [orderMemberId], references: [id], onDelete: Cascade)
-  answers                    RegistrationFormSubmissionAnswer[]
-  postRegistrationAssignment PostRegistrationFormAssignment?
-
+  @@unique([registrationFormId, orderMemberId])
   @@index([registrationOrderId, status])
-  @@index([orderMemberId, status])
-  @@index([registrationOrderId, assignmentOrderIndex])
   @@map("registration_form_submissions")
 }
 
-model PostRegistrationFormAssignment {
-  id                  String                   @id @default(nanoid())
-  registrationOrderId String
-  registrationFormId  String
-  logicalFormKey      String                   @db.VarChar(100)
-  orderMemberId       String?
-  audience            RegistrationFormAudience
-  isRequired          Boolean                  @default(true)
-  blocksCheckIn       Boolean                  @default(false)
-  orderIndex          Int                      @default(0)
-  opensAt             DateTime?
-  closesAt            DateTime?
-  assignedAt          DateTime                 @default(now()) @db.Timestamp(0)
-  responseId          String?                  @unique
-  reopenReason        String?                  @db.Text
-  reopenDeadlineAt    DateTime?
-  reopenedAt          DateTime?
-  reopenedBy          String?
-
-  order       RegistrationOrder           @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
-  form        RegistrationForm            @relation(fields: [registrationFormId], references: [id], onDelete: Restrict)
-  orderMember RegistrationOrderMember?    @relation(fields: [orderMemberId], references: [id], onDelete: Cascade)
-  response    RegistrationFormSubmission? @relation(fields: [responseId], references: [id], onDelete: SetNull)
-  reopener    User?                       @relation("PostRegistrationAssignmentReopener", fields: [reopenedBy], references: [id], onDelete: SetNull)
-
-  @@index([registrationOrderId, orderIndex])
-  @@index([orderMemberId, blocksCheckIn])
-  @@index([registrationFormId])
-  @@map("post_registration_form_assignments")
-}
-
 model RegistrationFormSubmissionAnswer {
-  id             String    @id @default(nanoid())
-  submissionId   String
-  formQuestionId String
-  textValue      String?   @db.Text
-  numberValue    Decimal?  @db.Decimal(30, 10)
-  dateValue      DateTime?
-  fileUrl        String?   @db.Text
-  createdAt      DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt      DateTime? @updatedAt
-
+  id              String                           @id @default(nanoid())
+  submissionId    String
+  formQuestionId  String
+  textValue       String?                          @db.Text
+  numberValue     Decimal?                         @db.Decimal(30, 10)
+  dateValue       DateTime?
+  createdAt       DateTime                         @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime?                        @updatedAt
   submission      RegistrationFormSubmission       @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   question        FormQuestion                     @relation(fields: [formQuestionId], references: [id], onDelete: Restrict)
   selectedOptions RegistrationFormSelectedOption[]
 
   @@unique([submissionId, formQuestionId])
-  @@index([formQuestionId])
   @@map("registration_form_submission_answers")
 }
 
 model RegistrationFormSelectedOption {
   answerId String
   optionId String
-
-  answer RegistrationFormSubmissionAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
-  option FormQuestionOption               @relation(fields: [optionId], references: [id], onDelete: Restrict)
+  answer   RegistrationFormSubmissionAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  option   FormQuestionOption               @relation(fields: [optionId], references: [id], onDelete: Restrict)
 
   @@id([answerId, optionId])
-  @@index([optionId])
   @@map("registration_form_selected_options")
 }
 
 model RegistrationPayment {
-  id                  String             @id @default(nanoid())
-  registrationOrderId String             @unique
-  status              OrderPaymentStatus @default(UNPAID)
-  currency            String             @default("IDR") @db.Char(3)
+  id                  String                     @id @default(nanoid())
+  registrationOrderId String                     @unique
+  status              RegistrationPaymentStatus  @default(COLLECTING)
+  currency            String                     @db.Char(3)
   amountMinor         BigInt
   bankSnapshot        Json?
-  submittedAt         DateTime?
-  verifiedAt          DateTime?
   expiresAt           DateTime?
-  rejectionReason     String?            @db.Text
-  revision            Int                @default(1)
-  reviewedBy          String?
   reviewedAt          DateTime?
-  createdAt           DateTime           @default(now()) @db.Timestamp(0)
-  updatedAt           DateTime?          @updatedAt
+  createdAt           DateTime                   @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime?                  @updatedAt
+  order               RegistrationOrder          @relation(fields: [registrationOrderId], references: [id], onDelete: Restrict)
+  proofs              RegistrationPaymentProof[]
+  correctionTargets   PaymentCorrectionTarget[]
 
-  order    RegistrationOrder            @relation(fields: [registrationOrderId], references: [id], onDelete: Restrict)
-  reviewer User?                        @relation("RegistrationPaymentReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
-  proofs   RegistrationPaymentProof[]
-  history  RegistrationPaymentHistory[]
-  refund   RegistrationRefund?
-
-  @@index([status, createdAt])
-  @@index([expiresAt, status])
+  @@index([status, expiresAt])
   @@map("registration_payments")
 }
 
 model RegistrationPaymentProof {
-  id           String             @id @default(nanoid())
-  paymentId    String
-  fileKey      String             @db.Text
-  uploadId     String?            @unique
-  status       PaymentProofStatus @default(SUBMITTED)
-  reviewedBy   String?
-  reviewReason String?            @db.Text
-  submittedAt  DateTime           @default(now()) @db.Timestamp(0)
-  reviewedAt   DateTime?
+  id               String                  @id @default(nanoid())
+  paymentId        String
+  orderMemberId    String
+  uploadedByUserId String
+  uploadId         String                  @unique
+  status           RegistrationProofStatus @default(CURRENT)
+  submittedAt      DateTime                @default(now()) @db.Timestamp(0)
+  supersededAt     DateTime?
+  payment          RegistrationPayment     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  orderMember      RegistrationOrderMember @relation(fields: [orderMemberId], references: [id], onDelete: Restrict)
+  uploader         User                    @relation("PaymentProofUploader", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  upload           PrivateUpload           @relation(fields: [uploadId], references: [id], onDelete: Restrict)
 
-  payment  RegistrationPayment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  reviewer User?               @relation("RegistrationPaymentProofReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
-  upload   PrivateUpload?      @relation(fields: [uploadId], references: [id], onDelete: Restrict)
-
-  @@index([paymentId, status, submittedAt])
-  @@index([status, submittedAt])
+  @@index([paymentId, orderMemberId, status])
   @@map("registration_payment_proofs")
+}
+
+model PaymentCorrectionTarget {
+  id                String                  @id @default(nanoid())
+  paymentId         String
+  orderMemberId     String
+  requestedByUserId String
+  reason            String                  @db.Text
+  requestedAt       DateTime                @default(now()) @db.Timestamp(0)
+  deadlineAt        DateTime
+  resolvedAt        DateTime?
+  payment           RegistrationPayment     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  orderMember       RegistrationOrderMember @relation(fields: [orderMemberId], references: [id], onDelete: Restrict)
+  requester         User                    @relation("PaymentCorrectionRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId, orderMemberId, resolvedAt])
+  @@map("payment_correction_targets")
+}
+
+model RegistrationTicket {
+  id            String                   @id @default(nanoid())
+  eventId       String
+  orderMemberId String                   @unique
+  tokenHash     String                   @unique @db.VarChar(128)
+  status        RegistrationTicketStatus @default(ACTIVE)
+  issuedAt      DateTime                 @default(now()) @db.Timestamp(0)
+  expiresAt     DateTime?
+  revokedAt     DateTime?
+  event         Event                    @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  orderMember   RegistrationOrderMember  @relation(fields: [orderMemberId], references: [id], onDelete: Restrict)
+  checkIns      AttendanceCheckIn[]
+
+  @@index([eventId, status])
+  @@map("registration_tickets")
+}
+
+model AttendanceCheckIn {
+  id             String             @id @default(nanoid())
+  eventId        String
+  ticketId       String
+  operatorUserId String
+  checkedInAt    DateTime           @default(now()) @db.Timestamp(0)
+  checkedOutAt   DateTime?
+  voidedAt       DateTime?
+  revision       Int                @default(1)
+  event          Event              @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  ticket         RegistrationTicket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  operator       User               @relation("AttendanceOperator", fields: [operatorUserId], references: [id], onDelete: Restrict)
+  audits         AttendanceAudit[]
+
+  @@index([eventId, checkedInAt])
+  @@index([ticketId, voidedAt])
+  @@map("attendance_check_ins")
+}
+
+model AttendanceAudit {
+  id                  String            @id @default(nanoid())
+  attendanceCheckInId String
+  actorUserId         String
+  action              String            @db.VarChar(50)
+  reason              String?           @db.Text
+  metadata            Json?
+  createdAt           DateTime          @default(now()) @db.Timestamp(0)
+  checkIn             AttendanceCheckIn @relation(fields: [attendanceCheckInId], references: [id], onDelete: Restrict)
+  actor               User              @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([attendanceCheckInId, createdAt])
+  @@map("attendance_audits")
+}
+
+model RegistrationStatusHistory {
+  id                  String            @id @default(nanoid())
+  registrationOrderId String
+  actorUserId         String?
+  entityType          String            @db.VarChar(50)
+  entityId            String
+  fromStatus          String?           @db.VarChar(50)
+  toStatus            String            @db.VarChar(50)
+  reason              String?           @db.Text
+  createdAt           DateTime          @default(now()) @db.Timestamp(0)
+  order               RegistrationOrder @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
+  actor               User?             @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([registrationOrderId, createdAt])
+  @@map("registration_status_history")
+}
+
+model BundleMembershipAudit {
+  id                  String                   @id @default(nanoid())
+  registrationOrderId String
+  orderMemberId       String?
+  subjectUserId       String
+  actorUserId         String
+  action              BundleMembershipAction
+  reason              String?                  @db.Text
+  createdAt           DateTime                 @default(now()) @db.Timestamp(0)
+  order               RegistrationOrder        @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
+  orderMember         RegistrationOrderMember? @relation("BundleMembershipMember", fields: [orderMemberId], references: [id], onDelete: SetNull)
+  subject             User                     @relation("BundleMembershipSubject", fields: [subjectUserId], references: [id], onDelete: Restrict)
+  actor               User                     @relation("BundleMembershipActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([registrationOrderId, createdAt])
+  @@map("bundle_membership_audits")
 }
 
 model PrivateUpload {
@@ -1198,191 +944,12 @@ model PrivateUpload {
   availableAt      DateTime?
   deletedAt        DateTime?
 
-  owner User                      @relation(fields: [ownerUserId], references: [id], onDelete: Restrict)
-  proof RegistrationPaymentProof?
+  owner         User                       @relation(fields: [ownerUserId], references: [id], onDelete: Restrict)
+  paymentProofs RegistrationPaymentProof[]
 
   @@index([ownerUserId, purpose, createdAt])
   @@index([status, createdAt])
   @@map("private_uploads")
-}
-
-model RegistrationPaymentHistory {
-  id          String              @id @default(nanoid())
-  paymentId   String
-  fromStatus  OrderPaymentStatus?
-  toStatus    OrderPaymentStatus
-  actorUserId String?
-  reason      String?             @db.Text
-  createdAt   DateTime            @default(now()) @db.Timestamp(0)
-
-  payment RegistrationPayment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  actor   User?               @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
-
-  @@index([paymentId, createdAt])
-  @@map("registration_payment_history")
-}
-
-model RegistrationRefund {
-  id                  String       @id @default(nanoid())
-  registrationOrderId String       @unique
-  paymentId           String       @unique
-  status              RefundStatus @default(NOT_REQUIRED)
-  amountMinor         BigInt
-  reason              String?      @db.Text
-  processedBy         String?
-  processedAt         DateTime?
-  createdAt           DateTime     @default(now()) @db.Timestamp(0)
-  updatedAt           DateTime?    @updatedAt
-
-  order     RegistrationOrder   @relation(fields: [registrationOrderId], references: [id], onDelete: Restrict)
-  payment   RegistrationPayment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
-  processor User?               @relation("RegistrationRefundProcessor", fields: [processedBy], references: [id], onDelete: SetNull)
-
-  @@index([status, createdAt])
-  @@map("registration_refunds")
-}
-
-model RegistrationInvitation {
-  id                  String                       @id @default(nanoid())
-  eventId             String
-  subEventId          String
-  email               String                       @db.VarChar(255)
-  tokenHash           String                       @unique @db.VarChar(128)
-  status              RegistrationInvitationStatus @default(PENDING)
-  sentBy              String
-  claimedBy           String?
-  orderMemberId       String?                      @unique
-  registrationOrderId String?
-  slotPosition        Int?
-  expiresAt           DateTime
-  acceptedAt          DateTime?
-  createdAt           DateTime                     @default(now()) @db.Timestamp(0)
-  updatedAt           DateTime?                    @updatedAt
-
-  event       Event                    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  subEvent    Subevent                 @relation(fields: [subEventId], references: [id], onDelete: Cascade)
-  sender      User                     @relation("RegistrationInvitationSender", fields: [sentBy], references: [id], onDelete: Restrict)
-  claimant    User?                    @relation("RegistrationInvitationClaimant", fields: [claimedBy], references: [id], onDelete: SetNull)
-  orderMember RegistrationOrderMember? @relation("RegistrationInvitationMember", fields: [orderMemberId], references: [id], onDelete: SetNull)
-  order       RegistrationOrder?       @relation(fields: [registrationOrderId, eventId, subEventId], references: [id, eventId, subEventId], onDelete: Cascade, map: "registration_invitations_order_scope_fkey")
-
-  @@unique([registrationOrderId, slotPosition])
-  @@index([eventId, email, status])
-  @@index([subEventId, status, expiresAt])
-  @@index([registrationOrderId, status])
-  @@map("registration_invitations")
-}
-
-model RegistrationWaitlistEntry {
-  id                  String         @id @default(nanoid())
-  registrationOrderId String         @unique
-  subEventId          String
-  ticketPackageId     String
-  status              WaitlistStatus @default(WAITING)
-  position            Int
-  offeredAt           DateTime?
-  offerExpiresAt      DateTime?
-  createdAt           DateTime       @default(now()) @db.Timestamp(0)
-  updatedAt           DateTime?      @updatedAt
-
-  order         RegistrationOrder @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
-  subEvent      Subevent          @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-  ticketPackage TicketPackage     @relation(fields: [ticketPackageId], references: [id], onDelete: Restrict)
-
-  @@unique([subEventId, position])
-  @@index([subEventId, status, createdAt])
-  @@index([status, offerExpiresAt])
-  @@map("registration_waitlist_entries")
-}
-
-model RegistrationTicket {
-  id              String       @id @default(nanoid())
-  orderMemberId   String       @unique
-  subEventId      String
-  tokenHash       String       @unique @db.VarChar(128)
-  tokenCiphertext String?      @db.Text
-  tokenIv         String?      @db.VarChar(64)
-  tokenAuthTag    String?      @db.VarChar(64)
-  keyVersion      String?      @db.VarChar(32)
-  status          TicketStatus @default(PENDING)
-  issuedAt        DateTime?
-  expiresAt       DateTime?
-  revokedAt       DateTime?
-  createdAt       DateTime     @default(now()) @db.Timestamp(0)
-  updatedAt       DateTime?    @updatedAt
-
-  orderMember RegistrationOrderMember @relation(fields: [orderMemberId], references: [id], onDelete: Restrict)
-  subEvent    Subevent                @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-  checkIns    AttendanceCheckIn[]
-
-  @@index([subEventId, status])
-  @@index([expiresAt, status])
-  @@map("registration_tickets")
-}
-
-model AttendanceCheckIn {
-  id               String    @id @default(nanoid())
-  ticketId         String
-  subEventId       String
-  operatorUserId   String
-  checkedInAt      DateTime  @default(now()) @db.Timestamp(0)
-  checkedOutAt     DateTime?
-  voidedAt         DateTime?
-  voidedBy         String?
-  voidReason       String?   @db.Text
-  correctionReason String?   @db.Text
-  revision         Int       @default(1)
-  source           String?   @db.VarChar(100)
-
-  ticket   RegistrationTicket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
-  operator User               @relation("AttendanceCheckInOperator", fields: [operatorUserId], references: [id], onDelete: Restrict)
-  subEvent Subevent           @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-  audits   AttendanceAudit[]
-
-  @@index([operatorUserId, checkedInAt])
-  @@index([subEventId, checkedInAt])
-  @@index([ticketId, voidedAt])
-  @@map("attendance_check_ins")
-}
-
-model AttendanceAudit {
-  id                  String   @id @default(nanoid())
-  attendanceCheckInId String
-  subEventId          String
-  actorUserId         String
-  action              String   @db.VarChar(50)
-  reason              String?  @db.Text
-  revision            Int
-  metadata            Json?
-  createdAt           DateTime @default(now()) @db.Timestamp(0)
-
-  checkIn  AttendanceCheckIn @relation(fields: [attendanceCheckInId], references: [id], onDelete: Restrict)
-  subEvent Subevent          @relation(fields: [subEventId], references: [id], onDelete: Restrict)
-  actor    User              @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
-
-  @@index([attendanceCheckInId, createdAt])
-  @@index([subEventId, createdAt])
-  @@map("attendance_audits")
-}
-
-model RegistrationStatusHistory {
-  id                  String   @id @default(nanoid())
-  registrationOrderId String
-  entityType          String   @db.VarChar(100)
-  entityId            String
-  fromStatus          String?  @db.VarChar(100)
-  toStatus            String   @db.VarChar(100)
-  actorUserId         String?
-  reason              String?  @db.Text
-  metadata            Json?
-  createdAt           DateTime @default(now()) @db.Timestamp(0)
-
-  order RegistrationOrder @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
-  actor User?             @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
-
-  @@index([registrationOrderId, createdAt])
-  @@index([entityType, entityId, createdAt])
-  @@map("registration_status_history")
 }
 
 // ==========================================

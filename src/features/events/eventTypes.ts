@@ -1,51 +1,14 @@
 import { z } from 'zod';
 import {
    CreateEventSchema,
-   DeleteEventSchema,
-   GetEventSchema,
+   EventListSchema,
+   RegistrationSettingsSchema,
    UpdateEventSchema,
 } from './eventSchema.js';
-import type {
-   EventStatus,
-   SubeventStatus,
-   SubeventType,
-   SubeventVisibility,
-} from '@prisma/client';
 
 export type CreateEventRequest = z.infer<typeof CreateEventSchema>;
-export type DeleteEventRequest = z.infer<typeof DeleteEventSchema>;
-export type GetEventQuery = z.infer<typeof GetEventSchema>;
 export type UpdateEventRequest = z.infer<typeof UpdateEventSchema>;
-
-export interface EventListItem {
-   id: string;
-   name: string;
-   publicDescription: string | null;
-   coverImageUrl: string | null;
-   status: EventStatus;
-   createdAt: Date;
-   updatedAt: Date | null;
-   subevents: {
-      id: string;
-      eventId: string;
-      name: string;
-      date: Date;
-      type: SubeventType;
-      locationUrl: string | null;
-      posterUrl: string | null;
-      destinationUrl: string | null;
-      position: number;
-      visibility: SubeventVisibility;
-      status: SubeventStatus;
-   }[];
-}
-
-export interface GetEventResponse {
-   data: EventListItem[];
-   meta: {
-      page: number;
-      limit: number;
-      totalRecords: number;
-      totalPages: number;
-   };
-}
+export type EventListQuery = z.infer<typeof EventListSchema>;
+export type RegistrationSettingsRequest = z.infer<
+   typeof RegistrationSettingsSchema
+>;

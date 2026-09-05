@@ -1,14 +1,12 @@
-import type { z } from 'zod';
-import type { auth } from '@/utils/auth.js';
-import type {
-   createEventPackageSchema,
-   updateEventPackageSchema,
+import { z } from 'zod';
+import {
+   CreateEventPackageSchema,
+   UpdateEventPackageSchema,
 } from './eventPackageSchema.js';
 
-export type SessionUser = typeof auth.$Infer.Session.user;
 export type CreateEventPackageRequest = z.infer<
-   typeof createEventPackageSchema
+   typeof CreateEventPackageSchema
 >;
 export type UpdateEventPackageRequest = z.infer<
-   typeof updateEventPackageSchema
+   typeof UpdateEventPackageSchema
 >;

@@ -1,41 +1,44 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
-import { CreateEventSchema, SubEventOrderSchema } from './eventSchema.js';
+import test from 'node:test';
+import {
+   CreateEventSchema,
+   RegistrationSettingsSchema,
+} from './eventSchema.js';
 
-describe('event hub schemas', () => {
-   it('normalizes optional cover image URLs and blank values', () => {
-      const base = { name: 'Expo', publicDescription: 'Description' };
-      assert.equal(
-         CreateEventSchema.parse({ ...base, coverImageUrl: 'example.com/a' })
-            .coverImageUrl,
-         'https://example.com/a',
-      );
-      assert.equal(
-         CreateEventSchema.parse({ ...base, coverImageUrl: '   ' })
-            .coverImageUrl,
-         null,
-      );
-   });
+test('event schedule must end after it starts', () => {
+   assert.equal(
+      CreateEventSchema.safeParse({
+         name: 'Valid Event',
+         startsAt: '2026-09-06',
+         endsAt: '2026-09-05',
+      }).success,
+      false,
+   );
+});
 
-   it('rejects non-HTTP cover image URLs', () => {
-      assert.equal(
-         CreateEventSchema.safeParse({
-            name: 'Expo',
-            publicDescription: 'Description',
-            coverImageUrl: 'ftp://example.com/a',
-         }).success,
-         false,
-      );
-   });
-
-   it('accepts the complete-order request shape only', () => {
-      assert.deepEqual(SubEventOrderSchema.parse({ subEventIds: ['a', 'b'] }), {
-         subEventIds: ['a', 'b'],
-      });
-      assert.equal(
-         SubEventOrderSchema.safeParse({ subEventIds: ['a'], extra: true })
-            .success,
-         false,
-      );
-   });
+test('registration settings enforce lifecycle and attendance dependencies', () => {
+   const settings = {
+      isRegistrationOpen: true,
+      registrationOpensAt: '2026-09-05',
+      registrationClosesAt: '2026-09-06',
+      cancellationClosesAt: null,
+      capacity: 100,
+      paymentCurrency: 'IDR',
+      paymentBankName: null,
+      paymentAccountNumber: null,
+      paymentAccountHolder: null,
+      paymentInstructions: null,
+      paymentProofTypes: ['image/png'],
+      paymentProofMaxBytes: 1024,
+      attendanceEnabled: false,
+      attendanceCheckoutEnabled: true,
+   };
+   assert.equal(RegistrationSettingsSchema.safeParse(settings).success, false);
+   assert.equal(
+      RegistrationSettingsSchema.safeParse({
+         ...settings,
+         attendanceEnabled: true,
+      }).success,
+      true,
+   );
 });

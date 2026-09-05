@@ -1,129 +1,81 @@
-import { Prisma } from '@prisma/client';
 import { AppError } from '@/utils/appError.js';
-import { eventCommitteeService } from '@/features/event-committee/eventCommitteeService.js';
-import { eventPackageRepository } from './eventPackageRepository.js';
+import { eventService } from '@/features/events/eventService.js';
+import { eventPackageRepository as repo } from './eventPackageRepository.js';
 import type {
    CreateEventPackageRequest,
-   SessionUser,
    UpdateEventPackageRequest,
 } from './eventPackageTypes.js';
 
-type PackageRow = NonNullable<
-   Awaited<ReturnType<typeof eventPackageRepository.find>>
->;
-
-const mapPackage = (row: PackageRow) => ({
-   ...row,
-   priceMinor: row.priceMinor.toString(),
-   salesStartAt: row.salesStartAt?.toISOString() ?? null,
-   salesEndAt: row.salesEndAt?.toISOString() ?? null,
-   createdAt: row.createdAt.toISOString(),
-   updatedAt: row.updatedAt?.toISOString() ?? null,
-   dependentOrderCount: row._count.orders,
-   editable: row._count.orders === 0,
-   _count: undefined,
+type User = { id: string; roles?: unknown };
+const serialize = <T extends { priceMinor: bigint }>(value: T) => ({
+   ...value,
+   priceMinor: value.priceMinor.toString(),
 });
-
-const translateUniqueConflict = (error: unknown): never => {
-   if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-   )
-      throw new AppError(
-         'Package code already exists',
-         409,
-         'PACKAGE_CODE_EXISTS',
-      );
-   throw error;
-};
+const codeBase = (name: string) =>
+   name
+      .normalize('NFKD')
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_|_$/g, '')
+      .toUpperCase()
+      .slice(0, 80) || 'PACKAGE';
 
 class EventPackageService {
-   private async authorizeSubEvent(subEventId: string, user: SessionUser) {
-      const subEvent = await eventPackageRepository.findSubEvent(subEventId);
-      if (!subEvent)
-         throw new AppError('Sub-event not found', 404, 'SUB_EVENT_NOT_FOUND');
-      await eventCommitteeService.assertEventCommitteeMemberOrAdmin(
-         subEvent.eventId,
-         user,
+   async list(eventId: string, user: User) {
+      await eventService.assertScope(eventId, user);
+      return (await repo.list(eventId)).map(serialize);
+   }
+   async get(eventId: string, id: string, user: User) {
+      await eventService.assertScope(eventId, user);
+      const value = await repo.find(eventId, id);
+      if (!value) throw new AppError('Event package not found', 404);
+      return serialize(value);
+   }
+   async create(eventId: string, body: CreateEventPackageRequest, user: User) {
+      await eventService.assertScope(eventId, user);
+      const base = codeBase(body.name);
+      const used = new Set(
+         (await repo.codes(eventId, base)).map(({ code }) => code),
       );
-      return subEvent;
+      let code = base;
+      for (let suffix = 2; used.has(code); suffix++) code = `${base}_${suffix}`;
+      return serialize(
+         await repo.create({ eventId, code, status: 'DRAFT', ...body }),
+      );
    }
-
-   async list(subEventId: string, user: SessionUser) {
-      await this.authorizeSubEvent(subEventId, user);
-      return (await eventPackageRepository.list(subEventId)).map(mapPackage);
-   }
-
-   async create(
-      subEventId: string,
-      user: SessionUser,
-      payload: CreateEventPackageRequest,
-   ) {
-      const subEvent = await this.authorizeSubEvent(subEventId, user);
-      const result = await eventPackageRepository
-         .create({
-            eventId: subEvent.eventId,
-            subEventId,
-            ...payload,
-            priceMinor: BigInt(payload.priceMinor),
-            salesStartAt: payload.salesStartAt
-               ? new Date(payload.salesStartAt)
-               : null,
-            salesEndAt: payload.salesEndAt
-               ? new Date(payload.salesEndAt)
-               : null,
-         })
-         .catch(translateUniqueConflict);
-      return mapPackage(result);
-   }
-
    async update(
-      packageId: string,
-      user: SessionUser,
-      payload: UpdateEventPackageRequest,
+      eventId: string,
+      id: string,
+      body: UpdateEventPackageRequest,
+      user: User,
    ) {
-      const existing = await eventPackageRepository.find(packageId);
-      if (!existing)
-         throw new AppError('Package not found', 404, 'PACKAGE_NOT_FOUND');
-      await this.authorizeSubEvent(existing.subEventId, user);
-      const commercialChange = [
-         payload.code,
-         payload.name,
-         payload.description,
-         payload.seatCount,
-         payload.currency,
-         payload.priceMinor,
-         payload.salesStartAt,
-         payload.salesEndAt,
-      ].some((value) => value !== undefined);
-      if (existing._count.orders > 0 && commercialChange)
+      const current = await this.require(eventId, id, user);
+      if (
+         (await repo.orderCount(id)) > 0 &&
+         (body.seatCount !== undefined ||
+            body.currency !== undefined ||
+            body.priceMinor !== undefined)
+      )
          throw new AppError(
-            'Referenced package commercial fields are immutable',
+            'Commercial package terms are immutable after an order exists',
             409,
-            'PACKAGE_IMMUTABLE',
          );
-      const { revision, priceMinor, salesStartAt, salesEndAt, ...rest } =
-         payload;
-      const result = await eventPackageRepository
-         .updateCas(packageId, revision, {
-            ...rest,
-            ...(priceMinor !== undefined && { priceMinor: BigInt(priceMinor) }),
-            ...(salesStartAt !== undefined && {
-               salesStartAt: salesStartAt ? new Date(salesStartAt) : null,
-            }),
-            ...(salesEndAt !== undefined && {
-               salesEndAt: salesEndAt ? new Date(salesEndAt) : null,
-            }),
-         })
-         .catch(translateUniqueConflict);
-      if (!result)
-         throw new AppError(
-            'Package revision changed',
-            409,
-            'PACKAGE_REVISION_CONFLICT',
-         );
-      return mapPackage(result);
+      const start = body.salesStartAt ?? current.salesStartAt;
+      const end = body.salesEndAt ?? current.salesEndAt;
+      if (start && end && end <= start)
+         throw new AppError('salesEndAt must be after salesStartAt', 400);
+      return serialize(await repo.update(id, body));
+   }
+   async status(eventId: string, id: string, active: boolean, user: User) {
+      await this.require(eventId, id, user);
+      return serialize(
+         await repo.update(id, { status: active ? 'ACTIVE' : 'INACTIVE' }),
+      );
+   }
+   private async require(eventId: string, id: string, user: User) {
+      await eventService.assertScope(eventId, user);
+      const value = await repo.find(eventId, id);
+      if (!value) throw new AppError('Event package not found', 404);
+      return value;
    }
 }
-
 export const eventPackageService = new EventPackageService();

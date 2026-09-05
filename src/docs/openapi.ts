@@ -4,20 +4,15 @@ import {
 } from '@asteasolutions/zod-to-openapi';
 import { registerHealthDocs } from '@/docs/healthDocs.js';
 import { registerEventDocs } from '@/features/events/eventDocs.js';
+import { registerEventGroupDocs } from '@/features/event-groups/eventGroupDocs.js';
+import { registerEventPackageDocs } from '@/features/event-packages/eventPackageDocs.js';
+import { registerRegistrationFormDocs } from '@/features/registration-forms/registrationFormDocs.js';
 import { registerMembershipDocs } from '@/features/membership/membershipDocs.js';
 import { registerPermissionDocs } from '@/features/permissions/permissionDocs.js';
-import { registerRegistrationFormDocs } from '@/features/registration-forms/registrationFormDocs.js';
 import { registerRoleDocs } from '@/features/roles/roleDocs.js';
-import { registerSubEventDocs } from '@/features/sub-events/subEventDocs.js';
 import { registerUrlShortenerDocs } from '@/features/url-shortener/urlDocs.js';
 import { registerUserDocs } from '@/features/users/userDocs.js';
 import { registerLinkWorkspaceDocs } from '@/features/link-workspaces/linkWorkspaceDocs.js';
-import { registerEventCommitteeDocs } from '@/features/event-committee/eventCommitteeDocs.js';
-import { registerEventRegistrationDocs } from '@/features/event-registrations/eventRegistrationDocs.js';
-import { registerEventPaymentDocs } from '@/features/event-payments/eventPaymentDocs.js';
-import { registerPostRegistrationFormDocs } from '@/features/post-registration-forms/postRegistrationFormDocs.js';
-import { registerEventPackageDocs } from '@/features/event-packages/eventPackageDocs.js';
-import { registerEventTicketDocs } from '@/features/event-tickets/eventTicketDocs.js';
 import {
    canonicalErrorResponseSchema,
    canonicalValidationErrorResponseSchema,
@@ -44,15 +39,10 @@ registerPermissionDocs(registry);
 registerUrlShortenerDocs(registry);
 registerLinkWorkspaceDocs(registry);
 registerEventDocs(registry);
-registerEventCommitteeDocs(registry);
-registerMembershipDocs(registry);
-registerSubEventDocs(registry);
-registerRegistrationFormDocs(registry);
-registerEventRegistrationDocs(registry);
-registerEventPaymentDocs(registry);
-registerPostRegistrationFormDocs(registry);
+registerEventGroupDocs(registry);
 registerEventPackageDocs(registry);
-registerEventTicketDocs(registry);
+registerRegistrationFormDocs(registry);
+registerMembershipDocs(registry);
 registerElectionDocs(registry);
 
 export const generateOpenApiDocument = () => {

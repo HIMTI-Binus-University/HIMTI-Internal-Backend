@@ -1,54 +1,30 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
 
-const packageInclude = {
-   _count: { select: { orders: true } },
-} satisfies Prisma.TicketPackageInclude;
-
 class EventPackageRepository {
-   findSubEvent(subEventId: string) {
-      return prisma.subevent.findUnique({
-         where: { id: subEventId },
-         select: { id: true, eventId: true },
-      });
-   }
-
-   list(subEventId: string) {
+   list(eventId: string) {
       return prisma.ticketPackage.findMany({
-         where: { subEventId },
-         orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-         include: packageInclude,
+         where: { eventId },
+         orderBy: { createdAt: 'asc' },
       });
    }
-
-   find(packageId: string) {
-      return prisma.ticketPackage.findUnique({
-         where: { id: packageId },
-         include: packageInclude,
+   find(eventId: string, id: string) {
+      return prisma.ticketPackage.findFirst({ where: { id, eventId } });
+   }
+   codes(eventId: string, prefix: string) {
+      return prisma.ticketPackage.findMany({
+         where: { eventId, code: { startsWith: prefix } },
+         select: { code: true },
       });
    }
-
    create(data: Prisma.TicketPackageUncheckedCreateInput) {
-      return prisma.ticketPackage.create({ data, include: packageInclude });
+      return prisma.ticketPackage.create({ data });
    }
-
-   async updateCas(
-      packageId: string,
-      revision: number,
-      data: Prisma.TicketPackageUpdateManyMutationInput,
-   ) {
-      return prisma.$transaction(async (tx) => {
-         const changed = await tx.ticketPackage.updateMany({
-            where: { id: packageId, revision },
-            data: { ...data, revision: { increment: 1 } },
-         });
-         if (changed.count !== 1) return null;
-         return tx.ticketPackage.findUniqueOrThrow({
-            where: { id: packageId },
-            include: packageInclude,
-         });
-      });
+   update(id: string, data: Prisma.TicketPackageUpdateInput) {
+      return prisma.ticketPackage.update({ where: { id }, data });
+   }
+   orderCount(id: string) {
+      return prisma.registrationOrder.count({ where: { ticketPackageId: id } });
    }
 }
-
 export const eventPackageRepository = new EventPackageRepository();
