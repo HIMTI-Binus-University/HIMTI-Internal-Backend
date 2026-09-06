@@ -1,89 +1,94 @@
-import { prisma } from "@/config/prisma.js";
+import { prisma } from '@/config/prisma.js';
+import {HimtiKitResource, HimtiKitSoftware} from '@prisma/client';
 import {
   CreateKitResourcesInput,
   UpdateKitResourcesInput,
   GetKitResourcesQuery,
   CreateKitSoftwareInput,
   UpdateKitSoftwareInput,
-} from './himtiKitTypes.js'; 
+} from './himtiKitTypes.js';
 
-// ==========================================
-// REPOSITORY UNTUK RESOURCES
-// ==========================================
+export class HimtiKitRepository {
+  // ==========================================
+  // REPOSITORY UNTUK RESOURCES
+  // ==========================================
 
-export const findResources = async (query: GetKitResourcesQuery) => {
-  const { major } = query;
+  public async findResources(query: GetKitResourcesQuery): Promise<HimtiKitResource[]> {
+    const { major } = query;
 
-  return await prisma.himtiKitResource.findMany({
-    where: {
-      ...(major && { major }),
-    },
-    orderBy: [
-      {title: 'asc'},
-      {createdAt: 'desc'}
-    ],
-  });
-};
+    return await prisma.himtiKitResource.findMany({
+      where: {
+        ...(major && { major }),
+      },
+      orderBy: [
+        { title: 'asc' },
+        { createdAt: 'desc' },
+      ],
+    });
+  }
 
-export const findResourceById = async (id: string) => {
-  return await prisma.himtiKitResource.findUnique({
-    where: { id },
-  });
-};
+  public async findResourceById(id: string): Promise<HimtiKitResource | null> {
+    return await prisma.himtiKitResource.findUnique({
+      where: { id },
+    });
+  }
 
-export const createResource = async (data: CreateKitResourcesInput) => {
-  return await prisma.himtiKitResource.create({
-    data,
-  });
-};
+  public async createResource(data: CreateKitResourcesInput): Promise<HimtiKitResource> {
+    return await prisma.himtiKitResource.create({
+      data,
+    });
+  }
 
-export const updateResource = async (id: string, data: UpdateKitResourcesInput) => {
-  return await prisma.himtiKitResource.update({
-    where: { id },
-    data,
-  });
-};
+  public async updateResource(id: string, data: UpdateKitResourcesInput): Promise<HimtiKitResource> {
+    return await prisma.himtiKitResource.update({
+      where: { id },
+      data,
+    });
+  }
 
-export const deleteResource = async (id: string) => {
-  return await prisma.himtiKitResource.delete({
-    where: { id },
-  });
-};
+  public async deleteResource(id: string): Promise<HimtiKitResource> {
+    return await prisma.himtiKitResource.delete({
+      where: { id },
+    });
+  }
 
-// ==========================================
-// REPOSITORY UNTUK SOFTWARE
-// ==========================================
+  // ==========================================
+  // REPOSITORY UNTUK SOFTWARE
+  // ==========================================
 
-export const findSoftwares = async () => {
-  return await prisma.himtiKitSoftware.findMany({
-    orderBy: [
-      {name: 'asc'},
-      {createdAt: 'desc'}
-    ],
-  });
-};
+  public async findSoftwares(): Promise<HimtiKitSoftware[]> {
+    return await prisma.himtiKitSoftware.findMany({
+      orderBy: [
+        { name: 'asc' },
+        { createdAt: 'desc' },
+      ],
+    });
+  }
 
-export const findSoftwareById = async (id: string) => {
-  return await prisma.himtiKitSoftware.findUnique({
-    where: { id },
-  });
-};
+  public async findSoftwareById(id: string): Promise<HimtiKitSoftware | null> {
+    return await prisma.himtiKitSoftware.findUnique({
+      where: { id },
+    });
+  }
 
-export const createSoftware = async (data: CreateKitSoftwareInput) => {
-  return await prisma.himtiKitSoftware.create({
-    data,
-  });
-};
+  public async createSoftware(data: CreateKitSoftwareInput): Promise<HimtiKitSoftware> {
+    return await prisma.himtiKitSoftware.create({
+      data,
+    });
+  }
 
-export const updateSoftware = async (id: string, data: UpdateKitSoftwareInput) => {
-  return await prisma.himtiKitSoftware.update({
-    where: { id },
-    data,
-  });
-};
+  public async updateSoftware(id: string, data: UpdateKitSoftwareInput): Promise<HimtiKitSoftware> {
+    return await prisma.himtiKitSoftware.update({
+      where: { id },
+      data,
+    });
+  }
 
-export const deleteSoftware = async (id: string) => {
-  return await prisma.himtiKitSoftware.delete({
-    where: { id },
-  });
-};
+  public async deleteSoftware(id: string): Promise<HimtiKitSoftware> {
+    return await prisma.himtiKitSoftware.delete({
+      where: { id },
+    });
+  }
+}
+
+export const himtiKitRepository = new HimtiKitRepository();
