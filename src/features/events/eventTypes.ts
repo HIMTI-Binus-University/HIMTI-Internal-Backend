@@ -9,6 +9,7 @@ import {
 export type CreateEventRequest = z.infer<typeof CreateEventSchema>;
 export type UpdateEventRequest = z.infer<typeof UpdateEventSchema>;
 export type EventListQuery = z.infer<typeof EventListSchema>;
+export type EventGroupOption = { id: string; name: string };
 export type RegistrationSettingsRequest = z.infer<
    typeof RegistrationSettingsSchema
 >;

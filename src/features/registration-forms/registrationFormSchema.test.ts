@@ -4,6 +4,7 @@ import { RegistrationFormBodySchema } from './registrationFormSchema.js';
 import { registrationFormService } from './registrationFormService.js';
 
 const form = (question: object) => ({
+   expectedRevision: 0,
    name: 'Registration',
    sections: [{ title: 'Preferences', questions: [question] }],
 });
@@ -15,6 +16,7 @@ test('form semantics reject reserved profile keys and duplicate field keys', () 
    assert.throws(() => registrationFormService.validate(profile), /Reserved/);
 
    const duplicate = RegistrationFormBodySchema.parse({
+      expectedRevision: 0,
       name: 'Registration',
       sections: [
          {

@@ -4,12 +4,20 @@ import { isAdminUser } from '@/utils/statusAccess.js';
 import { eventRepository } from './eventRepository.js';
 import type {
    CreateEventRequest,
+   EventGroupOption,
    EventListQuery,
-   UpdateEventRequest,
    RegistrationSettingsRequest,
+   UpdateEventRequest,
 } from './eventTypes.js';
 
 type User = { id: string; roles?: unknown };
+export const PAYMENT_PROOF_MAX_BYTES = 1_572_864;
+export const PAYMENT_PROOF_TYPES = [
+   'image/jpeg',
+   'image/png',
+   'application/pdf',
+] as const;
+
 class EventService {
    listPublic(query: EventListQuery) {
       return eventRepository.listPublic(query);
@@ -21,6 +29,9 @@ class EventService {
    }
    listInternal(query: EventListQuery, user: User) {
       return eventRepository.listInternal(query, user.id, isAdminUser(user));
+   }
+   eventGroupOptions(user: User): Promise<EventGroupOption[]> {
+      return eventRepository.eventGroupOptions(user.id, isAdminUser(user));
    }
    async assertScope(id: string, user: User) {
       const event = await eventRepository.find(id);
@@ -42,6 +53,7 @@ class EventService {
    async create(payload: CreateEventRequest, user: User) {
       const {
          eventGroupId,
+         isPaid,
          individualTicketPriceMinor,
          individualTicketCurrency,
          ...fields
@@ -59,6 +71,8 @@ class EventService {
          throw new AppError('Event group scope required', 403);
       return eventRepository.create({
          ...fields,
+         paymentProofMaxBytes: PAYMENT_PROOF_MAX_BYTES,
+         paymentProofTypes: [...PAYMENT_PROOF_TYPES],
          ...(eventGroupId && {
             eventGroup: { connect: { id: eventGroupId } },
          }),
@@ -73,7 +87,7 @@ class EventService {
                status: 'ACTIVE',
                seatCount: 1,
                currency: individualTicketCurrency,
-               priceMinor: individualTicketPriceMinor,
+               priceMinor: isPaid ? individualTicketPriceMinor : 0n,
             },
          },
       } as Prisma.EventCreateInput);
@@ -173,6 +187,8 @@ class EventService {
          );
       await eventRepository.update(id, {
          ...payload,
+         paymentProofMaxBytes: PAYMENT_PROOF_MAX_BYTES,
+         paymentProofTypes: [...PAYMENT_PROOF_TYPES],
          updater: { connect: { id: user.id } },
       });
       return eventRepository.registrationSettings(id);

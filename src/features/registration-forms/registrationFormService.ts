@@ -8,12 +8,14 @@ type User = { id: string; roles?: unknown };
 const bodyOf = (form: Awaited<ReturnType<typeof repo.latest>>) => {
    if (!form) throw new AppError('Registration form not found', 404);
    return {
+      expectedRevision: form.revision,
       name: form.name,
       description: form.description,
       sections: form.sections.map((section) => ({
          title: section.title,
          description: section.description,
          questions: section.questions.map((question) => ({
+            logicalId: question.logicalId,
             fieldKey: question.fieldKey,
             label: question.label,
             type: question.type,
@@ -72,11 +74,7 @@ class RegistrationFormService {
    async put(eventId: string, body: RegistrationFormBody, user: User) {
       await eventService.assertScope(eventId, user);
       this.validate(body);
-      const current = await repo.latest(eventId);
-      if (!current) return repo.create(eventId, 1, body);
-      if (current.status === 'DRAFT')
-         return repo.replaceDraft(current.id, body);
-      return repo.create(eventId, current.version + 1, body);
+      return repo.save(eventId, body);
    }
    async validateCurrent(eventId: string, user: User) {
       return this.validate(bodyOf(await this.get(eventId, user)));
@@ -89,24 +87,28 @@ class RegistrationFormService {
    async publish(eventId: string, user: User) {
       const form = await this.get(eventId, user);
       if (form.status !== 'DRAFT')
-         throw new AppError('Only a draft form can be published', 409);
+         throw new AppError(
+            'Reload and edit the current published Registration Form; saving publishes changes and assigns additional questions automatically.',
+            409,
+         );
+      if (
+         form.sections.some(({ questions }) =>
+            questions.some(({ type }) => type === 'FILE'),
+         )
+      )
+         throw new AppError(
+            'FILE questions cannot be published until private answer uploads are supported',
+            422,
+            'UNSUPPORTED_FILE_QUESTION',
+         );
       this.validate(bodyOf(form));
-      return repo.publish(eventId, form.id);
+      return repo.publish(eventId, form.id, form.revision);
    }
    async close(eventId: string, user: User) {
       const form = await this.get(eventId, user);
       if (form.status !== 'PUBLISHED')
          throw new AppError('Only a published form can be closed', 409);
-      return repo.close(form.id);
-   }
-   async duplicate(eventId: string, user: User) {
-      const form = await this.get(eventId, user);
-      if (form.status === 'DRAFT')
-         throw new AppError(
-            'Only a published or closed form can be duplicated',
-            409,
-         );
-      return repo.create(eventId, form.version + 1, bodyOf(form));
+      return repo.close(eventId, form.id, form.revision);
    }
 }
 export const registrationFormService = new RegistrationFormService();

@@ -3,7 +3,6 @@ import { requireAuth } from '@/middleware/authMiddleware.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
 import {
    closeRegistrationForm,
-   duplicateRegistrationForm,
    getRegistrationForm,
    previewRegistrationForm,
    publishRegistrationForm,
@@ -12,7 +11,11 @@ import {
 } from './registrationFormController.js';
 
 const router = express.Router();
-router.use(requireAuth, requirePermission('manage_event_registration_form'));
+router.use(
+   '/internal/events/:eventId/registration-form',
+   requireAuth,
+   requirePermission('manage_event_registration_form'),
+);
 router
    .route('/internal/events/:eventId/registration-form')
    .get(getRegistrationForm)
@@ -32,9 +35,5 @@ router.post(
 router.post(
    '/internal/events/:eventId/registration-form/close',
    closeRegistrationForm,
-);
-router.post(
-   '/internal/events/:eventId/registration-form/duplicate',
-   duplicateRegistrationForm,
 );
 export default router;

@@ -121,14 +121,65 @@ describe('CompleteProfileSchema', () => {
 });
 
 describe('UpdateProfileSchema', () => {
-   test('rejects academic and membership fields', () => {
-      const result = UpdateProfileSchema.safeParse({
+   test('accepts complete BINUS and NON_BINUS repair paths', () => {
+      const binus = UpdateProfileSchema.parse({
          ...common,
-         universityId: 'other-university',
-         memberType: 'LECTURER',
+         institutionType: 'BINUS',
+         universityId: 'binus-id',
+         studyProgramId: 'program-id',
+         regionId: 'region-id',
+         nim: '2600000000',
+      });
+      const nonBinus = UpdateProfileSchema.parse({
+         ...common,
+         institutionType: 'NON_BINUS',
+         universityName: '  Example University  ',
+         studyProgramName: '  Computer Science  ',
       });
 
-      assert.equal(result.success, false);
+      assert.equal(binus.institutionType, 'BINUS');
+      if (nonBinus.institutionType === 'NON_BINUS') {
+         assert.equal(nonBinus.universityName, 'Example University');
+         assert.equal(nonBinus.studyProgramName, 'Computer Science');
+      }
+   });
+
+   test('rejects incomplete, opposite-path, membership, and server fields', () => {
+      const invalidPayloads = [
+         { ...common, institutionType: 'BINUS', universityId: 'binus-id' },
+         {
+            ...common,
+            institutionType: 'NON_BINUS',
+            universityName: 'University',
+            studyProgramName: 'Program',
+            nim: 'not-allowed',
+         },
+         {
+            ...common,
+            institutionType: 'NON_BINUS',
+            universityName: 'University',
+            studyProgramName: 'Program',
+            memberType: 'STUDENT',
+         },
+         {
+            ...common,
+            institutionType: 'NON_BINUS',
+            universityName: 'University',
+            studyProgramName: 'Program',
+            outlookEmailVerified: true,
+         },
+         {
+            ...common,
+            institutionType: 'NON_BINUS',
+            universityName: 'University',
+            studyProgramName: 'Program',
+            registrationCompletedAt: new Date().toISOString(),
+         },
+      ];
+
+      for (const payload of invalidPayloads) {
+         assert.equal(UpdateProfileSchema.safeParse(payload).success, false);
+      }
    });
 });
 

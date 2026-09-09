@@ -18,7 +18,8 @@ const fields = {
 export const CreateEventSchema = z
    .object({
       ...fields,
-      individualTicketPriceMinor: z.coerce.bigint().nonnegative().default(0n),
+      isPaid: z.boolean(),
+      individualTicketPriceMinor: z.coerce.bigint().nonnegative().optional(),
       individualTicketCurrency: z
          .string()
          .trim()
@@ -26,11 +27,34 @@ export const CreateEventSchema = z
          .toUpperCase()
          .default('IDR'),
    })
-   .refine(
-      (value) =>
-         !value.startsAt || !value.endsAt || value.endsAt > value.startsAt,
-      { message: 'endsAt must be after startsAt', path: ['endsAt'] },
-   );
+   .superRefine((value, context) => {
+      if (value.startsAt && value.endsAt && value.endsAt <= value.startsAt)
+         context.addIssue({
+            code: 'custom',
+            message: 'endsAt must be after startsAt',
+            path: ['endsAt'],
+         });
+      if (
+         value.isPaid &&
+         (!value.individualTicketPriceMinor ||
+            value.individualTicketPriceMinor <= 0n)
+      )
+         context.addIssue({
+            code: 'custom',
+            message: 'a positive individual ticket price is required',
+            path: ['individualTicketPriceMinor'],
+         });
+      if (
+         !value.isPaid &&
+         value.individualTicketPriceMinor !== undefined &&
+         value.individualTicketPriceMinor !== 0n
+      )
+         context.addIssue({
+            code: 'custom',
+            message: 'a free event cannot have an individual ticket price',
+            path: ['individualTicketPriceMinor'],
+         });
+   });
 export const UpdateEventSchema = z.object(fields).partial();
 export const EventListSchema = z.object({
    page: z.coerce.number().int().min(1).default(1),
@@ -59,21 +83,6 @@ export const RegistrationSettingsSchema = z
       paymentAccountNumber: nullableTrimmed(100),
       paymentAccountHolder: nullableTrimmed(150),
       paymentInstructions: z.string().trim().min(1).nullable(),
-      paymentProofTypes: z
-         .array(
-            z.enum([
-               'image/jpeg',
-               'image/png',
-               'image/webp',
-               'application/pdf',
-            ]),
-         )
-         .min(1),
-      paymentProofMaxBytes: z
-         .number()
-         .int()
-         .min(1)
-         .max(25 * 1024 * 1024),
       attendanceEnabled: z.boolean(),
       attendanceCheckoutEnabled: z.boolean(),
    })

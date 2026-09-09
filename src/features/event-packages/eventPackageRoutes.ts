@@ -10,7 +10,11 @@ import {
 } from './eventPackageController.js';
 
 const router = express.Router();
-router.use(requireAuth, requirePermission('manage_event_packages'));
+router.use(
+   '/internal/events/:eventId/packages',
+   requireAuth,
+   requirePermission('manage_event_packages'),
+);
 router
    .route('/internal/events/:eventId/packages')
    .get(listEventPackages)

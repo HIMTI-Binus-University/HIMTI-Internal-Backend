@@ -23,7 +23,3 @@ export const publishRegistrationForm = async (req: Request, res: Response) =>
    res.json({ data: await service.publish(eventId(req), res.locals.user) });
 export const closeRegistrationForm = async (req: Request, res: Response) =>
    res.json({ data: await service.close(eventId(req), res.locals.user) });
-export const duplicateRegistrationForm = async (req: Request, res: Response) =>
-   res
-      .status(201)
-      .json({ data: await service.duplicate(eventId(req), res.locals.user) });

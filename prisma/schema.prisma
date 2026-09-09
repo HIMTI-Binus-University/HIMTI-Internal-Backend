@@ -533,8 +533,8 @@ model Event {
   paymentAccountNumber      String?     @db.VarChar(100)
   paymentAccountHolder      String?     @db.VarChar(150)
   paymentInstructions       String?     @db.Text
-  paymentProofTypes         String[]    @default(["image/jpeg", "image/png", "image/webp", "application/pdf"])
-  paymentProofMaxBytes      Int         @default(10485760)
+  paymentProofTypes         String[]    @default(["image/jpeg", "image/png", "application/pdf"])
+  paymentProofMaxBytes      Int         @default(1572864)
   attendanceEnabled         Boolean     @default(false)
   attendanceCheckoutEnabled Boolean     @default(false)
   createdAt                 DateTime    @default(now()) @db.Timestamp(0)
@@ -605,6 +605,7 @@ model RegistrationForm {
   description String?                      @db.Text
   status      RegistrationFormStatus       @default(DRAFT)
   version     Int                          @default(1)
+  revision    Int                          @default(1)
   publishedAt DateTime?
   createdAt   DateTime                     @default(now()) @db.Timestamp(0)
   updatedAt   DateTime?                    @updatedAt
@@ -633,6 +634,7 @@ model RegistrationFormSection {
 model FormQuestion {
   id         String                             @id @default(nanoid())
   sectionId  String
+  logicalId  String                             @default(nanoid())
   fieldKey   String                             @db.VarChar(100)
   label      String                             @db.VarChar(255)
   type       FormQuestionType
@@ -642,6 +644,7 @@ model FormQuestion {
   section    RegistrationFormSection            @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   options    FormQuestionOption[]
   answers    RegistrationFormSubmissionAnswer[]
+  supplementalRequests SupplementalQuestionRequest[]
 
   @@unique([sectionId, fieldKey])
   @@unique([sectionId, orderIndex])
@@ -663,29 +666,30 @@ model FormQuestionOption {
 }
 
 model RegistrationOrder {
-  id                String                      @id @default(nanoid())
-  orderNumber       String                      @unique @db.VarChar(50)
-  eventId           String
-  ticketPackageId   String
-  status            RegistrationOrderStatus     @default(ASSEMBLING)
-  revision          Int                         @default(1)
-  seatCount         Int
-  currency          String                      @db.Char(3)
-  subtotalMinor     BigInt
-  totalMinor        BigInt
-  bundleCodeHash    String?                     @unique @db.VarChar(64)
-  paymentDeadlineAt DateTime?
-  confirmedAt       DateTime?
-  cancelledAt       DateTime?
-  createdAt         DateTime                    @default(now()) @db.Timestamp(0)
-  updatedAt         DateTime?                   @updatedAt
-  event             Event                       @relation(fields: [eventId], references: [id], onDelete: Restrict)
-  ticketPackage     TicketPackage               @relation(fields: [ticketPackageId, eventId], references: [id, eventId], onDelete: Restrict)
-  members           RegistrationOrderMember[]
-  capacityHold      RegistrationCapacityHold?
-  payment           RegistrationPayment?
-  history           RegistrationStatusHistory[]
-  membershipAudits  BundleMembershipAudit[]
+  id                  String                      @id @default(nanoid())
+  orderNumber         String                      @unique @db.VarChar(50)
+  eventId             String
+  ticketPackageId     String
+  status              RegistrationOrderStatus     @default(ASSEMBLING)
+  revision            Int                         @default(1)
+  seatCount           Int
+  currency            String                      @db.Char(3)
+  subtotalMinor       BigInt
+  totalMinor          BigInt
+  bundleCodeHash      String?                     @unique @db.VarChar(64)
+  bundleCodeEncrypted String?                     @db.Text
+  paymentDeadlineAt   DateTime?
+  confirmedAt         DateTime?
+  cancelledAt         DateTime?
+  createdAt           DateTime                    @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime?                   @updatedAt
+  event               Event                       @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  ticketPackage       TicketPackage               @relation(fields: [ticketPackageId, eventId], references: [id, eventId], onDelete: Restrict)
+  members             RegistrationOrderMember[]
+  capacityHold        RegistrationCapacityHold?
+  payment             RegistrationPayment?
+  history             RegistrationStatusHistory[]
+  membershipAudits    BundleMembershipAudit[]
 
   @@index([eventId, status, createdAt])
   @@index([ticketPackageId, status])
@@ -699,6 +703,8 @@ model RegistrationOrderMember {
   userId               String
   status               RegistrationMemberStatus     @default(ACTIVE)
   position             Int
+  supplementalRevision Int                          @default(1)
+  supplementalRequests SupplementalQuestionRequest[]
   snapshotName         String?                      @db.VarChar(255)
   snapshotNim          String?                      @db.VarChar(50)
   snapshotOutlookEmail String?                      @db.VarChar(100)
@@ -788,6 +794,23 @@ model RegistrationFormSelectedOption {
 
   @@id([answerId, optionId])
   @@map("registration_form_selected_options")
+}
+
+model SupplementalQuestionRequest {
+  id            String                  @id @default(nanoid())
+  orderMemberId String
+  logicalId     String
+  questionId    String
+  answer        Json?
+  answeredAt    DateTime?
+  withdrawnAt   DateTime?
+  createdAt     DateTime                @default(now())
+  member        RegistrationOrderMember @relation(fields: [orderMemberId], references: [id], onDelete: Cascade)
+  question      FormQuestion            @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@unique([orderMemberId, logicalId])
+  @@index([questionId])
+  @@map("supplemental_question_requests")
 }
 
 model RegistrationPayment {

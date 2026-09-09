@@ -26,6 +26,11 @@ describe('OpenAPI contract', () => {
       assert.ok(document.paths['/api/events']);
       assert.ok(document.paths['/api/event-groups']);
       assert.ok(document.paths['/api/internal/events']);
+      assert.equal(
+         document.paths['/api/internal/events/event-group-options']?.get
+            ?.operationId,
+         'getEventGroupOptions',
+      );
       assert.ok(document.paths['/api/internal/event-groups']);
       assert.ok(document.paths['/api/health']);
       assert.equal(
@@ -76,7 +81,6 @@ describe('OpenAPI contract', () => {
          [formPath, 'put', '200'],
          [`${formPath}/publish`, 'post', '200'],
          [`${formPath}/close`, 'post', '200'],
-         [`${formPath}/duplicate`, 'post', '201'],
       ] as const)
          assert.match(
             responseRef(path, method, status),
@@ -106,6 +110,14 @@ describe('OpenAPI contract', () => {
          );
 
       const packageSchema = document.components?.schemas?.EventPackage;
+      const settingsSchema = document.components?.schemas
+         ?.EventRegistrationSettings as {
+         properties?: { paymentProofMaxBytes?: { enum?: number[] } };
+      };
+      assert.deepEqual(
+         settingsSchema.properties?.paymentProofMaxBytes?.enum,
+         [1_572_864],
+      );
       assert.match(JSON.stringify(packageSchema), /Prisma BigInt/);
       assert.equal(
          (packageSchema as { properties?: { priceMinor?: { type?: string } } })
@@ -132,6 +144,44 @@ describe('OpenAPI contract', () => {
       assert.equal(
          operationIds.some((id) => /V[12]$/.test(id)),
          false,
+      );
+   });
+
+   it('exposes the canonical Phase 3 participant contract', () => {
+      const paths = generateOpenApiDocument().paths;
+      const context = paths['/api/events/{eventId}/registration-context'];
+      const create = paths['/api/events/{eventId}/registrations'];
+      const list = paths['/api/me/event-registrations'];
+      const detail = paths['/api/me/event-registrations/{registrationId}'];
+      const answers =
+         paths['/api/me/event-registrations/{registrationId}/answers'];
+      const cancel =
+         paths['/api/me/event-registrations/{registrationId}/cancel'];
+
+      assert.equal(context?.get?.operationId, 'getEventRegistrationContext');
+      assert.equal(create?.post?.operationId, 'createEventRegistration');
+      assert.equal(list?.get?.operationId, 'listMyEventRegistrations');
+      assert.equal(detail?.get?.operationId, 'getMyEventRegistration');
+      assert.equal(
+         answers?.put?.operationId,
+         'replaceMyEventRegistrationAnswers',
+      );
+      assert.equal(cancel?.post?.operationId, 'cancelMyEventRegistration');
+      for (const operation of [
+         create?.post,
+         list?.get,
+         detail?.get,
+         answers?.put,
+         cancel?.post,
+      ])
+         assert.deepEqual(operation?.security, [{ sessionCookie: [] }]);
+      assert.equal(
+         paths['/api/me/event-registrations/{registrationId}/submit'],
+         undefined,
+      );
+      assert.equal(
+         paths['/api/me/event-registrations/{registrationId}/response'],
+         undefined,
       );
    });
 

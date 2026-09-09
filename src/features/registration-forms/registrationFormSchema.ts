@@ -5,6 +5,7 @@ const option = z.object({
    value: z.string().trim().min(1).max(255),
 });
 const common = {
+   logicalId: z.string().min(1).max(100).optional(),
    fieldKey: z
       .string()
       .trim()
@@ -105,6 +106,7 @@ const question = z.discriminatedUnion('type', [
 
 export const RegistrationFormBodySchema = z
    .object({
+      expectedRevision: z.number().int().nonnegative(),
       name: z.string().trim().min(1).max(255),
       description: z.string().trim().min(1).nullable().default(null),
       sections: z

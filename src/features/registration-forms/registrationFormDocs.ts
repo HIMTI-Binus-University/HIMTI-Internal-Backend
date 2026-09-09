@@ -11,6 +11,7 @@ const optionSchema = z.object({
    orderIndex: z.number().int(),
 });
 const questionSchema = z.object({
+   logicalId: z.string(),
    id: z.string(),
    sectionId: z.string(),
    fieldKey: z.string(),
@@ -39,6 +40,7 @@ const sectionSchema = z.object({
    questions: z.array(questionSchema),
 });
 const registrationFormSchema = z.object({
+   revision: z.number().int(),
    id: z.string(),
    eventId: z.string(),
    name: z.string(),
@@ -101,6 +103,8 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
       method: 'get',
       path: '/api/internal/events/{eventId}/registration-form',
       operationId: 'getEventRegistrationForm',
+      description:
+         'Returns the current published form in preference to any retained legacy duplicate draft. Legacy drafts are not deleted or merged.',
       tags: ['Event Registration Form'],
       security,
       request: { params },
@@ -110,6 +114,8 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
       method: 'put',
       path: '/api/internal/events/{eventId}/registration-form',
       operationId: 'putEventRegistrationForm',
+      description:
+         'Edits the current published form atomically and assigns new questions to active participants. Legacy replacement drafts without verified lineage cannot be edited or published; reload to edit the published form, or request administrator review if none is published.',
       tags: ['Event Registration Form'],
       security,
       request: {
@@ -161,19 +167,4 @@ export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
          request: { params },
          responses: itemSuccess,
       });
-   registry.registerPath({
-      method: 'post',
-      path: '/api/internal/events/{eventId}/registration-form/duplicate',
-      operationId: 'duplicateEventRegistrationForm',
-      tags: ['Event Registration Form'],
-      security,
-      request: { params },
-      responses: {
-         201: {
-            description: 'Registration form duplicated as a new draft version.',
-            content: json(EventRegistrationFormResponse),
-         },
-         ...errors,
-      },
-   });
 };

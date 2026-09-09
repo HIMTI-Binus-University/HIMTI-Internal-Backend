@@ -7,6 +7,14 @@ const migration = readFileSync(
    'prisma/migrations/20260905000000_replace_registration_event_foundation/migration.sql',
    'utf8',
 );
+const paymentProofLimitMigration = readFileSync(
+   'prisma/migrations/20260907000000_fix_event_payment_proof_limit/migration.sql',
+   'utf8',
+);
+const paymentProofTypesMigration = readFileSync(
+   'prisma/migrations/20260909120000_fix_payment_proof_types/migration.sql',
+   'utf8',
+);
 const seed = readFileSync('prisma/seed.ts', 'utf8');
 
 test('final registration schema is Event-owned and excludes removed concepts', () => {
@@ -48,4 +56,32 @@ test('replacement migration stays inside its deletion boundary', () => {
    ]) {
       assert.match(seed, new RegExp(`'${permission}'`));
    }
+});
+
+test('payment proof limit migration backfills before enforcing the fixed value', () => {
+   assert.ok(
+      paymentProofLimitMigration.indexOf('UPDATE "events"') <
+         paymentProofLimitMigration.indexOf('ADD CONSTRAINT'),
+   );
+   assert.match(
+      paymentProofLimitMigration,
+      /ALTER COLUMN "paymentProofMaxBytes" SET DEFAULT 1572864/,
+   );
+   assert.match(
+      paymentProofLimitMigration,
+      /CHECK \("paymentProofMaxBytes" = 1572864\)/,
+   );
+   assert.doesNotMatch(paymentProofLimitMigration, /DROP TABLE|DROP COLUMN/);
+});
+
+test('payment proof formats are fixed after existing events are normalized', () => {
+   assert.ok(
+      paymentProofTypesMigration.indexOf('UPDATE "events"') <
+         paymentProofTypesMigration.indexOf('ADD CONSTRAINT'),
+   );
+   assert.match(
+      paymentProofTypesMigration,
+      /ARRAY\['image\/jpeg', 'image\/png', 'application\/pdf'\]/,
+   );
+   assert.doesNotMatch(paymentProofTypesMigration, /image\/webp/);
 });

@@ -7,6 +7,8 @@ import { registerEventDocs } from '@/features/events/eventDocs.js';
 import { registerEventGroupDocs } from '@/features/event-groups/eventGroupDocs.js';
 import { registerEventPackageDocs } from '@/features/event-packages/eventPackageDocs.js';
 import { registerRegistrationFormDocs } from '@/features/registration-forms/registrationFormDocs.js';
+import { registerEventRegistrationDocs } from '@/features/event-registrations/eventRegistrationDocs.js';
+import { registerEventPaymentDocs } from '@/features/event-payments/eventPaymentDocs.js';
 import { registerMembershipDocs } from '@/features/membership/membershipDocs.js';
 import { registerPermissionDocs } from '@/features/permissions/permissionDocs.js';
 import { registerRoleDocs } from '@/features/roles/roleDocs.js';
@@ -42,6 +44,8 @@ registerEventDocs(registry);
 registerEventGroupDocs(registry);
 registerEventPackageDocs(registry);
 registerRegistrationFormDocs(registry);
+registerEventRegistrationDocs(registry);
+registerEventPaymentDocs(registry);
 registerMembershipDocs(registry);
 registerElectionDocs(registry);
 

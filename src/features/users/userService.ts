@@ -6,6 +6,7 @@ import {
    UpdateUserRequest,
    CompleteProfileRequest,
    UpdateProfileRequest,
+   buildProfileUpdateData,
 } from './userTypes.js';
 import { auth } from '@/utils/auth.js';
 import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
@@ -284,19 +285,45 @@ class UserService {
    async updateProfile(payload: UpdateProfileRequest, id: string) {
       const currentUser = await userRepository.findCurrentById(id);
       if (!currentUser) throw new AppError('User not found', 404);
-      if (!currentUser.registrationCompletedAt) {
-         throw new AppError(
-            'Complete registration before editing your profile',
-            403,
-         );
+
+      if (payload.institutionType === 'BINUS') {
+         const [university, studyProgram, region] = await Promise.all([
+            userRepository.findActiveUniversity(payload.universityId),
+            userRepository.findActiveStudyProgram(payload.studyProgramId),
+            userRepository.findActiveRegion(payload.regionId),
+         ]);
+         if (
+            !university ||
+            (university.shortName?.toUpperCase() !== 'BINUS' &&
+               university.name.toUpperCase() !== 'BINUS UNIVERSITY')
+         ) {
+            throw new AppError('Active BINUS university is required', 400);
+         }
+         if (!studyProgram) {
+            throw new AppError('Active study program is required', 400);
+         }
+         if (!region) {
+            throw new AppError('Active BINUS region is required', 400);
+         }
+         if (!currentUser.outlookEmail || !currentUser.outlookEmailVerified) {
+            throw new AppError(
+               'The Outlook email must be verified for the current user',
+               400,
+            );
+         }
       }
 
-      await userRepository.update(id, {
-         name: payload.name,
-         phoneNumber: payload.phoneNumber,
-         lineId: payload.lineId || null,
-         updatedBy: id,
-      });
+      const result = await userRepository.updateProfile(
+         id,
+         buildProfileUpdateData(payload, id),
+         payload.institutionType === 'BINUS',
+      );
+      if (!result.count) {
+         throw new AppError(
+            'The Outlook email must be verified for the current user',
+            400,
+         );
+      }
       return await this.getCurrentUser(id);
    }
 

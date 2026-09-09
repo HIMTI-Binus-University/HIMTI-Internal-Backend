@@ -31,12 +31,17 @@ export const stagePrivateFile = async (
    const finalPath = resolveKey(key);
    const quarantine = `${finalPath}.quarantine`;
    await mkdir(path.dirname(finalPath), { recursive: true, mode: 0o700 });
-   const handle = await open(quarantine, 'wx', 0o600);
    try {
-      await handle.writeFile(contents);
-      await handle.sync();
-   } finally {
-      await handle.close();
+      const handle = await open(quarantine, 'wx', 0o600);
+      try {
+         await handle.writeFile(contents);
+         await handle.sync();
+      } finally {
+         await handle.close();
+      }
+   } catch (error) {
+      await rm(path.dirname(finalPath), { recursive: true, force: true });
+      throw error;
    }
    return {
       key,

@@ -16,9 +16,33 @@ const registrationSettingsSchema = z.object({
    paymentAccountHolder: z.string().nullable(),
    paymentInstructions: z.string().nullable(),
    paymentProofTypes: z.array(z.string()),
-   paymentProofMaxBytes: z.number().int().positive(),
+   paymentProofMaxBytes: z.literal(1_572_864).openapi({
+      description: 'Fixed server-enforced payment proof limit in bytes.',
+   }),
    attendanceEnabled: z.boolean(),
    attendanceCheckoutEnabled: z.boolean(),
+});
+
+const createEventRequestSchema = z.object({
+   eventGroupId: z.string().nullable().optional(),
+   name: z.string().min(3).max(255),
+   publicDescription: z.string().nullable().optional(),
+   internalDescription: z.string().nullable().optional(),
+   startsAt: z.string().datetime().nullable().optional(),
+   endsAt: z.string().datetime().nullable().optional(),
+   locationName: z.string().max(255).nullable().optional(),
+   locationAddress: z.string().nullable().optional(),
+   locationUrl: z.string().url().nullable().optional(),
+   coverImageUrl: z.string().url().nullable().optional(),
+   primaryColor: z.string().max(20).nullable().optional(),
+   secondaryColor: z.string().max(20).nullable().optional(),
+   isPaid: z.boolean(),
+   individualTicketPriceMinor: z
+      .string()
+      .regex(/^\d+$/)
+      .optional()
+      .openapi({ description: 'Required and positive when isPaid is true.' }),
+   individualTicketCurrency: z.string().length(3).default('IDR'),
 });
 
 export const registerEventDocs = (registry: OpenAPIRegistry) => {
@@ -60,11 +84,44 @@ export const registerEventDocs = (registry: OpenAPIRegistry) => {
       responses: response,
    });
    registry.registerPath({
+      method: 'get',
+      path: '/api/internal/events/event-group-options',
+      tags: ['Internal Events'],
+      operationId: 'getEventGroupOptions',
+      description:
+         'Returns all Event Groups for Admin users and only groups where other callers are MANAGER organizers. Requires manage_events.',
+      security: [{ sessionCookie: [] }],
+      responses: {
+         200: {
+            description: 'Assignable Event Group options.',
+            content: {
+               'application/json': {
+                  schema: z.object({
+                     data: z.array(
+                        z.object({ id: z.string(), name: z.string() }),
+                     ),
+                  }),
+               },
+            },
+         },
+         401: response[401],
+         403: response[403],
+      },
+   });
+   registry.registerPath({
       method: 'post',
       path: '/api/internal/events',
       tags: ['Internal Events'],
       operationId: 'createEvent',
       security: [{ sessionCookie: [] }],
+      request: {
+         body: {
+            required: true,
+            content: {
+               'application/json': { schema: createEventRequestSchema },
+            },
+         },
+      },
       responses: { ...response, 201: { description: 'Created' } },
    });
    for (const method of ['get', 'patch'] as const)

@@ -843,6 +843,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/events/{eventId}/bundles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createEventBundle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/{eventId}/bundles/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["joinEventBundle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/{eventId}/registration-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEventRegistrationContext"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/{eventId}/registrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createEventRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -2884,6 +2948,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internal/event-payments/{paymentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Review all member acknowledgements; requires review_event_payments and event scope */
+        get: operations["getInternalEventPayment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/event-payments/{paymentId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** approve whole-order payment; requires review_event_payments and event scope */
+        post: operations["approveEventPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/event-payments/{paymentId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** reject whole-order payment; requires review_event_payments and event scope */
+        post: operations["rejectEventPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/event-payments/{paymentId}/request-correction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** request-correction whole-order payment; requires review_event_payments and event scope */
+        post: operations["requestEventPaymentCorrection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internal/events": {
         parameters: {
             query?: never;
@@ -3044,6 +3176,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internal/events/{eventId}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List whole-order payments once, never once per proof */
+        get: operations["listInternalEventPayments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internal/events/{eventId}/publish": {
         parameters: {
             query?: never;
@@ -3067,7 +3216,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Returns the current published form in preference to any retained legacy duplicate draft. Legacy drafts are not deleted or merged. */
         get: operations["getEventRegistrationForm"];
+        /** @description Edits the current published form atomically and assigns new questions to active participants. Legacy replacement drafts without verified lineage cannot be edited or published; reload to edit the published form, or request administrator review if none is published. */
         put: operations["putEventRegistrationForm"];
         post?: never;
         delete?: never;
@@ -3086,22 +3237,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["closeEventRegistrationForm"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/internal/events/{eventId}/registration-form/duplicate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["duplicateEventRegistrationForm"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3165,6 +3300,123 @@ export interface paths {
         };
         get: operations["getEventRegistrationSettings"];
         put: operations["updateEventRegistrationSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/registrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lists individual and Bundle orders. Requires review_event_registrations and event scope. Payment data is excluded. */
+        get: operations["listInternalEventRegistrations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/registrations/{registrationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Returns profile snapshots and pinned form answers for a scoped registration reviewer. Payment and private upload data are excluded. */
+        get: operations["getInternalEventRegistration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/registrations/{registrationId}/members/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeEventBundleMember"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/registrations/{registrationId}/payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get payment for a registration; requires review_event_payments and event scope */
+        get: operations["getInternalEventRegistrationPayment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/registrations/bundles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listInternalEventBundles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/registrations/outstanding-answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Requires manage_event_registration_form and event scope. Active participants owing required additional answers. Manual communication only. */
+        get: operations["supplementalTracking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/event-group-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Returns all Event Groups for Admin users and only groups where other callers are MANAGER organizers. Requires manage_events. */
+        get: operations["getEventGroupOptions"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -4240,6 +4492,153 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/me/event-payments/{paymentId}/acknowledgement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload your own private proof copy; replacements preserve history */
+        post: operations["uploadEventPaymentAcknowledgement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-registrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyEventRegistrations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-registrations/{registrationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyEventRegistration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-registrations/{registrationId}/additional-answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** @description Answers outstanding additional questions only. expectedRevision is the member supplementalRevision. Does not change registration, payment, ticket or capacity state. Answered questions are historical and immutable. */
+        put: operations["saveSupplementalAnswers"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-registrations/{registrationId}/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["replaceMyEventRegistrationAnswers"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-registrations/{registrationId}/bundle-code/replace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["replaceMyBundleCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-registrations/{registrationId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelMyEventRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-registrations/{registrationId}/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["leaveMyBundle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-registrations/{registrationId}/payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read shared payment with only your own proof metadata */
+        get: operations["getMyEventPayment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/membership/periods": {
@@ -5948,6 +6347,23 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/private/payment-proofs/{proofId}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Private proof content for its uploader or scoped reviewer with view_payment_proofs */
+        get: operations["getEventPaymentProofContent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/role": {
         parameters: {
             query?: never;
@@ -7621,8 +8037,8 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Update self-service contact profile
-         * @description Updates only name, phone number, and LINE ID after onboarding. Academic and membership path fields are immutable here.
+         * Update self-service personal information
+         * @description Repairs event-registration personal information even when membership onboarding is incomplete. BINUS requires active controlled university, study program, and region options, NIM, and the existing verified Outlook email. NON_BINUS requires free-text university and study program names. Opposite-path fields are cleared; member type, membership records, verification flags, and registration completion are not client-settable.
          */
         patch: {
             parameters: {
@@ -7669,13 +8085,6 @@ export interface paths {
                 };
                 /** @description Authentication required. */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Onboarding is not complete. */
-                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -8512,6 +8921,121 @@ export interface components {
         EventPackageListResponse: {
             data: components["schemas"]["EventPackage"][];
         };
+        EventPayment: {
+            acknowledgementCount: number;
+            allowedMediaTypes: string[];
+            amountMinor: string;
+            bank: {
+                accountHolder: string | null;
+                accountNumber: string | null;
+                bankName: string | null;
+                instructions: string | null;
+            } | null;
+            currency: string;
+            eventId: string;
+            eventName: string;
+            /** Format: date-time */
+            expiresAt: string | null;
+            id: string;
+            /** @enum {number} */
+            maxBytes: 1572864;
+            members: {
+                correction: {
+                    /** Format: date-time */
+                    deadlineAt: string;
+                    reason: string;
+                } | null;
+                email?: string | null;
+                id: string;
+                name: string | null;
+                proofs: {
+                    contentUrl: string;
+                    id: string;
+                    mediaType: string;
+                    sizeBytes: number;
+                    /** @enum {string} */
+                    status: "CURRENT" | "SUPERSEDED";
+                    /** Format: date-time */
+                    submittedAt: string;
+                }[];
+            }[];
+            /** @enum {string} */
+            orderStatus: "ASSEMBLING" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "CONFIRMED" | "EXPIRED" | "CANCELLED" | "REJECTED";
+            packageName: string;
+            registrationId: string;
+            requiredCount: number;
+            revision: number;
+            /** @enum {string} */
+            status: "COLLECTING" | "REVIEW" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+        };
+        EventRegistrationContextResponse: {
+            data: {
+                event: {
+                    capacity: number | null;
+                    currency: string;
+                    id: string;
+                    name: string;
+                    /** Format: date-time */
+                    registrationClosesAt: string | null;
+                    registrationOpen: boolean;
+                    /** Format: date-time */
+                    registrationOpensAt: string | null;
+                };
+                form: {
+                    /** Format: date-time */
+                    createdAt: string;
+                    description: string | null;
+                    eventId: string;
+                    id: string;
+                    name: string;
+                    /** Format: date-time */
+                    publishedAt: string | null;
+                    revision: number;
+                    sections: {
+                        description: string | null;
+                        id: string;
+                        orderIndex: number;
+                        questions: {
+                            fieldKey: string;
+                            id: string;
+                            isRequired: boolean;
+                            label: string;
+                            logicalId: string;
+                            options: {
+                                id: string;
+                                label: string;
+                                orderIndex: number;
+                                value: string;
+                            }[];
+                            orderIndex: number;
+                            /** @enum {string} */
+                            type: "TEXT" | "TEXTAREA" | "NUMBER" | "DATE" | "SELECT" | "RADIO" | "CHECKBOX" | "FILE";
+                            validation?: unknown;
+                        }[];
+                        registrationFormId: string;
+                        title: string;
+                    }[];
+                    /** @enum {string} */
+                    status: "DRAFT" | "PUBLISHED" | "CLOSED";
+                    /** Format: date-time */
+                    updatedAt: string | null;
+                    version: number;
+                } | null;
+                packages: {
+                    code: string;
+                    currency: string;
+                    description: string | null;
+                    id: string;
+                    name: string;
+                    priceMinor: string;
+                    /** Format: date-time */
+                    salesEndAt: string | null;
+                    /** Format: date-time */
+                    salesStartAt: string | null;
+                    seatCount: number;
+                }[];
+            };
+        };
         EventRegistrationForm: {
             /** Format: date-time */
             createdAt: string;
@@ -8521,6 +9045,7 @@ export interface components {
             name: string;
             /** Format: date-time */
             publishedAt: string | null;
+            revision: number;
             sections: {
                 description: string | null;
                 id: string;
@@ -8530,6 +9055,7 @@ export interface components {
                     id: string;
                     isRequired: boolean;
                     label: string;
+                    logicalId: string;
                     options: {
                         id: string;
                         label: string;
@@ -8565,6 +9091,7 @@ export interface components {
                     name: string;
                     /** Format: date-time */
                     publishedAt: string | null;
+                    revision: number;
                     sections: {
                         description: string | null;
                         id: string;
@@ -8574,6 +9101,7 @@ export interface components {
                             id: string;
                             isRequired: boolean;
                             label: string;
+                            logicalId: string;
                             options: {
                                 id: string;
                                 label: string;
@@ -8613,6 +9141,189 @@ export interface components {
                 valid: true;
             };
         };
+        EventRegistrationResponse: {
+            /** @description Participant order detail. Ticket token and token hash are never returned. */
+            data: {
+                /** @description Current readable code for Bundle orders only. Null means a legacy Bundle requires one regeneration. Omitted for individual orders. */
+                bundleCode?: string | null;
+                /** Format: date-time */
+                cancelledAt: string | null;
+                capacityHold?: unknown;
+                /** Format: date-time */
+                confirmedAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                currency: string;
+                event: {
+                    /** Format: date-time */
+                    cancellationClosesAt: string | null;
+                    /** Format: date-time */
+                    endsAt: string | null;
+                    id: string;
+                    name: string;
+                    /** Format: date-time */
+                    startsAt: string | null;
+                };
+                eventId: string;
+                id: string;
+                members: {
+                    id: string;
+                    isCurrentUser: boolean;
+                    name: string | null;
+                    position: number;
+                    ready: boolean;
+                    /** Format: date-time */
+                    snapshotAt: string | null;
+                    snapshotEmail: string | null;
+                    snapshotName: string | null;
+                    snapshotNim: string | null;
+                    snapshotOutlookEmail: string | null;
+                    snapshotPhoneNumber: string | null;
+                    snapshotRegion: string | null;
+                    snapshotStudyProgram: string | null;
+                    snapshotUniversity: string | null;
+                    /** @enum {string} */
+                    status: "ACTIVE" | "LEFT" | "REMOVED" | "LOCKED";
+                    submissions?: {
+                        answers: {
+                            /** Format: date-time */
+                            dateValue: string | null;
+                            formQuestionId: string;
+                            numberValue: string | null;
+                            selectedOptions: {
+                                option: {
+                                    label?: string;
+                                    value: string;
+                                };
+                            }[];
+                            textValue: string | null;
+                        }[];
+                        form: {
+                            /** Format: date-time */
+                            createdAt: string;
+                            description: string | null;
+                            eventId: string;
+                            id: string;
+                            name: string;
+                            /** Format: date-time */
+                            publishedAt: string | null;
+                            revision: number;
+                            sections: {
+                                description: string | null;
+                                id: string;
+                                orderIndex: number;
+                                questions: {
+                                    fieldKey: string;
+                                    id: string;
+                                    isRequired: boolean;
+                                    label: string;
+                                    logicalId: string;
+                                    options: {
+                                        id: string;
+                                        label: string;
+                                        orderIndex: number;
+                                        value: string;
+                                    }[];
+                                    orderIndex: number;
+                                    /** @enum {string} */
+                                    type: "TEXT" | "TEXTAREA" | "NUMBER" | "DATE" | "SELECT" | "RADIO" | "CHECKBOX" | "FILE";
+                                    validation?: unknown;
+                                }[];
+                                registrationFormId: string;
+                                title: string;
+                            }[];
+                            /** @enum {string} */
+                            status: "DRAFT" | "PUBLISHED" | "CLOSED";
+                            /** Format: date-time */
+                            updatedAt: string | null;
+                            version: number;
+                        };
+                        formVersion: number;
+                        id: string;
+                        registrationFormId: string;
+                        /** @enum {string} */
+                        status: "DRAFT" | "SUBMITTED" | "LOCKED";
+                        /** Format: date-time */
+                        submittedAt: string | null;
+                    }[];
+                    supplementalRequests?: {
+                        answer: string | number | string[] | unknown;
+                        /** Format: date-time */
+                        answeredAt: string | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        id: string;
+                        logicalId: string;
+                        orderMemberId: string;
+                        question: {
+                            fieldKey: string;
+                            id: string;
+                            isRequired: boolean;
+                            label: string;
+                            logicalId: string;
+                            options: {
+                                id: string;
+                                label: string;
+                                orderIndex: number;
+                                value: string;
+                            }[];
+                            orderIndex: number;
+                            /** @enum {string} */
+                            type: "TEXT" | "TEXTAREA" | "NUMBER" | "DATE" | "SELECT" | "RADIO" | "CHECKBOX" | "FILE";
+                            validation?: unknown;
+                        };
+                        questionId: string;
+                        /** Format: date-time */
+                        withdrawnAt: string | null;
+                    }[];
+                    supplementalRevision?: number;
+                    ticket?: {
+                        /** Format: date-time */
+                        expiresAt: string | null;
+                        id: string;
+                        /** Format: date-time */
+                        issuedAt: string;
+                        /** @enum {string} */
+                        status: "ACTIVE" | "USED" | "REVOKED" | "EXPIRED";
+                    } | null;
+                }[];
+                orderNumber: string;
+                payment?: unknown;
+                /** Format: date-time */
+                paymentDeadlineAt: string | null;
+                profile?: {
+                    complete: boolean;
+                    missingFields: string[];
+                    /** @enum {boolean} */
+                    readOnly: true;
+                    values: {
+                        email: string | null;
+                        name: string | null;
+                        nim: string | null;
+                        outlookEmail: string | null;
+                        phoneNumber: string | null;
+                        region: string | null;
+                        studyProgram: string | null;
+                        university: string | null;
+                    };
+                };
+                revision: number;
+                seatCount: number;
+                /** @enum {string} */
+                status: "ASSEMBLING" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "CONFIRMED" | "EXPIRED" | "CANCELLED" | "REJECTED";
+                subtotalMinor: string;
+                ticketPackage: {
+                    code: string;
+                    id: string;
+                    name: string;
+                    seatCount: number;
+                };
+                ticketPackageId: string;
+                totalMinor: string;
+                /** Format: date-time */
+                updatedAt: string | null;
+            };
+        };
         EventRegistrationSettings: {
             attendanceCheckoutEnabled: boolean;
             attendanceEnabled: boolean;
@@ -8626,7 +9337,11 @@ export interface components {
             paymentBankName: string | null;
             paymentCurrency: string;
             paymentInstructions: string | null;
-            paymentProofMaxBytes: number;
+            /**
+             * @description Fixed server-enforced payment proof limit in bytes.
+             * @enum {number}
+             */
+            paymentProofMaxBytes: 1572864;
             paymentProofTypes: string[];
             /** Format: date-time */
             registrationClosesAt: string | null;
@@ -9069,9 +9784,23 @@ export interface components {
             status: "ACTIVE" | "INACTIVE";
         };
         UpdateProfileRequest: {
+            /** @enum {string} */
+            institutionType: "BINUS";
+            lineId: string;
+            name: string;
+            nim: string;
+            phoneNumber: string;
+            regionId: string;
+            studyProgramId: string;
+            universityId: string;
+        } | {
+            /** @enum {string} */
+            institutionType: "NON_BINUS";
             lineId: string;
             name: string;
             phoneNumber: string;
+            studyProgramName: string;
+            universityName: string;
         };
         UpdateRoleRequest: {
             roleName?: string;
@@ -9548,6 +10277,420 @@ export interface operations {
             };
         };
     };
+    createEventBundle: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+            };
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @default [] */
+                    answers?: {
+                        questionId: string;
+                        value: string | number | string[] | unknown;
+                    }[];
+                    ticketPackageId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Assembling Bundle created. The readable code is also available on authenticated participant detail. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            bundleCode: string;
+                            /** @description Participant order detail. Ticket token and token hash are never returned. */
+                            registration: {
+                                /** @description Current readable code for Bundle orders only. Null means a legacy Bundle requires one regeneration. Omitted for individual orders. */
+                                bundleCode?: string | null;
+                                /** Format: date-time */
+                                cancelledAt: string | null;
+                                capacityHold?: unknown;
+                                /** Format: date-time */
+                                confirmedAt: string | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                                currency: string;
+                                event: {
+                                    /** Format: date-time */
+                                    cancellationClosesAt: string | null;
+                                    /** Format: date-time */
+                                    endsAt: string | null;
+                                    id: string;
+                                    name: string;
+                                    /** Format: date-time */
+                                    startsAt: string | null;
+                                };
+                                eventId: string;
+                                id: string;
+                                members: {
+                                    id: string;
+                                    isCurrentUser: boolean;
+                                    name: string | null;
+                                    position: number;
+                                    ready: boolean;
+                                    /** Format: date-time */
+                                    snapshotAt: string | null;
+                                    snapshotEmail: string | null;
+                                    snapshotName: string | null;
+                                    snapshotNim: string | null;
+                                    snapshotOutlookEmail: string | null;
+                                    snapshotPhoneNumber: string | null;
+                                    snapshotRegion: string | null;
+                                    snapshotStudyProgram: string | null;
+                                    snapshotUniversity: string | null;
+                                    /** @enum {string} */
+                                    status: "ACTIVE" | "LEFT" | "REMOVED" | "LOCKED";
+                                    submissions?: {
+                                        answers: {
+                                            /** Format: date-time */
+                                            dateValue: string | null;
+                                            formQuestionId: string;
+                                            numberValue: string | null;
+                                            selectedOptions: {
+                                                option: {
+                                                    label?: string;
+                                                    value: string;
+                                                };
+                                            }[];
+                                            textValue: string | null;
+                                        }[];
+                                        form: {
+                                            /** Format: date-time */
+                                            createdAt: string;
+                                            description: string | null;
+                                            eventId: string;
+                                            id: string;
+                                            name: string;
+                                            /** Format: date-time */
+                                            publishedAt: string | null;
+                                            revision: number;
+                                            sections: {
+                                                description: string | null;
+                                                id: string;
+                                                orderIndex: number;
+                                                questions: {
+                                                    fieldKey: string;
+                                                    id: string;
+                                                    isRequired: boolean;
+                                                    label: string;
+                                                    logicalId: string;
+                                                    options: {
+                                                        id: string;
+                                                        label: string;
+                                                        orderIndex: number;
+                                                        value: string;
+                                                    }[];
+                                                    orderIndex: number;
+                                                    /** @enum {string} */
+                                                    type: "TEXT" | "TEXTAREA" | "NUMBER" | "DATE" | "SELECT" | "RADIO" | "CHECKBOX" | "FILE";
+                                                    validation?: unknown;
+                                                }[];
+                                                registrationFormId: string;
+                                                title: string;
+                                            }[];
+                                            /** @enum {string} */
+                                            status: "DRAFT" | "PUBLISHED" | "CLOSED";
+                                            /** Format: date-time */
+                                            updatedAt: string | null;
+                                            version: number;
+                                        };
+                                        formVersion: number;
+                                        id: string;
+                                        registrationFormId: string;
+                                        /** @enum {string} */
+                                        status: "DRAFT" | "SUBMITTED" | "LOCKED";
+                                        /** Format: date-time */
+                                        submittedAt: string | null;
+                                    }[];
+                                    supplementalRequests?: {
+                                        answer: string | number | string[] | unknown;
+                                        /** Format: date-time */
+                                        answeredAt: string | null;
+                                        /** Format: date-time */
+                                        createdAt: string;
+                                        id: string;
+                                        logicalId: string;
+                                        orderMemberId: string;
+                                        question: {
+                                            fieldKey: string;
+                                            id: string;
+                                            isRequired: boolean;
+                                            label: string;
+                                            logicalId: string;
+                                            options: {
+                                                id: string;
+                                                label: string;
+                                                orderIndex: number;
+                                                value: string;
+                                            }[];
+                                            orderIndex: number;
+                                            /** @enum {string} */
+                                            type: "TEXT" | "TEXTAREA" | "NUMBER" | "DATE" | "SELECT" | "RADIO" | "CHECKBOX" | "FILE";
+                                            validation?: unknown;
+                                        };
+                                        questionId: string;
+                                        /** Format: date-time */
+                                        withdrawnAt: string | null;
+                                    }[];
+                                    supplementalRevision?: number;
+                                    ticket?: {
+                                        /** Format: date-time */
+                                        expiresAt: string | null;
+                                        id: string;
+                                        /** Format: date-time */
+                                        issuedAt: string;
+                                        /** @enum {string} */
+                                        status: "ACTIVE" | "USED" | "REVOKED" | "EXPIRED";
+                                    } | null;
+                                }[];
+                                orderNumber: string;
+                                payment?: unknown;
+                                /** Format: date-time */
+                                paymentDeadlineAt: string | null;
+                                profile?: {
+                                    complete: boolean;
+                                    missingFields: string[];
+                                    /** @enum {boolean} */
+                                    readOnly: true;
+                                    values: {
+                                        email: string | null;
+                                        name: string | null;
+                                        nim: string | null;
+                                        outlookEmail: string | null;
+                                        phoneNumber: string | null;
+                                        region: string | null;
+                                        studyProgram: string | null;
+                                        university: string | null;
+                                    };
+                                };
+                                revision: number;
+                                seatCount: number;
+                                /** @enum {string} */
+                                status: "ASSEMBLING" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "CONFIRMED" | "EXPIRED" | "CANCELLED" | "REJECTED";
+                                subtotalMinor: string;
+                                ticketPackage: {
+                                    code: string;
+                                    id: string;
+                                    name: string;
+                                    seatCount: number;
+                                };
+                                ticketPackageId: string;
+                                totalMinor: string;
+                                /** Format: date-time */
+                                updatedAt: string | null;
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bundle Code cryptography is not configured. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    joinEventBundle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    bundleCode: string;
+                    ticketPackageId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Joined Bundle. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRegistrationResponse"];
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too many Bundle Code attempts. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getEventRegistrationContext: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Public registration context. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRegistrationContextResponse"];
+                };
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createEventRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @default [] */
+                    answers?: {
+                        questionId: string;
+                        value: string | number | string[] | unknown;
+                    }[];
+                    /**
+                     * @default 1
+                     * @enum {number}
+                     */
+                    seatCount?: 1;
+                    ticketPackageId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Individual registration created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRegistrationResponse"];
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     getApiHealth: {
         parameters: {
             query?: never;
@@ -9920,6 +11063,299 @@ export interface operations {
             };
         };
     };
+    getInternalEventPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Payment returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPayment"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid input or proof content. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Payment or proof not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Revision, state, idempotency or deadline conflict. Reload before retrying. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proof exceeds 1572864 bytes. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    approveEventPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Payment returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPayment"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid input or proof content. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Payment or proof not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Revision, state, idempotency or deadline conflict. Reload before retrying. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proof exceeds 1572864 bytes. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    rejectEventPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: number;
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Payment returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPayment"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid input or proof content. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Payment or proof not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Revision, state, idempotency or deadline conflict. Reload before retrying. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proof exceeds 1572864 bytes. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    requestEventPaymentCorrection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: number;
+                    memberIds: string[];
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Payment returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPayment"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid input or proof content. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Payment or proof not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Revision, state, idempotency or deadline conflict. Reload before retrying. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proof exceeds 1572864 bytes. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     listInternalEvents: {
         parameters: {
             query?: never;
@@ -9966,7 +11402,33 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uri */
+                    coverImageUrl?: string | null;
+                    /** Format: date-time */
+                    endsAt?: string | null;
+                    eventGroupId?: string | null;
+                    /** @default IDR */
+                    individualTicketCurrency?: string;
+                    /** @description Required and positive when isPaid is true. */
+                    individualTicketPriceMinor?: string;
+                    internalDescription?: string | null;
+                    isPaid: boolean;
+                    locationAddress?: string | null;
+                    locationName?: string | null;
+                    /** Format: uri */
+                    locationUrl?: string | null;
+                    name: string;
+                    primaryColor?: string | null;
+                    publicDescription?: string | null;
+                    secondaryColor?: string | null;
+                    /** Format: date-time */
+                    startsAt?: string | null;
+                };
+            };
+        };
         responses: {
             /** @description Success */
             200: {
@@ -10724,6 +12186,84 @@ export interface operations {
             };
         };
     };
+    listInternalEventPayments: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                status?: "COLLECTING" | "REVIEW" | "VERIFIED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            };
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Payment queue. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPayment"][];
+                        meta: {
+                            limit: number;
+                            page: number;
+                            totalPages: number;
+                            totalRecords: number;
+                        };
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid input or proof content. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Payment or proof not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Revision, state, idempotency or deadline conflict. Reload before retrying. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proof exceeds 1572864 bytes. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     publishEvent: {
         parameters: {
             query?: never;
@@ -10836,6 +12376,7 @@ export interface operations {
                 "application/json": {
                     /** @default null */
                     description?: string | null;
+                    expectedRevision: number;
                     name: string;
                     sections: {
                         /** @default null */
@@ -10845,6 +12386,7 @@ export interface operations {
                             /** @default true */
                             isRequired?: boolean;
                             label: string;
+                            logicalId?: string;
                             /** @default [] */
                             options?: {
                                 label: string;
@@ -10862,6 +12404,7 @@ export interface operations {
                             /** @default true */
                             isRequired?: boolean;
                             label: string;
+                            logicalId?: string;
                             /** @default [] */
                             options?: {
                                 label: string;
@@ -10879,6 +12422,7 @@ export interface operations {
                             /** @default true */
                             isRequired?: boolean;
                             label: string;
+                            logicalId?: string;
                             /** @default [] */
                             options?: {
                                 label: string;
@@ -10897,6 +12441,7 @@ export interface operations {
                             /** @default true */
                             isRequired?: boolean;
                             label: string;
+                            logicalId?: string;
                             /** @default [] */
                             options?: {
                                 label: string;
@@ -10916,6 +12461,7 @@ export interface operations {
                             /** @default true */
                             isRequired?: boolean;
                             label: string;
+                            logicalId?: string;
                             options: {
                                 label: string;
                                 value: string;
@@ -10929,6 +12475,7 @@ export interface operations {
                             /** @default true */
                             isRequired?: boolean;
                             label: string;
+                            logicalId?: string;
                             options: {
                                 label: string;
                                 value: string;
@@ -10942,6 +12489,7 @@ export interface operations {
                             /** @default true */
                             isRequired?: boolean;
                             label: string;
+                            logicalId?: string;
                             options: {
                                 label: string;
                                 value: string;
@@ -10958,6 +12506,7 @@ export interface operations {
                             /** @default true */
                             isRequired?: boolean;
                             label: string;
+                            logicalId?: string;
                             /** @default [] */
                             options?: {
                                 label: string;
@@ -11035,63 +12584,6 @@ export interface operations {
         responses: {
             /** @description Registration form returned. */
             200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EventRegistrationFormResponse"];
-                };
-            };
-            /** @description Invalid form definition. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Authentication required. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Permission and Event scope required. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Event or registration form not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Invalid registration form lifecycle transition. */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    duplicateEventRegistrationForm: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                eventId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Registration form duplicated as a new draft version. */
-            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11373,8 +12865,6 @@ export interface operations {
                     paymentBankName: string | null;
                     paymentCurrency: string;
                     paymentInstructions: string | null;
-                    paymentProofMaxBytes: number;
-                    paymentProofTypes: ("image/jpeg" | "image/png" | "image/webp" | "application/pdf")[];
                     /** Format: date-time */
                     registrationClosesAt: string | null;
                     /** Format: date-time */
@@ -11408,6 +12898,1409 @@ export interface operations {
             };
             /** @description Event not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listInternalEventRegistrations: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                status?: "ASSEMBLING" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "CONFIRMED" | "EXPIRED" | "CANCELLED" | "REJECTED";
+                kind?: "INDIVIDUAL" | "BUNDLE";
+            };
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Scoped registration orders. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** Format: date-time */
+                            confirmedAt: string | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                            currency: string;
+                            id: string;
+                            /** @enum {string} */
+                            kind: "INDIVIDUAL" | "BUNDLE";
+                            memberCount: number;
+                            orderNumber: string;
+                            /** Format: date-time */
+                            paymentDeadlineAt: string | null;
+                            revision: number;
+                            seatCount: number;
+                            /** @enum {string} */
+                            status: "ASSEMBLING" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "CONFIRMED" | "EXPIRED" | "CANCELLED" | "REJECTED";
+                            ticketPackage: {
+                                id: string;
+                                name: string;
+                            };
+                            totalMinor: string;
+                        }[];
+                        meta: {
+                            limit: number;
+                            page: number;
+                            totalPages: number;
+                            totalRecords: number;
+                        };
+                    };
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getInternalEventRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Scoped registration detail. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** Format: date-time */
+                            cancelledAt: string | null;
+                            capacityHold: {
+                                /** Format: date-time */
+                                expiresAt: string;
+                                quantity: number;
+                                /** @enum {string} */
+                                status: "ACTIVE" | "CONSUMED" | "RELEASED" | "EXPIRED";
+                            } | null;
+                            /** Format: date-time */
+                            confirmedAt: string | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                            currency: string;
+                            event: {
+                                /** Format: date-time */
+                                cancellationClosesAt: string | null;
+                                /** Format: date-time */
+                                endsAt: string | null;
+                                id: string;
+                                name: string;
+                                /** Format: date-time */
+                                startsAt: string | null;
+                            };
+                            eventId: string;
+                            id: string;
+                            /** @enum {string} */
+                            kind: "INDIVIDUAL" | "BUNDLE";
+                            members: {
+                                additionalAnswersReady: boolean;
+                                email: string | null;
+                                id: string;
+                                name: string | null;
+                                position: number;
+                                /** Format: date-time */
+                                snapshotAt: string | null;
+                                snapshotEmail: string | null;
+                                snapshotName: string | null;
+                                snapshotNim: string | null;
+                                snapshotOutlookEmail: string | null;
+                                snapshotPhoneNumber: string | null;
+                                snapshotRegion: string | null;
+                                snapshotStudyProgram: string | null;
+                                snapshotUniversity: string | null;
+                                /** @enum {string} */
+                                status: "ACTIVE" | "LEFT" | "REMOVED" | "LOCKED";
+                                submissions: {
+                                    answers: {
+                                        /** Format: date-time */
+                                        dateValue: string | null;
+                                        formQuestionId: string;
+                                        numberValue: string | null;
+                                        selectedOptions: {
+                                            option: {
+                                                label?: string;
+                                                value: string;
+                                            };
+                                        }[];
+                                        textValue: string | null;
+                                    }[];
+                                    form: {
+                                        /** Format: date-time */
+                                        createdAt: string;
+                                        description: string | null;
+                                        eventId: string;
+                                        id: string;
+                                        name: string;
+                                        /** Format: date-time */
+                                        publishedAt: string | null;
+                                        revision: number;
+                                        sections: {
+                                            description: string | null;
+                                            id: string;
+                                            orderIndex: number;
+                                            questions: {
+                                                fieldKey: string;
+                                                id: string;
+                                                isRequired: boolean;
+                                                label: string;
+                                                logicalId: string;
+                                                options: {
+                                                    id: string;
+                                                    label: string;
+                                                    orderIndex: number;
+                                                    value: string;
+                                                }[];
+                                                orderIndex: number;
+                                                /** @enum {string} */
+                                                type: "TEXT" | "TEXTAREA" | "NUMBER" | "DATE" | "SELECT" | "RADIO" | "CHECKBOX" | "FILE";
+                                                validation?: unknown;
+                                            }[];
+                                            registrationFormId: string;
+                                            title: string;
+                                        }[];
+                                        /** @enum {string} */
+                                        status: "DRAFT" | "PUBLISHED" | "CLOSED";
+                                        /** Format: date-time */
+                                        updatedAt: string | null;
+                                        version: number;
+                                    };
+                                    formVersion: number;
+                                    id: string;
+                                    registrationFormId: string;
+                                    /** @enum {string} */
+                                    status: "DRAFT" | "SUBMITTED" | "LOCKED";
+                                    /** Format: date-time */
+                                    submittedAt: string | null;
+                                }[];
+                                supplementalRequests: {
+                                    answer?: unknown;
+                                    /** Format: date-time */
+                                    answeredAt: string | null;
+                                    id: string;
+                                    question: {
+                                        fieldKey: string;
+                                        id: string;
+                                        isRequired: boolean;
+                                        label: string;
+                                        logicalId: string;
+                                        options: {
+                                            id: string;
+                                            label: string;
+                                            orderIndex: number;
+                                            value: string;
+                                        }[];
+                                        orderIndex: number;
+                                        /** @enum {string} */
+                                        type: "TEXT" | "TEXTAREA" | "NUMBER" | "DATE" | "SELECT" | "RADIO" | "CHECKBOX" | "FILE";
+                                    };
+                                    /** Format: date-time */
+                                    withdrawnAt: string | null;
+                                }[];
+                                supplementalRevision: number;
+                                ticket: {
+                                    /** Format: date-time */
+                                    expiresAt: string | null;
+                                    id: string;
+                                    /** Format: date-time */
+                                    issuedAt: string;
+                                    /** @enum {string} */
+                                    status: "ACTIVE" | "USED" | "REVOKED" | "EXPIRED";
+                                } | null;
+                                userId: string;
+                            }[];
+                            orderNumber: string;
+                            /** Format: date-time */
+                            paymentDeadlineAt: string | null;
+                            revision: number;
+                            seatCount: number;
+                            /** @enum {string} */
+                            status: "ASSEMBLING" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "CONFIRMED" | "EXPIRED" | "CANCELLED" | "REJECTED";
+                            subtotalMinor: string;
+                            ticketPackage: {
+                                code: string;
+                                id: string;
+                                name: string;
+                                seatCount: number;
+                            };
+                            ticketPackageId: string;
+                            totalMinor: string;
+                            /** Format: date-time */
+                            updatedAt: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    removeEventBundleMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                registrationId: string;
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: number;
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Member removed and audited. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** @enum {boolean} */
+                            removed: true;
+                        };
+                    };
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and Event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getInternalEventRegistrationPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Payment returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPayment"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid input or proof content. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Payment or proof not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Revision, state, idempotency or deadline conflict. Reload before retrying. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proof exceeds 1572864 bytes. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listInternalEventBundles: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bundle operations list. Readable codes are never exposed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: unknown[];
+                    };
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and Event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    supplementalTracking: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Outstanding required answers. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            registrationOrderId: string;
+                            supplementalRequests: {
+                                id: string;
+                                question: {
+                                    label: string;
+                                };
+                            }[];
+                            user: {
+                                email: string;
+                                name: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getEventGroupOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Assignable Event Group options. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            name: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    uploadEventPaymentAcknowledgement: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    expectedRevision: number;
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Payment returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPayment"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid input or proof content. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Payment or proof not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Revision, state, idempotency or deadline conflict. Reload before retrying. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proof exceeds 1572864 bytes. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listMyEventRegistrations: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current user registrations. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            eventId: string;
+                            id: string;
+                            /** @enum {string} */
+                            status: "ASSEMBLING" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "CONFIRMED" | "EXPIRED" | "CANCELLED" | "REJECTED";
+                        }[];
+                        meta: {
+                            limit: number;
+                            page: number;
+                            totalPages: number;
+                            totalRecords: number;
+                        };
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getMyEventRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owned registration detail. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRegistrationResponse"];
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    saveSupplementalAnswers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    answers: {
+                        questionId: string;
+                        value: string | number | string[] | unknown;
+                    }[];
+                    expectedRevision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Additional answers saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRegistrationResponse"];
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    replaceMyEventRegistrationAnswers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    answers: {
+                        questionId: string;
+                        value: string | number | string[] | unknown;
+                    }[];
+                    expectedRevision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Answers replaced. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRegistrationResponse"];
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    replaceMyBundleCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Code replaced. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            bundleCode: string;
+                            /** @description Participant order detail. Ticket token and token hash are never returned. */
+                            registration: {
+                                /** @description Current readable code for Bundle orders only. Null means a legacy Bundle requires one regeneration. Omitted for individual orders. */
+                                bundleCode?: string | null;
+                                /** Format: date-time */
+                                cancelledAt: string | null;
+                                capacityHold?: unknown;
+                                /** Format: date-time */
+                                confirmedAt: string | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                                currency: string;
+                                event: {
+                                    /** Format: date-time */
+                                    cancellationClosesAt: string | null;
+                                    /** Format: date-time */
+                                    endsAt: string | null;
+                                    id: string;
+                                    name: string;
+                                    /** Format: date-time */
+                                    startsAt: string | null;
+                                };
+                                eventId: string;
+                                id: string;
+                                members: {
+                                    id: string;
+                                    isCurrentUser: boolean;
+                                    name: string | null;
+                                    position: number;
+                                    ready: boolean;
+                                    /** Format: date-time */
+                                    snapshotAt: string | null;
+                                    snapshotEmail: string | null;
+                                    snapshotName: string | null;
+                                    snapshotNim: string | null;
+                                    snapshotOutlookEmail: string | null;
+                                    snapshotPhoneNumber: string | null;
+                                    snapshotRegion: string | null;
+                                    snapshotStudyProgram: string | null;
+                                    snapshotUniversity: string | null;
+                                    /** @enum {string} */
+                                    status: "ACTIVE" | "LEFT" | "REMOVED" | "LOCKED";
+                                    submissions?: {
+                                        answers: {
+                                            /** Format: date-time */
+                                            dateValue: string | null;
+                                            formQuestionId: string;
+                                            numberValue: string | null;
+                                            selectedOptions: {
+                                                option: {
+                                                    label?: string;
+                                                    value: string;
+                                                };
+                                            }[];
+                                            textValue: string | null;
+                                        }[];
+                                        form: {
+                                            /** Format: date-time */
+                                            createdAt: string;
+                                            description: string | null;
+                                            eventId: string;
+                                            id: string;
+                                            name: string;
+                                            /** Format: date-time */
+                                            publishedAt: string | null;
+                                            revision: number;
+                                            sections: {
+                                                description: string | null;
+                                                id: string;
+                                                orderIndex: number;
+                                                questions: {
+                                                    fieldKey: string;
+                                                    id: string;
+                                                    isRequired: boolean;
+                                                    label: string;
+                                                    logicalId: string;
+                                                    options: {
+                                                        id: string;
+                                                        label: string;
+                                                        orderIndex: number;
+                                                        value: string;
+                                                    }[];
+                                                    orderIndex: number;
+                                                    /** @enum {string} */
+                                                    type: "TEXT" | "TEXTAREA" | "NUMBER" | "DATE" | "SELECT" | "RADIO" | "CHECKBOX" | "FILE";
+                                                    validation?: unknown;
+                                                }[];
+                                                registrationFormId: string;
+                                                title: string;
+                                            }[];
+                                            /** @enum {string} */
+                                            status: "DRAFT" | "PUBLISHED" | "CLOSED";
+                                            /** Format: date-time */
+                                            updatedAt: string | null;
+                                            version: number;
+                                        };
+                                        formVersion: number;
+                                        id: string;
+                                        registrationFormId: string;
+                                        /** @enum {string} */
+                                        status: "DRAFT" | "SUBMITTED" | "LOCKED";
+                                        /** Format: date-time */
+                                        submittedAt: string | null;
+                                    }[];
+                                    supplementalRequests?: {
+                                        answer: string | number | string[] | unknown;
+                                        /** Format: date-time */
+                                        answeredAt: string | null;
+                                        /** Format: date-time */
+                                        createdAt: string;
+                                        id: string;
+                                        logicalId: string;
+                                        orderMemberId: string;
+                                        question: {
+                                            fieldKey: string;
+                                            id: string;
+                                            isRequired: boolean;
+                                            label: string;
+                                            logicalId: string;
+                                            options: {
+                                                id: string;
+                                                label: string;
+                                                orderIndex: number;
+                                                value: string;
+                                            }[];
+                                            orderIndex: number;
+                                            /** @enum {string} */
+                                            type: "TEXT" | "TEXTAREA" | "NUMBER" | "DATE" | "SELECT" | "RADIO" | "CHECKBOX" | "FILE";
+                                            validation?: unknown;
+                                        };
+                                        questionId: string;
+                                        /** Format: date-time */
+                                        withdrawnAt: string | null;
+                                    }[];
+                                    supplementalRevision?: number;
+                                    ticket?: {
+                                        /** Format: date-time */
+                                        expiresAt: string | null;
+                                        id: string;
+                                        /** Format: date-time */
+                                        issuedAt: string;
+                                        /** @enum {string} */
+                                        status: "ACTIVE" | "USED" | "REVOKED" | "EXPIRED";
+                                    } | null;
+                                }[];
+                                orderNumber: string;
+                                payment?: unknown;
+                                /** Format: date-time */
+                                paymentDeadlineAt: string | null;
+                                profile?: {
+                                    complete: boolean;
+                                    missingFields: string[];
+                                    /** @enum {boolean} */
+                                    readOnly: true;
+                                    values: {
+                                        email: string | null;
+                                        name: string | null;
+                                        nim: string | null;
+                                        outlookEmail: string | null;
+                                        phoneNumber: string | null;
+                                        region: string | null;
+                                        studyProgram: string | null;
+                                        university: string | null;
+                                    };
+                                };
+                                revision: number;
+                                seatCount: number;
+                                /** @enum {string} */
+                                status: "ASSEMBLING" | "PENDING_PAYMENT" | "PAYMENT_REVIEW" | "CONFIRMED" | "EXPIRED" | "CANCELLED" | "REJECTED";
+                                subtotalMinor: string;
+                                ticketPackage: {
+                                    code: string;
+                                    id: string;
+                                    name: string;
+                                    seatCount: number;
+                                };
+                                ticketPackageId: string;
+                                totalMinor: string;
+                                /** Format: date-time */
+                                updatedAt: string | null;
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    cancelMyEventRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Registration cancelled. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** @enum {boolean} */
+                            cancelled: true;
+                        };
+                    };
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    leaveMyBundle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Membership left. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** @enum {boolean} */
+                            left: true;
+                        };
+                    };
+                };
+            };
+            /** @description Request or typed answers are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event, package, or registration not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Registration state, revision, deadline, duplicate, or capacity conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getMyEventPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Payment returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventPayment"];
+                        /** @enum {string} */
+                        msg: "success";
+                    };
+                };
+            };
+            /** @description Invalid input or proof content. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Payment or proof not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Revision, state, idempotency or deadline conflict. Reload before retrying. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proof exceeds 1572864 bytes. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getEventPaymentProofContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                proofId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private file, no-store, sandboxed and nosniff. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Invalid input or proof content. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Payment or proof not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Revision, state, idempotency or deadline conflict. Reload before retrying. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proof exceeds 1572864 bytes. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };

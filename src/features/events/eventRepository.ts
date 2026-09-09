@@ -67,6 +67,15 @@ class EventRepository {
          take: query.limit,
       });
    }
+   eventGroupOptions(userId: string, admin: boolean) {
+      return prisma.eventGroup.findMany({
+         where: admin
+            ? undefined
+            : { organizers: { some: { userId, role: 'MANAGER' } } },
+         select: { id: true, name: true },
+         orderBy: { name: 'asc' },
+      });
+   }
    find(id: string) {
       return prisma.event.findUnique({
          where: { id },
