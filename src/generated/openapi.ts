@@ -3048,6 +3048,55 @@ export interface paths {
         patch: operations["updateEvent"];
         trace?: never;
     };
+    "/api/internal/events/{eventId}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEventAttendance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/attendance/{attendanceId}/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkoutEventAttendance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/attendance/{attendanceId}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Voids an erroneous check-in without deleting its attendance or audit history. */
+        post: operations["voidEventAttendance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internal/events/{eventId}/cancel": {
         parameters: {
             query?: never;
@@ -3399,6 +3448,55 @@ export interface paths {
         };
         /** @description Requires manage_event_registration_form and event scope. Active participants owing required additional answers. Manual communication only. */
         get: operations["supplementalTracking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/tickets/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkInEventTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/tickets/manual-check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Checks in a selected confirmed participant by opaque ticket ID; no credential is exposed. */
+        post: operations["manuallyCheckInEventTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/events/{eventId}/tickets/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["searchEventTickets"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4633,6 +4731,55 @@ export interface paths {
         };
         /** Read shared payment with only your own proof metadata */
         get: operations["getMyEventPayment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyEventTickets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-tickets/{ticketId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyEventTicket"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/event-tickets/{ticketId}/credential": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Returns the active owner-only credential in the response body. Credentials are never placed in URLs, logs, lists, or examples. */
+        get: operations["getMyEventTicketCredential"];
         put?: never;
         post?: never;
         delete?: never;
@@ -8894,6 +9041,14 @@ export interface components {
             msg: string;
             status?: string;
         };
+        EventAttendance: {
+            /** Format: date-time */
+            checkedInAt: string;
+            /** Format: date-time */
+            checkedOutAt: string | null;
+            id: string;
+            revision: number;
+        };
         EventPackage: {
             code: string;
             /** Format: date-time */
@@ -9574,6 +9729,33 @@ export interface components {
             };
             /** @enum {string} */
             msg: "success";
+        };
+        ParticipantEventTicket: {
+            attendance: {
+                /** Format: date-time */
+                checkedInAt: string;
+                /** Format: date-time */
+                checkedOutAt: string | null;
+                id: string;
+                revision: number;
+            } | null;
+            event: {
+                attendanceCheckoutEnabled: boolean;
+                attendanceEnabled: boolean;
+                /** Format: date-time */
+                endsAt: string | null;
+                name: string;
+                /** Format: date-time */
+                startsAt: string | null;
+            };
+            eventId: string;
+            /** Format: date-time */
+            expiresAt: string | null;
+            id: string;
+            /** Format: date-time */
+            issuedAt: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "USED" | "REVOKED" | "EXPIRED";
         };
         PermissionListResponse: {
             data: {
@@ -11549,6 +11731,227 @@ export interface operations {
             };
         };
     };
+    listEventAttendance: {
+        parameters: {
+            query?: {
+                search?: string;
+                state?: "NOT_CHECKED_IN" | "CHECKED_IN" | "CHECKED_OUT";
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed participant roster and attendance state. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            attendance: {
+                                /** Format: date-time */
+                                checkedInAt: string;
+                                /** Format: date-time */
+                                checkedOutAt: string | null;
+                                id: string;
+                                revision: number;
+                            } | null;
+                            email: string | null;
+                            id: string;
+                            /** Format: date-time */
+                            issuedAt: string;
+                            name: string | null;
+                            nim: string | null;
+                            orderNumber: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "USED" | "REVOKED" | "EXPIRED";
+                        }[];
+                        meta: {
+                            limit: number;
+                            page: number;
+                            totalPages: number;
+                            totalRecords: number;
+                        };
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and Event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ticket or attendance record not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Attendance disabled, duplicate, or state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    checkoutEventAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                attendanceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Participant checked out. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventAttendance"];
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and Event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ticket or attendance record not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Attendance disabled, duplicate, or state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    voidEventAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+                attendanceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expectedRevision: number;
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Attendance check-in voided. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventAttendance"];
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and Event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ticket or attendance record not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Attendance disabled, duplicate, or state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     cancelEvent: {
         parameters: {
             query?: never;
@@ -13497,6 +13900,224 @@ export interface operations {
             };
         };
     };
+    checkInEventTicket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    credential: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Participant checked in. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventAttendance"];
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and Event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ticket or attendance record not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Attendance disabled, duplicate, or state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    manuallyCheckInEventTicket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    ticketId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Participant checked in. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EventAttendance"];
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and Event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ticket or attendance record not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Attendance disabled, duplicate, or state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    searchEventTickets: {
+        parameters: {
+            query?: {
+                search?: string;
+                state?: "NOT_CHECKED_IN" | "CHECKED_IN" | "CHECKED_OUT";
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed participant roster and attendance state. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            attendance: {
+                                /** Format: date-time */
+                                checkedInAt: string;
+                                /** Format: date-time */
+                                checkedOutAt: string | null;
+                                id: string;
+                                revision: number;
+                            } | null;
+                            email: string | null;
+                            id: string;
+                            /** Format: date-time */
+                            issuedAt: string;
+                            name: string | null;
+                            nim: string | null;
+                            orderNumber: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "USED" | "REVOKED" | "EXPIRED";
+                        }[];
+                        meta: {
+                            limit: number;
+                            page: number;
+                            totalPages: number;
+                            totalRecords: number;
+                        };
+                    };
+                };
+            };
+            /** @description Invalid request. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and Event scope required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ticket or attendance record not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Attendance disabled, duplicate, or state conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     getEventGroupOptions: {
         parameters: {
             query?: never;
@@ -14237,6 +14858,114 @@ export interface operations {
             };
             /** @description Proof exceeds 1572864 bytes. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listMyEventTickets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owned confirmed tickets. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ParticipantEventTicket"][];
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getMyEventTicket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owned ticket. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ParticipantEventTicket"];
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ticket or attendance record not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getMyEventTicketCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active credential. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            credential: string;
+                            qrPayload: string;
+                        };
+                    };
+                };
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ticket or attendance record not found. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

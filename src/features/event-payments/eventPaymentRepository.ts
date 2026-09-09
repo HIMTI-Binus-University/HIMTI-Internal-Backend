@@ -1,7 +1,7 @@
-import { createHash, randomBytes } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
 import { AppError } from '@/utils/appError.js';
+import { createStoredTicketCredential } from '@/features/event-tickets/eventTicketTypes.js';
 import {
    acknowledgementsComplete,
    paymentDeadline,
@@ -451,9 +451,7 @@ export class EventPaymentRepository {
                         data: members.map((member) => ({
                            eventId: order.eventId,
                            orderMemberId: member.id,
-                           tokenHash: createHash('sha256')
-                              .update(randomBytes(32))
-                              .digest('hex'),
+                           ...createStoredTicketCredential(),
                         })),
                      });
                      status = 'VERIFIED';

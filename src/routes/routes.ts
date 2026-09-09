@@ -7,6 +7,7 @@ import eventPackageRoutes from '@/features/event-packages/eventPackageRoutes.js'
 import registrationFormRoutes from '@/features/registration-forms/registrationFormRoutes.js';
 import eventRegistrationRoutes from '@/features/event-registrations/eventRegistrationRoutes.js';
 import eventPaymentRoutes from '@/features/event-payments/eventPaymentRoutes.js';
+import eventTicketRoutes from '@/features/event-tickets/eventTicketRoutes.js';
 import permissionRoutes from '@/features/permissions/permissionRoutes.js';
 import userRoutes from '@/features/users/userRoutes.js';
 import roleRoutes from '@/features/roles/roleRoutes.js';
@@ -38,6 +39,7 @@ router.use('/', eventPackageRoutes);
 router.use('/', registrationFormRoutes);
 router.use('/', eventRegistrationRoutes);
 router.use('/', eventPaymentRoutes);
+router.use('/', eventTicketRoutes);
 router.use('/', permissionRoutes);
 router.use('/', userRoutes);
 router.use('/', roleRoutes);

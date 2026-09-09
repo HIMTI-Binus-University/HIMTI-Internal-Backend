@@ -1043,6 +1043,34 @@
             ],
             "type": "object"
          },
+         "EventAttendance": {
+            "properties": {
+               "checkedInAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "checkedOutAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "id": {
+                  "type": "string"
+               },
+               "revision": {
+                  "exclusiveMinimum": true,
+                  "minimum": 0,
+                  "type": "integer"
+               }
+            },
+            "required": [
+               "id",
+               "checkedInAt",
+               "checkedOutAt",
+               "revision"
+            ],
+            "type": "object"
+         },
          "EventPackage": {
             "properties": {
                "code": {
@@ -3795,6 +3823,104 @@
             "required": [
                "msg",
                "data"
+            ],
+            "type": "object"
+         },
+         "ParticipantEventTicket": {
+            "properties": {
+               "attendance": {
+                  "nullable": true,
+                  "properties": {
+                     "checkedInAt": {
+                        "format": "date-time",
+                        "type": "string"
+                     },
+                     "checkedOutAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "revision": {
+                        "exclusiveMinimum": true,
+                        "minimum": 0,
+                        "type": "integer"
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "checkedInAt",
+                     "checkedOutAt",
+                     "revision"
+                  ],
+                  "type": "object"
+               },
+               "event": {
+                  "properties": {
+                     "attendanceCheckoutEnabled": {
+                        "type": "boolean"
+                     },
+                     "attendanceEnabled": {
+                        "type": "boolean"
+                     },
+                     "endsAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "name": {
+                        "type": "string"
+                     },
+                     "startsAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "name",
+                     "startsAt",
+                     "endsAt",
+                     "attendanceEnabled",
+                     "attendanceCheckoutEnabled"
+                  ],
+                  "type": "object"
+               },
+               "eventId": {
+                  "type": "string"
+               },
+               "expiresAt": {
+                  "format": "date-time",
+                  "nullable": true,
+                  "type": "string"
+               },
+               "id": {
+                  "type": "string"
+               },
+               "issuedAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "status": {
+                  "enum": [
+                     "ACTIVE",
+                     "USED",
+                     "REVOKED",
+                     "EXPIRED"
+                  ],
+                  "type": "string"
+               }
+            },
+            "required": [
+               "id",
+               "eventId",
+               "status",
+               "issuedAt",
+               "expiresAt",
+               "event",
+               "attendance"
             ],
             "type": "object"
          },
@@ -14388,6 +14514,386 @@
             ]
          }
       },
+      "/api/internal/events/{eventId}/attendance": {
+         "get": {
+            "operationId": "listEventAttendance",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "eventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "default": "",
+                     "maxLength": 100,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "state",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "NOT_CHECKED_IN",
+                        "CHECKED_IN",
+                        "CHECKED_OUT"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 25,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "properties": {
+                                       "attendance": {
+                                          "nullable": true,
+                                          "properties": {
+                                             "checkedInAt": {
+                                                "format": "date-time",
+                                                "type": "string"
+                                             },
+                                             "checkedOutAt": {
+                                                "format": "date-time",
+                                                "nullable": true,
+                                                "type": "string"
+                                             },
+                                             "id": {
+                                                "type": "string"
+                                             },
+                                             "revision": {
+                                                "exclusiveMinimum": true,
+                                                "minimum": 0,
+                                                "type": "integer"
+                                             }
+                                          },
+                                          "required": [
+                                             "id",
+                                             "checkedInAt",
+                                             "checkedOutAt",
+                                             "revision"
+                                          ],
+                                          "type": "object"
+                                       },
+                                       "email": {
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "id": {
+                                          "type": "string"
+                                       },
+                                       "issuedAt": {
+                                          "format": "date-time",
+                                          "type": "string"
+                                       },
+                                       "name": {
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "nim": {
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "orderNumber": {
+                                          "type": "string"
+                                       },
+                                       "status": {
+                                          "enum": [
+                                             "ACTIVE",
+                                             "USED",
+                                             "REVOKED",
+                                             "EXPIRED"
+                                          ],
+                                          "type": "string"
+                                       }
+                                    },
+                                    "required": [
+                                       "id",
+                                       "status",
+                                       "issuedAt",
+                                       "name",
+                                       "email",
+                                       "nim",
+                                       "orderNumber",
+                                       "attendance"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "meta": {
+                                 "properties": {
+                                    "limit": {
+                                       "type": "number"
+                                    },
+                                    "page": {
+                                       "type": "number"
+                                    },
+                                    "totalPages": {
+                                       "type": "number"
+                                    },
+                                    "totalRecords": {
+                                       "type": "number"
+                                    }
+                                 },
+                                 "required": [
+                                    "page",
+                                    "limit",
+                                    "totalRecords",
+                                    "totalPages"
+                                 ],
+                                 "type": "object"
+                              }
+                           },
+                           "required": [
+                              "data",
+                              "meta"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Confirmed participant roster and attendance state."
+               },
+               "400": {
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "Permission and Event scope required."
+               },
+               "404": {
+                  "description": "Ticket or attendance record not found."
+               },
+               "409": {
+                  "description": "Attendance disabled, duplicate, or state conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event Attendance"
+            ]
+         }
+      },
+      "/api/internal/events/{eventId}/attendance/{attendanceId}/checkout": {
+         "post": {
+            "operationId": "checkoutEventAttendance",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "eventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "attendanceId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "expectedRevision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           }
+                        },
+                        "required": [
+                           "expectedRevision"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/EventAttendance"
+                              }
+                           },
+                           "required": [
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Participant checked out."
+               },
+               "400": {
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "Permission and Event scope required."
+               },
+               "404": {
+                  "description": "Ticket or attendance record not found."
+               },
+               "409": {
+                  "description": "Attendance disabled, duplicate, or state conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event Attendance"
+            ]
+         }
+      },
+      "/api/internal/events/{eventId}/attendance/{attendanceId}/void": {
+         "post": {
+            "description": "Voids an erroneous check-in without deleting its attendance or audit history.",
+            "operationId": "voidEventAttendance",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "eventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "attendanceId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "expectedRevision": {
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "type": "integer"
+                           },
+                           "reason": {
+                              "maxLength": 500,
+                              "minLength": 3,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "expectedRevision",
+                           "reason"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/EventAttendance"
+                              }
+                           },
+                           "required": [
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Attendance check-in voided."
+               },
+               "400": {
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "Permission and Event scope required."
+               },
+               "404": {
+                  "description": "Ticket or attendance record not found."
+               },
+               "409": {
+                  "description": "Attendance disabled, duplicate, or state conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event Attendance"
+            ]
+         }
+      },
       "/api/internal/events/{eventId}/cancel": {
          "post": {
             "operationId": "cancelEvent",
@@ -17730,6 +18236,363 @@
             ]
          }
       },
+      "/api/internal/events/{eventId}/tickets/check-in": {
+         "post": {
+            "operationId": "checkInEventTicket",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "eventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "credential": {
+                              "maxLength": 64,
+                              "minLength": 1,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "credential"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/EventAttendance"
+                              }
+                           },
+                           "required": [
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Participant checked in."
+               },
+               "400": {
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "Permission and Event scope required."
+               },
+               "404": {
+                  "description": "Ticket or attendance record not found."
+               },
+               "409": {
+                  "description": "Attendance disabled, duplicate, or state conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event Attendance"
+            ]
+         }
+      },
+      "/api/internal/events/{eventId}/tickets/manual-check-in": {
+         "post": {
+            "description": "Checks in a selected confirmed participant by opaque ticket ID; no credential is exposed.",
+            "operationId": "manuallyCheckInEventTicket",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "eventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "ticketId": {
+                              "minLength": 1,
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "ticketId"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/EventAttendance"
+                              }
+                           },
+                           "required": [
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Participant checked in."
+               },
+               "400": {
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "Permission and Event scope required."
+               },
+               "404": {
+                  "description": "Ticket or attendance record not found."
+               },
+               "409": {
+                  "description": "Attendance disabled, duplicate, or state conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event Attendance"
+            ]
+         }
+      },
+      "/api/internal/events/{eventId}/tickets/search": {
+         "get": {
+            "operationId": "searchEventTickets",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "eventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "default": "",
+                     "maxLength": 100,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "state",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "NOT_CHECKED_IN",
+                        "CHECKED_IN",
+                        "CHECKED_OUT"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 25,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "properties": {
+                                       "attendance": {
+                                          "nullable": true,
+                                          "properties": {
+                                             "checkedInAt": {
+                                                "format": "date-time",
+                                                "type": "string"
+                                             },
+                                             "checkedOutAt": {
+                                                "format": "date-time",
+                                                "nullable": true,
+                                                "type": "string"
+                                             },
+                                             "id": {
+                                                "type": "string"
+                                             },
+                                             "revision": {
+                                                "exclusiveMinimum": true,
+                                                "minimum": 0,
+                                                "type": "integer"
+                                             }
+                                          },
+                                          "required": [
+                                             "id",
+                                             "checkedInAt",
+                                             "checkedOutAt",
+                                             "revision"
+                                          ],
+                                          "type": "object"
+                                       },
+                                       "email": {
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "id": {
+                                          "type": "string"
+                                       },
+                                       "issuedAt": {
+                                          "format": "date-time",
+                                          "type": "string"
+                                       },
+                                       "name": {
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "nim": {
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
+                                       "orderNumber": {
+                                          "type": "string"
+                                       },
+                                       "status": {
+                                          "enum": [
+                                             "ACTIVE",
+                                             "USED",
+                                             "REVOKED",
+                                             "EXPIRED"
+                                          ],
+                                          "type": "string"
+                                       }
+                                    },
+                                    "required": [
+                                       "id",
+                                       "status",
+                                       "issuedAt",
+                                       "name",
+                                       "email",
+                                       "nim",
+                                       "orderNumber",
+                                       "attendance"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "meta": {
+                                 "properties": {
+                                    "limit": {
+                                       "type": "number"
+                                    },
+                                    "page": {
+                                       "type": "number"
+                                    },
+                                    "totalPages": {
+                                       "type": "number"
+                                    },
+                                    "totalRecords": {
+                                       "type": "number"
+                                    }
+                                 },
+                                 "required": [
+                                    "page",
+                                    "limit",
+                                    "totalRecords",
+                                    "totalPages"
+                                 ],
+                                 "type": "object"
+                              }
+                           },
+                           "required": [
+                              "data",
+                              "meta"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Confirmed participant roster and attendance state."
+               },
+               "400": {
+                  "description": "Invalid request."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "Permission and Event scope required."
+               },
+               "404": {
+                  "description": "Ticket or attendance record not found."
+               },
+               "409": {
+                  "description": "Attendance disabled, duplicate, or state conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event Attendance"
+            ]
+         }
+      },
       "/api/internal/events/event-group-options": {
          "get": {
             "description": "Returns all Event Groups for Admin users and only groups where other callers are MANAGER organizers. Requires manage_events.",
@@ -20501,6 +21364,156 @@
             "summary": "Read shared payment with only your own proof metadata",
             "tags": [
                "Event Payments"
+            ]
+         }
+      },
+      "/api/me/event-tickets": {
+         "get": {
+            "operationId": "listMyEventTickets",
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "$ref": "#/components/schemas/ParticipantEventTicket"
+                                 },
+                                 "type": "array"
+                              }
+                           },
+                           "required": [
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Owned confirmed tickets."
+               },
+               "401": {
+                  "description": "Authentication required."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event Tickets"
+            ]
+         }
+      },
+      "/api/me/event-tickets/{ticketId}": {
+         "get": {
+            "operationId": "getMyEventTicket",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "ticketId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/ParticipantEventTicket"
+                              }
+                           },
+                           "required": [
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Owned ticket."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "404": {
+                  "description": "Ticket or attendance record not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event Tickets"
+            ]
+         }
+      },
+      "/api/me/event-tickets/{ticketId}/credential": {
+         "get": {
+            "description": "Returns the active owner-only credential in the response body. Credentials are never placed in URLs, logs, lists, or examples.",
+            "operationId": "getMyEventTicketCredential",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "ticketId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "credential": {
+                                       "type": "string"
+                                    },
+                                    "qrPayload": {
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "credential",
+                                    "qrPayload"
+                                 ],
+                                 "type": "object"
+                              }
+                           },
+                           "required": [
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Active credential."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "404": {
+                  "description": "Ticket or attendance record not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Event Tickets"
             ]
          }
       },

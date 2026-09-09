@@ -124,6 +124,7 @@ class EventService {
       const event = await this.assertManagerScope(id, user);
       if (event.status === 'CANCELLED')
          throw new AppError('Cancelled event is terminal', 409);
+      if (status === 'CANCELLED') return eventRepository.cancel(id, user.id);
       return eventRepository.update(id, {
          status,
          updater: { connect: { id: user.id } },

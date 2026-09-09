@@ -97,6 +97,27 @@ class EventRepository {
    update(id: string, data: Prisma.EventUpdateInput) {
       return prisma.event.update({ where: { id }, data });
    }
+   cancel(id: string, userId: string) {
+      return prisma.$transaction(
+         async (tx) => {
+            await tx.$queryRaw`SELECT id FROM events WHERE id = ${id} FOR UPDATE`;
+            const event = await tx.event.update({
+               where: { id },
+               data: {
+                  status: 'CANCELLED',
+                  isRegistrationOpen: false,
+                  updater: { connect: { id: userId } },
+               },
+            });
+            await tx.registrationTicket.updateMany({
+               where: { eventId: id, status: 'ACTIVE' },
+               data: { status: 'REVOKED', revokedAt: new Date() },
+            });
+            return event;
+         },
+         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+   }
    hasScope(id: string, userId: string) {
       return prisma.event.findFirst({
          where: {

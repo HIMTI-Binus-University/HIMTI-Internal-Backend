@@ -48,6 +48,7 @@ The example contains safe local database and port defaults. Configure these
 service credentials before testing their associated features:
 
 - `BETTER_AUTH_SECRET`: unique random secret; generate one with `openssl rand -base64 32`
+- `TICKET_CREDENTIAL_KEY_V1`: base64-encoded 32-byte AES key for recoverable participant QR credentials; generate one with `openssl rand -base64 32`
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Google OAuth credentials
 - `RESEND_API_KEY`: email delivery for BINUS email verification
 
@@ -175,15 +176,15 @@ profile field.
    Open `http://localhost:5555`.
 
 4. Update the signed-in `User` record:
-
    - Set `status` to `ACTIVE`.
    - Set `registrationCompletedAt` to the current UTC date and time in ISO 8601
      format, for example `2026-08-26T12:00:00.000Z`. Generate a value to paste
      into Prisma Studio with:
 
-     ```bash
-     date -u +"%Y-%m-%dT%H:%M:%S.000Z"
-     ```
+      ```bash
+      date -u +"%Y-%m-%dT%H:%M:%S.000Z"
+      ```
+
    - For a BINUS user, set `institutionType` to `BINUS` and
      `outlookEmailVerified` to `true`.
    - For a development-only non-BINUS user, set `institutionType` to
@@ -202,15 +203,15 @@ environments should use the registration and verification flows.
 
 ## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Run the TypeScript server in watch mode |
-| `npm run build` | Compile TypeScript into `dist/` |
-| `npm start` | Run the compiled server |
-| `npm test` | Run backend tests |
-| `npm run seed` | Seed application and reference data |
-| `npx prisma validate` | Validate the Prisma schema |
-| `npx prisma migrate status` | Inspect migration state |
+| Command                     | Purpose                                 |
+| --------------------------- | --------------------------------------- |
+| `npm run dev`               | Run the TypeScript server in watch mode |
+| `npm run build`             | Compile TypeScript into `dist/`         |
+| `npm start`                 | Run the compiled server                 |
+| `npm test`                  | Run backend tests                       |
+| `npm run seed`              | Seed application and reference data     |
+| `npx prisma validate`       | Validate the Prisma schema              |
+| `npx prisma migrate status` | Inspect migration state                 |
 
 ## Project Structure
 

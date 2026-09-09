@@ -632,18 +632,18 @@ model RegistrationFormSection {
 }
 
 model FormQuestion {
-  id         String                             @id @default(nanoid())
-  sectionId  String
-  logicalId  String                             @default(nanoid())
-  fieldKey   String                             @db.VarChar(100)
-  label      String                             @db.VarChar(255)
-  type       FormQuestionType
-  isRequired Boolean                            @default(true)
-  orderIndex Int
-  validation Json                               @default("{}")
-  section    RegistrationFormSection            @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  options    FormQuestionOption[]
-  answers    RegistrationFormSubmissionAnswer[]
+  id                   String                             @id @default(nanoid())
+  sectionId            String
+  logicalId            String                             @default(nanoid())
+  fieldKey             String                             @db.VarChar(100)
+  label                String                             @db.VarChar(255)
+  type                 FormQuestionType
+  isRequired           Boolean                            @default(true)
+  orderIndex           Int
+  validation           Json                               @default("{}")
+  section              RegistrationFormSection            @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  options              FormQuestionOption[]
+  answers              RegistrationFormSubmissionAnswer[]
   supplementalRequests SupplementalQuestionRequest[]
 
   @@unique([sectionId, fieldKey])
@@ -697,36 +697,37 @@ model RegistrationOrder {
 }
 
 model RegistrationOrderMember {
-  id                   String                       @id @default(nanoid())
+  id                   String                        @id @default(nanoid())
   registrationOrderId  String
   eventId              String
   userId               String
-  status               RegistrationMemberStatus     @default(ACTIVE)
+  status               RegistrationMemberStatus      @default(ACTIVE)
   position             Int
-  supplementalRevision Int                          @default(1)
+  supplementalRevision Int                           @default(1)
   supplementalRequests SupplementalQuestionRequest[]
-  snapshotName         String?                      @db.VarChar(255)
-  snapshotNim          String?                      @db.VarChar(50)
-  snapshotOutlookEmail String?                      @db.VarChar(100)
-  snapshotEmail        String?                      @db.VarChar(100)
-  snapshotUniversity   String?                      @db.VarChar(255)
-  snapshotStudyProgram String?                      @db.VarChar(255)
-  snapshotRegion       String?                      @db.VarChar(255)
-  snapshotPhoneNumber  String?                      @db.VarChar(20)
+  snapshotName         String?                       @db.VarChar(255)
+  snapshotNim          String?                       @db.VarChar(50)
+  snapshotOutlookEmail String?                       @db.VarChar(100)
+  snapshotEmail        String?                       @db.VarChar(100)
+  snapshotUniversity   String?                       @db.VarChar(255)
+  snapshotStudyProgram String?                       @db.VarChar(255)
+  snapshotRegion       String?                       @db.VarChar(255)
+  snapshotPhoneNumber  String?                       @db.VarChar(20)
   snapshotAt           DateTime?
-  createdAt            DateTime                     @default(now()) @db.Timestamp(0)
-  updatedAt            DateTime?                    @updatedAt
-  order                RegistrationOrder            @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
-  event                Event                        @relation(fields: [eventId], references: [id], onDelete: Restrict)
-  user                 User                         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt            DateTime                      @default(now()) @db.Timestamp(0)
+  updatedAt            DateTime?                     @updatedAt
+  order                RegistrationOrder             @relation(fields: [registrationOrderId], references: [id], onDelete: Cascade)
+  event                Event                         @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  user                 User                          @relation(fields: [userId], references: [id], onDelete: Restrict)
   submissions          RegistrationFormSubmission[]
   paymentProofs        RegistrationPaymentProof[]
   correctionTargets    PaymentCorrectionTarget[]
   ticket               RegistrationTicket?
-  membershipAudits     BundleMembershipAudit[]      @relation("BundleMembershipMember")
+  membershipAudits     BundleMembershipAudit[]       @relation("BundleMembershipMember")
 
   @@unique([registrationOrderId, userId])
   @@unique([registrationOrderId, position])
+  @@unique([id, eventId])
   @@unique([id, registrationOrderId])
   @@index([eventId, userId, status])
   @@map("registration_order_members")
@@ -868,18 +869,20 @@ model PaymentCorrectionTarget {
 }
 
 model RegistrationTicket {
-  id            String                   @id @default(nanoid())
-  eventId       String
-  orderMemberId String                   @unique
-  tokenHash     String                   @unique @db.VarChar(128)
-  status        RegistrationTicketStatus @default(ACTIVE)
-  issuedAt      DateTime                 @default(now()) @db.Timestamp(0)
-  expiresAt     DateTime?
-  revokedAt     DateTime?
-  event         Event                    @relation(fields: [eventId], references: [id], onDelete: Restrict)
-  orderMember   RegistrationOrderMember  @relation(fields: [orderMemberId], references: [id], onDelete: Restrict)
-  checkIns      AttendanceCheckIn[]
+  id                  String                   @id @default(nanoid())
+  eventId             String
+  orderMemberId       String                   @unique
+  tokenHash           String                   @unique @db.VarChar(128)
+  credentialEncrypted String?                  @db.Text
+  status              RegistrationTicketStatus @default(ACTIVE)
+  issuedAt            DateTime                 @default(now()) @db.Timestamp(0)
+  expiresAt           DateTime?
+  revokedAt           DateTime?
+  event               Event                    @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  orderMember         RegistrationOrderMember  @relation(fields: [orderMemberId], references: [id], onDelete: Restrict)
+  checkIns            AttendanceCheckIn[]
 
+  @@unique([id, eventId])
   @@index([eventId, status])
   @@map("registration_tickets")
 }

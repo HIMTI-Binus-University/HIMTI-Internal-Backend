@@ -598,7 +598,12 @@ class EventRegistrationService {
                snapshotPhoneNumber: member.snapshotPhoneNumber,
                snapshotAt: member.snapshotAt,
                submissions: member.submissions,
-               ticket: member.ticket,
+               ticket:
+                  order.status === 'CONFIRMED' &&
+                  member.status === 'LOCKED' &&
+                  member.ticket?.status === 'ACTIVE'
+                     ? member.ticket
+                     : null,
             }),
          };
       });

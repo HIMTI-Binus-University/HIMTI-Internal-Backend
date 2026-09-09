@@ -1,7 +1,8 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
 import { AppError } from '@/utils/appError.js';
+import { createStoredTicketCredential } from '@/features/event-tickets/eventTicketTypes.js';
 import type {
    EventRegistrationListQuery,
    InternalEventRegistrationListQuery,
@@ -1332,9 +1333,7 @@ class EventRegistrationRepository {
                   data: order.members.map(({ id: orderMemberId }) => ({
                      eventId: order.eventId,
                      orderMemberId,
-                     tokenHash: createHash('sha256')
-                        .update(randomBytes(32))
-                        .digest('hex'),
+                     ...createStoredTicketCredential(),
                   })),
                });
             }
