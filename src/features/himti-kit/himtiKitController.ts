@@ -183,4 +183,14 @@ export class EligibleAttendeeController {
       next(error);
     }
   };
+
+  validateAttendee = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { nim } = req.params as { nim: string };
+      const result = await this.attendeeService.validateAttendee(nim);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

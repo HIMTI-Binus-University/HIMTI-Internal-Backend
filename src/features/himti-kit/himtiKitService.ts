@@ -116,4 +116,14 @@ export class EligibleAttendeeService {
   async deleteAttendee(id: string) {
     return this.attendeeRepository.delete(id);
   }
+
+  async validateAttendee(nim: string) {
+    const attendee = await this.attendeeRepository.findByNim(nim);
+ 
+    if (!attendee) {
+      return { eligible: false };
+    }
+ 
+    return { eligible: true, name: attendee.name };
+  }
 }

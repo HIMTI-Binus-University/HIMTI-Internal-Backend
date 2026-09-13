@@ -151,3 +151,12 @@ router.delete(
   validateRequest({ params: AttendeeParamsSchema }),
   attendeeController.deleteAttendee
 );
+
+// ==========================================
+// ROUTES PUBLIK
+// ==========================================
+
+publicRouter.get('/attendees/validate/:nim', attendeeController.validateAttendee);
+ 
+export default router;
+export { publicRouter as himtiKitPublicRoutes };
