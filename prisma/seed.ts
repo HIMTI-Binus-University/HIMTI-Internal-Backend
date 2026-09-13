@@ -101,6 +101,7 @@ async function main() {
       'manage_elections',
       'view_election_results',
       'manage_certificates',
+      'manage_himti_kit',
    ];
 
    const permissions: Record<string, { id: string }> = {};
