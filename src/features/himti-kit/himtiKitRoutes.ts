@@ -49,6 +49,36 @@ const attendeeService = new EligibleAttendeeService(attendeeRepository);
 const attendeeController = new EligibleAttendeeController(attendeeService);
 
 // ==========================================
+// ROUTES PUBLIK
+// ==========================================
+
+publicRouter.get('/attendees/validate/:nim', attendeeController.validateAttendee);
+
+publicRouter.get(
+  '/resources',
+  validateRequest({ query: ResourceQuerySchema }),
+  resourceController.getAllResources
+);
+ 
+publicRouter.get(
+  '/resources/:id',
+  validateRequest({ params: ResourceParamsSchema }),
+  resourceController.getResourceById
+);
+ 
+publicRouter.get(
+  '/software',
+  validateRequest({ query: softwareQuerySchema }),
+  softwareController.getAllSoftware
+);
+ 
+publicRouter.get(
+  '/software/:id',
+  validateRequest({ params: softwareParamsSchema }),
+  softwareController.getSoftwareById
+);
+
+// ==========================================
 // AUTH GUARD (semua route di bawah ini adalah internal tool, wajib login admin)
 // ==========================================
 
@@ -58,18 +88,6 @@ router.use(requireAuth);
 // ==========================================
 // ROUTES UNTUK RESOURCES
 // ==========================================
-
-router.get(
-  '/resources',
-  validateRequest({ query: ResourceQuerySchema }),
-  resourceController.getAllResources
-);
-
-router.get(
-  '/resources/:id',
-  validateRequest({ params: ResourceParamsSchema }),
-  resourceController.getResourceById
-);
 
 router.post(
   '/resources',
@@ -92,18 +110,6 @@ router.delete(
 // ==========================================
 // ROUTES UNTUK SOFTWARE
 // ==========================================
-
-router.get(
-  '/software',
-  validateRequest({ query: softwareQuerySchema }),
-  softwareController.getAllSoftware
-);
-
-router.get(
-  '/software/:id',
-  validateRequest({ params: softwareParamsSchema }),
-  softwareController.getSoftwareById
-);
 
 router.post(
   '/software',
@@ -150,12 +156,6 @@ router.delete(
   validateRequest({ params: AttendeeParamsSchema }),
   attendeeController.deleteAttendee
 );
-
-// ==========================================
-// ROUTES PUBLIK
-// ==========================================
-
-publicRouter.get('/attendees/validate/:nim', attendeeController.validateAttendee);
  
 export default router;
 export { publicRouter as himtiKitPublicRoutes };

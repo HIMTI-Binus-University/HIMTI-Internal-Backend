@@ -14,7 +14,7 @@ export const himtiKitDocs = {
     '/himti-kit/resources': {
       get: {
         tags: ['HIMTI Kit - Resources'],
-        summary: 'Get all learning resources',
+        summary: 'Get all learning resources (public, no login required)',
         parameters: [
           { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search by title' },
           { name: 'major', in: 'query', schema: { type: 'string' }, description: 'Filter by major' },
@@ -53,7 +53,7 @@ export const himtiKitDocs = {
     '/himti-kit/resources/{id}': {
       get: {
         tags: ['HIMTI Kit - Resources'],
-        summary: 'Get a resource by id',
+        summary: 'Get a resource by id (public, no login required)',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
           200: { description: 'Resource found' },
@@ -86,7 +86,7 @@ export const himtiKitDocs = {
     '/himti-kit/software': {
       get: {
         tags: ['HIMTI Kit - Software'],
-        summary: 'Get all software entries',
+        summary: 'Get all software entries (public, no login required)',
         parameters: [
           { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search by software name' },
         ],
@@ -123,7 +123,7 @@ export const himtiKitDocs = {
     '/himti-kit/software/{id}': {
       get: {
         tags: ['HIMTI Kit - Software'],
-        summary: 'Get a software entry by id',
+        summary: 'Get a software entry by id (public, no login required)',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
           200: { description: 'Software found' },
