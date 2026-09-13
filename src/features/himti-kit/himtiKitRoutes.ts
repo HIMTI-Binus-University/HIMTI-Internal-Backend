@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '@/config/prisma.js';
 import { requireAuth } from '@/middleware/authMiddleware.js';
-import { requirePermission } from '@/middleware/permissionMiddleware.js';
-// BELUM ADA VALIDATE REQUEST
+// import { requirePermission } from '@/middleware/permissionMiddleware.js';
 import { validateRequest } from './himtiKitValidateRequest.js';
 import {
   ResourceRepository,
@@ -54,7 +53,7 @@ const attendeeController = new EligibleAttendeeController(attendeeService);
 // ==========================================
 
 router.use(requireAuth);
-router.use(requirePermission('manage_himti_kit'));
+// router.use(requirePermission('manage_himti_kit'));
 
 // ==========================================
 // ROUTES UNTUK RESOURCES
