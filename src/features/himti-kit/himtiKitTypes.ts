@@ -1,23 +1,29 @@
 import {z} from 'zod'
 import { 
+    MajorEnum,
     CreateKitResourcesSchema,
     UpdateKitResourcesSchema,
-    GetKitResourcesSchema,
-    DeleteKitResourcesSchema,
+    ResourceParamsSchema,
+    ResourceQuerySchema,
     CreateKitSoftwareSchema,
     UpdateKitSoftwareSchema,
-    DeleteKitSoftwareSchema,
-    MajorEnum
+    softwareParamsSchema,
+    softwareQuerySchema,
+    CreateAttendeeSchema,
+    BulkImportAttendeesSchema,
+    AttendeeParamsSchema,
+    AttendeeQuerySchema
 } from './himtiKitSchema.js'
 
 // ==========================================
 // TYPES UNTUK RESOURCES
 // ==========================================
 
+export type Major = z.infer<typeof MajorEnum>;
 export type CreateKitResourcesInput = z.infer<typeof CreateKitResourcesSchema>;
 export type UpdateKitResourcesInput = z.infer<typeof UpdateKitResourcesSchema>;
-export type GetKitResourcesQuery = z.infer<typeof GetKitResourcesSchema>;
-export type DeleteKitResourcesQuery = z.infer<typeof DeleteKitResourcesSchema>;
+export type ResourceParams = z.infer<typeof ResourceParamsSchema>;
+export type ResourceQuery = z.infer<typeof ResourceQuerySchema>;
 
 // ==========================================
 // TYPES UNTUK SOFTWARE
@@ -25,26 +31,14 @@ export type DeleteKitResourcesQuery = z.infer<typeof DeleteKitResourcesSchema>;
 
 export type CreateKitSoftwareInput = z.infer<typeof CreateKitSoftwareSchema>;
 export type UpdateKitSoftwareInput = z.infer<typeof UpdateKitSoftwareSchema>;
-export type DeleteKitSoftwareQuery = z.infer<typeof DeleteKitSoftwareSchema>;
+export type SoftwareParams = z.infer<typeof softwareParamsSchema>;
+export type SoftwareQuery = z.infer<typeof softwareQuerySchema>;
 
-export type MajorType = z.infer<typeof MajorEnum>;
+// ==========================================
+// TYPES UNTUK ATTENDEE
+// ==========================================
 
-export interface GetKitResourcesResponse {
-    data : {
-        id: string;
-        title: string;
-        description: string;
-        downloadUrl: string;
-        coverImageUrl: string | null;
-        semester: number;
-        major: MajorType;
-        createdAt: Date;
-        updatedAt: Date | null;
-    }[];
-    meta: {
-        page: number;
-        limit: number;
-        totalRecords: number;
-        totalPages: number;
-    };
-}
+export type CreateAttendeeInput = z.infer<typeof CreateAttendeeSchema>;
+export type BulkImportAttendeesInput = z.infer<typeof BulkImportAttendeesSchema>;
+export type AttendeeParams = z.infer<typeof AttendeeParamsSchema>;
+export type AttendeeQuery = z.infer<typeof AttendeeQuerySchema>;

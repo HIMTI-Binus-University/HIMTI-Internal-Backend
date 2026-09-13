@@ -1,5 +1,8 @@
 import {z} from 'zod';
+import { MajorHIMTIKit } from '@prisma/client';
 import { normalizeHttpUrl } from '@/utils/httpUrl.js';
+
+export const MajorEnum = z.nativeEnum(MajorHIMTIKit);
 
 const optionalHttpUrlSchema = z
    .string()
@@ -17,42 +20,33 @@ const optionalHttpUrlSchema = z
          });
          return z.NEVER;
       }
-   });
-
-export const MajorEnum = z.enum([
-  "COMPUTER_SCIENCE_REGULAR",
-  "COMPUTER_SCIENCE_AND_MATHEMATICS",
-  "COMPUTER_SCIENCE_AND_STATISTIC",
-  "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING",
-  "ARTIFICIAL_INTELLIGENCE",
-  "CYBER_SECURITY",
-  "DATA_SCIENCE",
-  "GAME_APPLICATION_AND_TECHNOLOGY",
-  "MOBILE_APPLICATION_AND_TECHNOLOGY"
-]);
+   })
 
 // ==========================================
 // SCHEMA UNTUK RESOURCES
 // ==========================================
 
 export const CreateKitResourcesSchema = z.object ({
-   title : z.string().min(1),
-   description: z.string(),
+   title : z.string().min(1, "Title is required"),
+   description: z.string().optional(),
+   major: MajorEnum,
    downloadUrl: z.string().url("Enter a valid web link"),
    coverImageUrl: optionalHttpUrlSchema
       .optional()
-      .transform((value) => value ?? null),
-   semester: z.coerce.number().min(1).max(8),
-   major: MajorEnum
+      .transform((value) => value ?? null)
 });
 
 export const UpdateKitResourcesSchema = CreateKitResourcesSchema.partial();
 
-export const DeleteKitResourcesSchema = z.object({});
+export const ResourceParamsSchema = z.object({
+  id: z.string().min(1),
+});
+ 
+export const ResourceQuerySchema = z.object({
+  search: z.string().optional(),
+  major: MajorEnum.optional(),
+});
 
-export const GetKitResourcesSchema = z.object({
-   major : MajorEnum.optional()
-})
 
 // ==========================================
 // SCHEMA UNTUK SOFTWARE
@@ -60,7 +54,7 @@ export const GetKitResourcesSchema = z.object({
 
 export const CreateKitSoftwareSchema = z.object ({
    name : z.string().min(1),
-   description: z.string(),
+   description: z.string().min(1, 'Description is required'),
    downloadUrl: z.string().url("Enter a valid web link"),
    coverImageUrl: optionalHttpUrlSchema
       .optional()
@@ -69,4 +63,30 @@ export const CreateKitSoftwareSchema = z.object ({
 
 export const UpdateKitSoftwareSchema = CreateKitSoftwareSchema.partial();
 
-export const DeleteKitSoftwareSchema = z.object({});
+export const softwareParamsSchema = z.object({
+  id: z.string().min(1),
+});
+ 
+export const softwareQuerySchema = z.object({
+  search: z.string().optional(),
+});
+
+// ==========================================
+// SCHEMA UNTUK STUDENT HIMTI KIT
+// ==========================================
+export const CreateAttendeeSchema  = z.object({
+  nim: z.string().min(1, "NIM is required"),
+  name: z.string().min(1, "Student full name is required"),
+});
+ 
+export const BulkImportAttendeesSchema = z.object({
+  attendees: z.array(CreateAttendeeSchema).min(1, 'At least one attendee is required')
+});
+ 
+export const AttendeeParamsSchema = z.object({
+  id: z.string().min(1)
+});
+ 
+export const AttendeeQuerySchema = z.object({
+  search: z.string().optional()
+});

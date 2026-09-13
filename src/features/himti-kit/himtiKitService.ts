@@ -1,73 +1,119 @@
-import { himtiKitRepository } from './himtiKitRepository.js';
-import { HimtiKitResource, HimtiKitSoftware } from '@prisma/client';
+import {
+  ResourceRepository,
+  SoftwareRepository,
+  EligibleAttendeeRepository,
+} from './himtiKitRepository.js';
 import {
   CreateKitResourcesInput,
   UpdateKitResourcesInput,
-  GetKitResourcesQuery,
+  ResourceQuery,
   CreateKitSoftwareInput,
   UpdateKitSoftwareInput,
+  SoftwareQuery,
+  CreateAttendeeInput,
+  BulkImportAttendeesInput,
+  AttendeeQuery,
 } from './himtiKitTypes.js';
+import { AppError } from '@/utils/appError.js';
 
-export class HimtiKitService {
-  // ==========================================
-  // 1. SERVICE UNTUK RESOURCES
-  // ==========================================
+// ==========================================
+// SERVICE UNTUK RESOURCES
+// ==========================================
 
-  async getAllResources(query: GetKitResourcesQuery): Promise<HimtiKitResource[]> {
-    return await himtiKitRepository.findResources(query);
+export class ResourceService {
+  constructor(private readonly resourceRepository: ResourceRepository) {}
+
+  async getAllResources(query: ResourceQuery) {
+    return this.resourceRepository.findMany(query);
   }
 
-  async getResourceById(id: string): Promise<HimtiKitResource> {
-    const resource = await himtiKitRepository.findResourceById(id);
+  async getResourceById(id: string) {
+    const resource = await this.resourceRepository.findById(id);
     if (!resource) {
-      throw new Error('HimtiKit Resource not found');
+      throw new AppError('Resource not found', 404);
     }
     return resource;
   }
 
-  async createResource(data: CreateKitResourcesInput): Promise<HimtiKitResource> {
-    return await himtiKitRepository.createResource(data);
+  async createResource(data: CreateKitResourcesInput) {
+    return this.resourceRepository.create(data);
   }
 
-  async updateResource(id: string, data: UpdateKitResourcesInput): Promise<HimtiKitResource> {
+  async updateResource(id: string, data: UpdateKitResourcesInput) {
     await this.getResourceById(id);
-    return await himtiKitRepository.updateResource(id, data);
+    return this.resourceRepository.update(id, data);
   }
 
-  async deleteResource(id: string): Promise<HimtiKitResource> {
+  async deleteResource(id: string) {
     await this.getResourceById(id);
-    return await himtiKitRepository.deleteResource(id);
+    return this.resourceRepository.delete(id);
+  }
+}
+
+// ==========================================
+// SERVICE UNTUK SOFTWARE
+// ==========================================
+
+export class SoftwareService {
+  constructor(private readonly softwareRepository: SoftwareRepository) {}
+
+  async getAllSoftware(query: SoftwareQuery) {
+    return this.softwareRepository.findMany(query);
   }
 
-  // ==========================================
-  // 2. SERVICE UNTUK SOFTWARE
-  // ==========================================
-
-  async getAllSoftwares(): Promise<HimtiKitSoftware[]> {
-    return await himtiKitRepository.findSoftwares();
-  }
-
-  async getSoftwareById(id: string): Promise<HimtiKitSoftware> {
-    const software = await himtiKitRepository.findSoftwareById(id);
+  async getSoftwareById(id: string) {
+    const software = await this.softwareRepository.findById(id);
     if (!software) {
-      throw new Error('HimtiKit Software not found');
+      throw new AppError('Software not found', 404);
     }
     return software;
   }
 
-  async createSoftware(data: CreateKitSoftwareInput): Promise<HimtiKitSoftware> {
-    return await himtiKitRepository.createSoftware(data);
+  async createSoftware(data: CreateKitSoftwareInput) {
+    return this.softwareRepository.create(data);
   }
 
-  async updateSoftware(id: string, data: UpdateKitSoftwareInput): Promise<HimtiKitSoftware> {
+  async updateSoftware(id: string, data: UpdateKitSoftwareInput) {
     await this.getSoftwareById(id);
-    return await himtiKitRepository.updateSoftware(id, data);
+    return this.softwareRepository.update(id, data);
   }
 
-  async deleteSoftware(id: string): Promise<HimtiKitSoftware> {
+  async deleteSoftware(id: string) {
     await this.getSoftwareById(id);
-    return await himtiKitRepository.deleteSoftware(id);
+    return this.softwareRepository.delete(id);
   }
 }
 
-export const himtiKitService = new HimtiKitService();
+// ==========================================
+// SERVICE UNTUK ATTENDEE
+// ==========================================
+
+export class EligibleAttendeeService {
+  constructor(private readonly attendeeRepository: EligibleAttendeeRepository) {}
+
+  async getAllAttendees(query: AttendeeQuery) {
+    return this.attendeeRepository.findMany(query);
+  }
+
+  async createAttendee(data: CreateAttendeeInput) {
+    const existing = await this.attendeeRepository.findByNim(data.nim);
+    if (existing) {
+      throw new AppError('NIM is already registered', 409);
+    }
+    return this.attendeeRepository.create(data);
+  }
+
+  async bulkImportAttendees(data: BulkImportAttendeesInput) {
+    const totalImported = await this.attendeeRepository.createMany(data.attendees);
+
+    return {
+      totalSubmitted: data.attendees.length,
+      totalImported,
+      totalSkipped: data.attendees.length - totalImported,
+    };
+  }
+
+  async deleteAttendee(id: string) {
+    return this.attendeeRepository.delete(id);
+  }
+}

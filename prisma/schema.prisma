@@ -150,15 +150,16 @@ enum LinkWorkspaceStatus {
 }
 
 enum MajorHIMTIKit {
-  COMPUTER_SCIENCE_REGULAR
+  COMPUTER_SCIENCE
+  MOBILE_APPLICATION_AND_TECHNOLOGY
+  GAME_APPLICATION_AND_TECHNOLOGY
+  DATA_SCIENCE
+  CYBER_SECURITY
   COMPUTER_SCIENCE_AND_MATHEMATICS
   COMPUTER_SCIENCE_AND_STATISTIC
   COMPUTER_SCIENCE_SOFTWARE_ENGINEERING
   ARTIFICIAL_INTELLIGENCE
-  CYBER_SECURITY
-  DATA_SCIENCE
-  GAME_APPLICATION_AND_TECHNOLOGY
-  MOBILE_APPLICATION_AND_TECHNOLOGY
+  DIGITAL_PSYCHOLOGY
 }
 
 enum ElectionStatus {
@@ -868,10 +869,9 @@ model ElectionBallot {
 model HimtiKitResource {
   id            String  @id @default(nanoid())
   title         String
-  description   String
+  description   String?
   downloadUrl   String
   coverImageUrl String? @db.Text
-  semester      Int
   major         MajorHIMTIKit
 
   createdAt DateTime  @default(now()) @db.Timestamp(0)
@@ -886,5 +886,14 @@ model HimtiKitSoftware {
   coverImageUrl String? @db.Text
 
   createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+}
+
+model HimtiKitAttendee {
+  id        String   @id @default(nanoid())
+  name      String
+  nim       String   @unique
+
+  createdAt DateTime @default(now()) @db.Timestamp(0)
   updatedAt DateTime? @updatedAt
 }
