@@ -4,14 +4,22 @@ import {
 } from '@asteasolutions/zod-to-openapi';
 import { registerHealthDocs } from '@/docs/healthDocs.js';
 import { registerEventDocs } from '@/features/events/eventDocs.js';
+import { registerEventGroupDocs } from '@/features/event-groups/eventGroupDocs.js';
+import { registerEventPackageDocs } from '@/features/event-packages/eventPackageDocs.js';
+import { registerRegistrationFormDocs } from '@/features/registration-forms/registrationFormDocs.js';
+import { registerEventRegistrationDocs } from '@/features/event-registrations/eventRegistrationDocs.js';
+import { registerEventPaymentDocs } from '@/features/event-payments/eventPaymentDocs.js';
+import { registerEventTicketDocs } from '@/features/event-tickets/eventTicketDocs.js';
 import { registerMembershipDocs } from '@/features/membership/membershipDocs.js';
 import { registerPermissionDocs } from '@/features/permissions/permissionDocs.js';
-import { registerRegistrationFormDocs } from '@/features/registration-forms/registrationFormDocs.js';
 import { registerRoleDocs } from '@/features/roles/roleDocs.js';
-import { registerSubEventDocs } from '@/features/sub-events/subEventDocs.js';
 import { registerUrlShortenerDocs } from '@/features/url-shortener/urlDocs.js';
 import { registerUserDocs } from '@/features/users/userDocs.js';
 import { registerLinkWorkspaceDocs } from '@/features/link-workspaces/linkWorkspaceDocs.js';
+import {
+   canonicalErrorResponseSchema,
+   canonicalValidationErrorResponseSchema,
+} from '@/docs/commonSchemas.js';
 import { registerElectionDocs } from '@/features/elections/electionDocs.js';
 
 const registry = new OpenAPIRegistry();
@@ -24,6 +32,9 @@ registry.registerComponent('securitySchemes', 'sessionCookie', {
       'Protected endpoints require an active Better Auth session cookie. In HTTPS environments Better Auth may prefix the cookie name with __Secure-. Scalar sends the existing browser cookie automatically when using the current docs host.',
 });
 
+registry.register('ApiError', canonicalErrorResponseSchema);
+registry.register('ValidationApiError', canonicalValidationErrorResponseSchema);
+
 registerHealthDocs(registry);
 registerUserDocs(registry);
 registerRoleDocs(registry);
@@ -31,9 +42,13 @@ registerPermissionDocs(registry);
 registerUrlShortenerDocs(registry);
 registerLinkWorkspaceDocs(registry);
 registerEventDocs(registry);
-registerMembershipDocs(registry);
-registerSubEventDocs(registry);
+registerEventGroupDocs(registry);
+registerEventPackageDocs(registry);
 registerRegistrationFormDocs(registry);
+registerEventRegistrationDocs(registry);
+registerEventPaymentDocs(registry);
+registerEventTicketDocs(registry);
+registerMembershipDocs(registry);
 registerElectionDocs(registry);
 
 export const generateOpenApiDocument = () => {
@@ -52,7 +67,7 @@ export const generateOpenApiDocument = () => {
             description: 'Current docs host',
          },
          {
-            url: `http://localhost:${process.env.PORT || 8000}`,
+            url: 'http://localhost:8000',
             description: 'Local development',
          },
          {
@@ -66,3 +81,17 @@ export const generateOpenApiDocument = () => {
       ],
    });
 };
+
+const sortObjectKeys = (value: unknown): unknown => {
+   if (Array.isArray(value)) return value.map(sortObjectKeys);
+   if (!value || typeof value !== 'object') return value;
+
+   return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+         .sort(([left], [right]) => left.localeCompare(right))
+         .map(([key, child]) => [key, sortObjectKeys(child)]),
+   );
+};
+
+export const serializeOpenApiDocument = () =>
+   `${JSON.stringify(sortObjectKeys(generateOpenApiDocument()), null, 3)}\n`;

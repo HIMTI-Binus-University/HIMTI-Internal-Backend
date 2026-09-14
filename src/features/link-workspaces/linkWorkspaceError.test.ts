@@ -26,6 +26,8 @@ it('maps Prisma serialization conflicts to a retryable 409 response', () => {
    assert.equal(body.statusCode, 409);
    assert.deepEqual(body.payload, {
       status: 'fail',
+      code: 'TRANSACTION_CONFLICT',
+      message: 'The operation conflicted with another update. Please retry.',
       msg: 'The operation conflicted with another update. Please retry.',
    });
 });

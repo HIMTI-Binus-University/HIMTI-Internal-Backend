@@ -12,11 +12,21 @@ export const requireAuth = async (
    });
 
    if (!session) {
-      return res.status(401).json({ msg: 'Unauthorized' });
+      return res.status(401).json({
+         status: 'fail',
+         code: 'AUTHENTICATION_REQUIRED',
+         message: 'Unauthorized',
+         msg: 'Unauthorized',
+      });
    }
 
    if (session.user.status !== 'ACTIVE') {
-      return res.status(403).json({ msg: 'Account is not active' });
+      return res.status(403).json({
+         status: 'fail',
+         code: 'ACCOUNT_INACTIVE',
+         message: 'Account is not active',
+         msg: 'Account is not active',
+      });
    }
 
    res.locals.user = session.user;

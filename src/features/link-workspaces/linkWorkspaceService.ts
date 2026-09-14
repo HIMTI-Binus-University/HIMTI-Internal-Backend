@@ -1,13 +1,8 @@
+import { LinkWorkspaceRole } from '@prisma/client';
 import { auth } from '@/utils/auth.js';
 import { AppError } from '@/utils/appError.js';
 import { isAdminUser } from '@/utils/statusAccess.js';
 import { linkWorkspaceRepository } from './linkWorkspaceRepository.js';
-import {
-   canEditWorkspaceLinks,
-   canManageWorkspace,
-   canReadWorkspace,
-   redactWorkspaceMemberDetails,
-} from './linkWorkspacePolicy.js';
 import type {
    AddLinkWorkspaceMemberRequest,
    AttachWorkspaceLinkRequest,
@@ -20,6 +15,33 @@ import type {
 } from './linkWorkspaceTypes.js';
 
 type SessionUser = typeof auth.$Infer.Session.user;
+
+type WorkspaceWithMembers = {
+   members: Array<{
+      userId: string;
+      role: LinkWorkspaceRole;
+      user: { id: string; name: string; email?: string; status?: string };
+   }>;
+};
+
+const redactWorkspaceMemberDetails = <T extends WorkspaceWithMembers>(
+   workspace: T,
+   requesterId: string,
+   isAdmin: boolean,
+) => {
+   const requesterRole = workspace.members.find(
+      (member) => member.userId === requesterId,
+   )?.role;
+   if (isAdmin || requesterRole === 'OWNER') return workspace;
+
+   return {
+      ...workspace,
+      members: workspace.members.map((member) => ({
+         ...member,
+         user: { id: member.user.id, name: member.user.name },
+      })),
+   };
+};
 
 class LinkWorkspaceService {
    private async authorize(
@@ -37,13 +59,7 @@ class LinkWorkspaceService {
       const membership = workspace.members.find(
          (member) => member.userId === user.id,
       );
-      const policyAllows =
-         allowedRoles.length === 3
-            ? membership && canReadWorkspace(membership.role)
-            : allowedRoles.includes('EDITOR')
-              ? membership && canEditWorkspaceLinks(membership.role)
-              : membership && canManageWorkspace(membership.role);
-      if (!membership || !policyAllows) {
+      if (!membership || !allowedRoles.includes(membership.role)) {
          throw new AppError(
             'You are not allowed to access this workspace',
             403,

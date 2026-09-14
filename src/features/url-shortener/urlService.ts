@@ -12,7 +12,6 @@ import { AppError } from '@/utils/appError.js';
 import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
 import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
 import { isAdminUser } from '@/utils/statusAccess.js';
-import { canResolveWorkspaceLink } from '@/features/link-workspaces/linkWorkspacePolicy.js';
 
 class UrlService {
    async createUrl(
@@ -79,7 +78,7 @@ class UrlService {
 
    async getUrlByCode(shortCode: string) {
       const url = await urlRepository.findByCode(shortCode);
-      if (!url || !canResolveWorkspaceLink(url.workspaceLink)) return null;
+      if (!url || url.workspaceLink?.status === 'INACTIVE') return null;
       return url;
    }
 

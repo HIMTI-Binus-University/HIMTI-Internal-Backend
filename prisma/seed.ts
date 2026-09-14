@@ -97,7 +97,18 @@ async function main() {
       'manage_users',
       'manage_roles',
       'manage_events',
+      'manage_event_groups',
+      'manage_event_registration',
+      'manage_event_packages',
+      'manage_event_registration_form',
       'manage_batch',
+      'review_event_registrations',
+      'view_event_answers',
+      'review_event_payments',
+      'view_payment_proofs',
+      'scan_event_tickets',
+      'view_event_attendance',
+      'correct_event_attendance',
       'manage_elections',
       'view_election_results',
       'manage_certificates',
@@ -135,12 +146,19 @@ async function main() {
       // Batch and election administration are restricted to administrators.
       for (const perm of Object.values(permissions)) {
          if (
-            roleName !== 'Admin' &&
             [
                permissions.manage_batch.id,
+               permissions.review_event_registrations.id,
+               permissions.view_event_answers.id,
+               permissions.review_event_payments.id,
+               permissions.view_payment_proofs.id,
+               permissions.scan_event_tickets.id,
+               permissions.view_event_attendance.id,
+               permissions.correct_event_attendance.id,
                permissions.manage_elections.id,
                permissions.view_election_results.id,
-            ].includes(perm.id)
+            ].includes(perm.id) &&
+            roleName !== 'Admin'
          ) {
             continue;
          }

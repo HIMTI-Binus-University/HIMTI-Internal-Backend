@@ -30,6 +30,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
+RUN mkdir -p /var/lib/himti/private-uploads \
+   && chown -R node:node /var/lib/himti/private-uploads
+
 USER node
 
 EXPOSE 8000

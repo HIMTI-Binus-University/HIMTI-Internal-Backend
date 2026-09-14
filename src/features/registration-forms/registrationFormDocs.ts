@@ -1,484 +1,170 @@
 import '@/docs/zodOpenApi.js';
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
-import {
-   errorResponseSchema,
-   formFieldTypeSchema,
-   formQuestionStatusSchema,
-   idParamSchema,
-   protectedEndpoint,
-   validationErrorResponseSchema,
-} from '@/docs/commonSchemas.js';
+import { RegistrationFormBodySchema } from './registrationFormSchema.js';
 
-const tag = 'Registration forms';
-
-const formQuestionOptionRequestSchema = z.object({
-   label: z.string().min(1),
-   value: z.string().min(1),
-});
-
-const createFormQuestionRequestSchema = z.object({
-   label: z.string().min(1).max(255),
-   fieldType: formFieldTypeSchema,
-   isRequired: z.boolean().optional(),
-   helpText: z.string().nullable().optional(),
-   orderIndex: z.number().int().min(0).optional(),
-   options: z.array(formQuestionOptionRequestSchema).optional(),
-});
-
-const updateFormQuestionRequestSchema = z.object({
-   label: z.string().min(1).max(255).optional(),
-   fieldType: formFieldTypeSchema.optional(),
-   isRequired: z.boolean().optional(),
-   helpText: z.string().nullable().optional(),
-   orderIndex: z.number().int().min(0).optional(),
-   status: formQuestionStatusSchema.optional(),
-});
-
-const reorderFormQuestionsRequestSchema = z.object({
-   questionIds: z.array(z.string()).min(1),
-});
-
-const updateFormQuestionOptionRequestSchema = z.object({
-   label: z.string().min(1).max(255).optional(),
-   value: z.string().min(1).max(255).optional(),
-   isActive: z.boolean().optional(),
-});
-
-const formQuestionOptionSchema = z.object({
+const optionSchema = z.object({
    id: z.string(),
-   formQuestionId: z.string(),
+   questionId: z.string(),
    label: z.string(),
    value: z.string(),
-   isActive: z.boolean(),
-   createdAt: z.string().datetime(),
-   createdBy: z.string(),
-   updatedAt: z.string().datetime().nullable(),
-   updatedBy: z.string().nullable(),
+   orderIndex: z.number().int(),
 });
-
-const formQuestionSchema = z.object({
+const questionSchema = z.object({
+   logicalId: z.string(),
+   id: z.string(),
+   sectionId: z.string(),
+   fieldKey: z.string(),
+   label: z.string(),
+   type: z.enum([
+      'TEXT',
+      'TEXTAREA',
+      'NUMBER',
+      'DATE',
+      'SELECT',
+      'RADIO',
+      'CHECKBOX',
+      'FILE',
+   ]),
+   isRequired: z.boolean(),
+   orderIndex: z.number().int(),
+   validation: z.object({}).passthrough(),
+   options: z.array(optionSchema),
+});
+const sectionSchema = z.object({
    id: z.string(),
    registrationFormId: z.string(),
-   label: z.string(),
-   fieldKey: z.string(),
-   fieldType: formFieldTypeSchema,
-   isRequired: z.boolean(),
-   helpText: z.string().nullable(),
-   orderIndex: z.number(),
-   status: formQuestionStatusSchema,
+   title: z.string(),
+   description: z.string().nullable(),
+   orderIndex: z.number().int(),
+   questions: z.array(questionSchema),
+});
+const registrationFormSchema = z.object({
+   revision: z.number().int(),
+   id: z.string(),
+   eventId: z.string(),
+   name: z.string(),
+   description: z.string().nullable(),
+   status: z.enum(['DRAFT', 'PUBLISHED', 'CLOSED']),
+   version: z.number().int().positive(),
+   publishedAt: z.string().datetime().nullable(),
    createdAt: z.string().datetime(),
-   createdBy: z.string(),
    updatedAt: z.string().datetime().nullable(),
-   updatedBy: z.string().nullable(),
-   options: z.array(formQuestionOptionSchema),
+   sections: z.array(sectionSchema),
 });
-
-const formQuestionMutationResponseSchema = z.object({
-   msg: z.literal('success'),
-   data: formQuestionSchema,
+const validateResponseSchema = z.object({
+   data: z.object({ valid: z.literal(true) }),
 });
-
-const formQuestionListResponseSchema = z.object({
-   msg: z.literal('success'),
-   data: z.array(formQuestionSchema),
+const previewResponseSchema = z.object({
+   data: z.object({
+      profileSection: z.object({ readOnly: z.literal(true) }),
+      form: registrationFormSchema,
+   }),
 });
-
-const formQuestionOptionMutationResponseSchema = z.object({
-   msg: z.literal('success'),
-   data: formQuestionOptionSchema,
+const json = (schema: z.ZodType) => ({
+   'application/json': { schema },
 });
 
 export const registerRegistrationFormDocs = (registry: OpenAPIRegistry) => {
-   const CreateFormQuestionRequest = registry.register(
-      'CreateFormQuestionRequest',
-      createFormQuestionRequestSchema,
+   const EventRegistrationForm = registry.register(
+      'EventRegistrationForm',
+      registrationFormSchema,
    );
-   const UpdateFormQuestionRequest = registry.register(
-      'UpdateFormQuestionRequest',
-      updateFormQuestionRequestSchema,
+   const EventRegistrationFormResponse = registry.register(
+      'EventRegistrationFormResponse',
+      z.object({ data: EventRegistrationForm }),
    );
-   const ReorderFormQuestionsRequest = registry.register(
-      'ReorderFormQuestionsRequest',
-      reorderFormQuestionsRequestSchema,
+   const EventRegistrationFormValidateResponse = registry.register(
+      'EventRegistrationFormValidateResponse',
+      validateResponseSchema,
    );
-   const UpdateFormQuestionOptionRequest = registry.register(
-      'UpdateFormQuestionOptionRequest',
-      updateFormQuestionOptionRequestSchema,
+   const EventRegistrationFormPreviewResponse = registry.register(
+      'EventRegistrationFormPreviewResponse',
+      previewResponseSchema,
    );
-   const FormQuestionMutationResponse = registry.register(
-      'FormQuestionMutationResponse',
-      formQuestionMutationResponseSchema,
-   );
-   const FormQuestionListResponse = registry.register(
-      'FormQuestionListResponse',
-      formQuestionListResponseSchema,
-   );
-   const FormQuestionOptionMutationResponse = registry.register(
-      'FormQuestionOptionMutationResponse',
-      formQuestionOptionMutationResponseSchema,
-   );
+   const security = [{ sessionCookie: [] }];
+   const params = z.object({ eventId: z.string() });
+   const errors = {
+      400: { description: 'Invalid form definition.' },
+      401: { description: 'Authentication required.' },
+      403: { description: 'Permission and Event scope required.' },
+      404: { description: 'Event or registration form not found.' },
+      409: { description: 'Invalid registration form lifecycle transition.' },
+   };
+   const itemSuccess = {
+      200: {
+         description: 'Registration form returned.',
+         content: json(EventRegistrationFormResponse),
+      },
+      ...errors,
+   };
 
+   registry.registerPath({
+      method: 'get',
+      path: '/api/internal/events/{eventId}/registration-form',
+      operationId: 'getEventRegistrationForm',
+      description:
+         'Returns the current published form in preference to any retained legacy duplicate draft. Legacy drafts are not deleted or merged.',
+      tags: ['Event Registration Form'],
+      security,
+      request: { params },
+      responses: itemSuccess,
+   });
+   registry.registerPath({
+      method: 'put',
+      path: '/api/internal/events/{eventId}/registration-form',
+      operationId: 'putEventRegistrationForm',
+      description:
+         'Edits the current published form atomically and assigns new questions to active participants. Legacy replacement drafts without verified lineage cannot be edited or published; reload to edit the published form, or request administrator review if none is published.',
+      tags: ['Event Registration Form'],
+      security,
+      request: {
+         params,
+         body: {
+            required: true,
+            content: json(RegistrationFormBodySchema),
+         },
+      },
+      responses: itemSuccess,
+   });
    registry.registerPath({
       method: 'post',
-      path: '/api/registration-form/{id}/question',
-      tags: [tag],
-      summary: 'Create a form question',
-      description:
-         'Requires authentication, manage_events permission, and either Admin ' +
-         'role or steering committee membership on the parent event. Only draft ' +
-         'forms without responses can be edited. Field keys are generated by ' +
-         'the backend and kept unique within the form.',
-      security: [protectedEndpoint],
-      request: {
-         params: idParamSchema,
-         body: {
-            required: true,
-            content: {
-               'application/json': {
-                  schema: CreateFormQuestionRequest,
-               },
-            },
-         },
-      },
-      responses: {
-         201: {
-            description: 'Form question created.',
-            content: {
-               'application/json': {
-                  schema: FormQuestionMutationResponse,
-               },
-            },
-         },
-         400: {
-            description: 'Validation error or form is not editable.',
-            content: {
-               'application/json': {
-                  schema: validationErrorResponseSchema.or(errorResponseSchema),
-               },
-            },
-         },
-         401: { description: 'Authentication required.' },
-         403: {
-            description:
-               'Missing manage_events permission, Admin role, or steering committee membership.',
-         },
-         404: {
-            description: 'Registration form not found.',
-            content: {
-               'application/json': {
-                  schema: errorResponseSchema,
-               },
-            },
-         },
-      },
-   });
-
-   registry.registerPath({
-      method: 'patch',
-      path: '/api/registration-form/{id}/reorder-questions',
-      tags: [tag],
-      summary: 'Reorder form questions',
-      description:
-         'Requires authentication, manage_events permission, and either Admin ' +
-         'role or steering committee membership on the parent event. The body ' +
-         'must include all active question ids in the desired order.',
-      security: [protectedEndpoint],
-      request: {
-         params: idParamSchema,
-         body: {
-            required: true,
-            content: {
-               'application/json': {
-                  schema: ReorderFormQuestionsRequest,
-               },
-            },
-         },
-      },
+      path: '/api/internal/events/{eventId}/registration-form/validate',
+      operationId: 'validateEventRegistrationForm',
+      tags: ['Event Registration Form'],
+      security,
+      request: { params },
       responses: {
          200: {
-            description: 'Form questions reordered.',
-            content: {
-               'application/json': {
-                  schema: FormQuestionListResponse,
-               },
-            },
+            description: 'Current form is valid.',
+            content: json(EventRegistrationFormValidateResponse),
          },
-         400: {
-            description: 'Validation error or form is not editable.',
-            content: {
-               'application/json': {
-                  schema: validationErrorResponseSchema.or(errorResponseSchema),
-               },
-            },
-         },
-         401: { description: 'Authentication required.' },
-         403: {
-            description:
-               'Missing manage_events permission, Admin role, or steering committee membership.',
-         },
-         404: {
-            description: 'Registration form not found.',
-            content: {
-               'application/json': {
-                  schema: errorResponseSchema,
-               },
-            },
-         },
+         ...errors,
       },
    });
-
    registry.registerPath({
       method: 'post',
-      path: '/api/registration-form/question/{id}/option',
-      tags: [tag],
-      summary: 'Create a form question option',
-      description:
-         'Requires authentication, manage_events permission, and either Admin ' +
-         'role or steering committee membership on the parent event. Only ' +
-         'option-based questions on draft forms without responses can receive options.',
-      security: [protectedEndpoint],
-      request: {
-         params: idParamSchema,
-         body: {
-            required: true,
-            content: {
-               'application/json': {
-                  schema: formQuestionOptionRequestSchema,
-               },
-            },
-         },
-      },
-      responses: {
-         201: {
-            description: 'Form question option created.',
-            content: {
-               'application/json': {
-                  schema: FormQuestionOptionMutationResponse,
-               },
-            },
-         },
-         400: {
-            description: 'Validation error or form is not editable.',
-            content: {
-               'application/json': {
-                  schema: validationErrorResponseSchema.or(errorResponseSchema),
-               },
-            },
-         },
-         401: { description: 'Authentication required.' },
-         403: {
-            description:
-               'Missing manage_events permission, Admin role, or steering committee membership.',
-         },
-         404: {
-            description: 'Form question not found.',
-            content: {
-               'application/json': {
-                  schema: errorResponseSchema,
-               },
-            },
-         },
-      },
-   });
-
-   registry.registerPath({
-      method: 'patch',
-      path: '/api/registration-form/question/{id}',
-      tags: [tag],
-      summary: 'Update a form question',
-      description:
-         'Requires authentication, manage_events permission, and either Admin ' +
-         'role or steering committee membership on the parent event. Only draft ' +
-         'forms without responses can be edited.',
-      security: [protectedEndpoint],
-      request: {
-         params: idParamSchema,
-         body: {
-            required: true,
-            content: {
-               'application/json': {
-                  schema: UpdateFormQuestionRequest,
-               },
-            },
-         },
-      },
+      path: '/api/internal/events/{eventId}/registration-form/preview',
+      operationId: 'previewEventRegistrationForm',
+      tags: ['Event Registration Form'],
+      security,
+      request: { params },
       responses: {
          200: {
-            description: 'Form question updated.',
-            content: {
-               'application/json': {
-                  schema: FormQuestionMutationResponse,
-               },
-            },
+            description: 'Registration form preview returned.',
+            content: json(EventRegistrationFormPreviewResponse),
          },
-         400: {
-            description: 'Validation error or form is not editable.',
-            content: {
-               'application/json': {
-                  schema: validationErrorResponseSchema.or(errorResponseSchema),
-               },
-            },
-         },
-         401: { description: 'Authentication required.' },
-         403: {
-            description:
-               'Missing manage_events permission, Admin role, or steering committee membership.',
-         },
-         404: {
-            description: 'Form question not found.',
-            content: {
-               'application/json': {
-                  schema: errorResponseSchema,
-               },
-            },
-         },
+         ...errors,
       },
    });
-
-   registry.registerPath({
-      method: 'patch',
-      path: '/api/registration-form/option/{id}',
-      tags: [tag],
-      summary: 'Update a form question option',
-      description:
-         'Requires authentication, manage_events permission, and either Admin ' +
-         'role or steering committee membership on the parent event. Only draft ' +
-         'forms without responses can be edited.',
-      security: [protectedEndpoint],
-      request: {
-         params: idParamSchema,
-         body: {
-            required: true,
-            content: {
-               'application/json': {
-                  schema: UpdateFormQuestionOptionRequest,
-               },
-            },
-         },
-      },
-      responses: {
-         200: {
-            description: 'Form question option updated.',
-            content: {
-               'application/json': {
-                  schema: FormQuestionOptionMutationResponse,
-               },
-            },
-         },
-         400: {
-            description: 'Validation error or form is not editable.',
-            content: {
-               'application/json': {
-                  schema: validationErrorResponseSchema.or(errorResponseSchema),
-               },
-            },
-         },
-         401: { description: 'Authentication required.' },
-         403: {
-            description:
-               'Missing manage_events permission, Admin role, or steering committee membership.',
-         },
-         404: {
-            description: 'Form question option not found.',
-            content: {
-               'application/json': {
-                  schema: errorResponseSchema,
-               },
-            },
-         },
-      },
-   });
-
-   registry.registerPath({
-      method: 'patch',
-      path: '/api/registration-form/option/delete/{id}',
-      tags: [tag],
-      summary: 'Delete a form question option',
-      description:
-         'Requires authentication, manage_events permission, and either Admin ' +
-         'role or steering committee membership on the parent event. Soft ' +
-         'deletes the option by setting isActive to false.',
-      security: [protectedEndpoint],
-      request: {
-         params: idParamSchema,
-      },
-      responses: {
-         200: {
-            description: 'Form question option deleted.',
-            content: {
-               'application/json': {
-                  schema: FormQuestionOptionMutationResponse,
-               },
-            },
-         },
-         400: {
-            description: 'Validation error or form is not editable.',
-            content: {
-               'application/json': {
-                  schema: validationErrorResponseSchema.or(errorResponseSchema),
-               },
-            },
-         },
-         401: { description: 'Authentication required.' },
-         403: {
-            description:
-               'Missing manage_events permission, Admin role, or steering committee membership.',
-         },
-         404: {
-            description: 'Form question option not found.',
-            content: {
-               'application/json': {
-                  schema: errorResponseSchema,
-               },
-            },
-         },
-      },
-   });
-
-   registry.registerPath({
-      method: 'patch',
-      path: '/api/registration-form/question/delete/{id}',
-      tags: [tag],
-      summary: 'Delete a form question',
-      description:
-         'Requires authentication, manage_events permission, and either Admin ' +
-         'role or steering committee membership on the parent event. Soft ' +
-         'deletes the question and deactivates related options.',
-      security: [protectedEndpoint],
-      request: {
-         params: idParamSchema,
-      },
-      responses: {
-         200: {
-            description: 'Form question deleted.',
-            content: {
-               'application/json': {
-                  schema: FormQuestionMutationResponse,
-               },
-            },
-         },
-         400: {
-            description: 'Validation error or form is not editable.',
-            content: {
-               'application/json': {
-                  schema: validationErrorResponseSchema.or(errorResponseSchema),
-               },
-            },
-         },
-         401: { description: 'Authentication required.' },
-         403: {
-            description:
-               'Missing manage_events permission, Admin role, or steering committee membership.',
-         },
-         404: {
-            description: 'Form question not found.',
-            content: {
-               'application/json': {
-                  schema: errorResponseSchema,
-               },
-            },
-         },
-      },
-   });
+   for (const action of ['publish', 'close'] as const)
+      registry.registerPath({
+         method: 'post',
+         path: `/api/internal/events/{eventId}/registration-form/${action}`,
+         operationId: `${action}EventRegistrationForm`,
+         tags: ['Event Registration Form'],
+         security,
+         request: { params },
+         responses: itemSuccess,
+      });
 };

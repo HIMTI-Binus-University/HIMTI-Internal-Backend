@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import limiter from './config/rateLimiter.js';
 import { trustedOrigins } from './config/origins.js';
+import { startPaymentExpiry } from './features/event-payments/eventPaymentService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +25,7 @@ app.use(express.json());
 app.use(
    cors({
       origin: trustedOrigins,
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
       credentials: true,
    }),
 );
@@ -37,5 +38,6 @@ app.use('/api', routes);
 app.use(globalErrorHandler);
 
 app.listen(port, () => {
+   startPaymentExpiry();
    console.log(`⚡️[server]: server is running at http://localhost:${port}`);
 });
