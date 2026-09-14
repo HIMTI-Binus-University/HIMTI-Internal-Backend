@@ -14443,6 +14443,45 @@
          }
       },
       "/api/internal/events/{eventId}": {
+         "delete": {
+            "description": "Soft deletes a draft Event with no registration orders. Related setup records are retained. Requires manage_events and Event manager or Admin scope.",
+            "operationId": "deleteEvent",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "eventId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "204": {
+                  "description": "Event deleted"
+               },
+               "401": {
+                  "description": "Authentication required"
+               },
+               "403": {
+                  "description": "Permission and event scope required"
+               },
+               "404": {
+                  "description": "Event not found"
+               },
+               "409": {
+                  "description": "Event is not a draft, has registration orders, or conflicts with another transaction"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Events"
+            ]
+         },
          "get": {
             "operationId": "getInternalEvent",
             "parameters": [

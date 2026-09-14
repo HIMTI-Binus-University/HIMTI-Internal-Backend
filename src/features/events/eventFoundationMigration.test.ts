@@ -15,6 +15,10 @@ const paymentProofTypesMigration = readFileSync(
    'prisma/migrations/20260909120000_fix_payment_proof_types/migration.sql',
    'utf8',
 );
+const eventSoftDeleteMigration = readFileSync(
+   'prisma/migrations/20260910160000_event_soft_delete/migration.sql',
+   'utf8',
+);
 const seed = readFileSync('prisma/seed.ts', 'utf8');
 
 test('final registration schema is Event-owned and excludes removed concepts', () => {
@@ -84,4 +88,21 @@ test('payment proof formats are fixed after existing events are normalized', () 
       /ARRAY\['image\/jpeg', 'image\/png', 'application\/pdf'\]/,
    );
    assert.doesNotMatch(paymentProofTypesMigration, /image\/webp/);
+});
+
+test('event soft deletion adds audit fields without deleting existing data', () => {
+   assert.match(schema, /deletedAt\s+DateTime\?\s+@db\.Timestamp\(0\)/);
+   assert.match(schema, /deletedBy\s+String\?\s+@db\.VarChar\(100\)/);
+   assert.match(
+      eventSoftDeleteMigration,
+      /ADD COLUMN "deletedAt" TIMESTAMP\(0\)/,
+   );
+   assert.match(
+      eventSoftDeleteMigration,
+      /ADD COLUMN "deletedBy" VARCHAR\(100\)/,
+   );
+   assert.doesNotMatch(
+      eventSoftDeleteMigration,
+      /DELETE FROM|DROP TABLE|DROP COLUMN/,
+   );
 });

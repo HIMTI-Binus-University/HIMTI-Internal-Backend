@@ -135,6 +135,26 @@ export const registerEventDocs = (registry: OpenAPIRegistry) => {
          responses: response,
       });
    registry.registerPath({
+      method: 'delete',
+      path: '/api/internal/events/{eventId}',
+      tags: ['Internal Events'],
+      operationId: 'deleteEvent',
+      description:
+         'Soft deletes a draft Event with no registration orders. Related setup records are retained. Requires manage_events and Event manager or Admin scope.',
+      security: [{ sessionCookie: [] }],
+      request: { params: z.object({ eventId: z.string() }) },
+      responses: {
+         204: { description: 'Event deleted' },
+         401: response[401],
+         403: response[403],
+         404: response[404],
+         409: {
+            description:
+               'Event is not a draft, has registration orders, or conflicts with another transaction',
+         },
+      },
+   });
+   registry.registerPath({
       method: 'get',
       path: '/api/internal/events/{eventId}/organizers',
       tags: ['Internal Events'],

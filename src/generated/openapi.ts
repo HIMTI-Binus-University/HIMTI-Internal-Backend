@@ -3042,7 +3042,8 @@ export interface paths {
         get: operations["getInternalEvent"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** @description Soft deletes a draft Event with no registration orders. Related setup records are retained. Requires manage_events and Event manager or Admin scope. */
+        delete: operations["deleteEvent"];
         options?: never;
         head?: never;
         patch: operations["updateEvent"];
@@ -11683,6 +11684,54 @@ export interface operations {
             };
             /** @description Event not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteEvent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Event deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission and event scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event is not a draft, has registration orders, or conflicts with another transaction */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

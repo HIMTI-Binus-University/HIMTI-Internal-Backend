@@ -48,6 +48,10 @@ export const updateEvent = async (req: Request, res: Response) =>
          res.locals.user,
       ),
    });
+export const deleteEvent = async (req: Request, res: Response) => {
+   await eventService.delete(req.params.eventId as string, res.locals.user);
+   res.status(204).send();
+};
 export const transitionEvent =
    (status: 'PUBLISHED' | 'CLOSED' | 'CANCELLED') =>
    async (req: Request, res: Response) =>

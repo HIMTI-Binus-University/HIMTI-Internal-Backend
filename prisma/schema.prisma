@@ -277,6 +277,7 @@ model User {
   // Event relations are inverse declarations only; they do not alter users.
   createdEvents                  Event[]                     @relation("EventCreator")
   updatedEvents                  Event[]                     @relation("EventUpdater")
+  deletedEvents                  Event[]                     @relation("EventDeleter")
   createdEventGroups             EventGroup[]                @relation("EventGroupCreator")
   updatedEventGroups             EventGroup[]                @relation("EventGroupUpdater")
   eventOrganizerAssignments      EventOrganizer[]            @relation("EventOrganizerUser")
@@ -541,10 +542,13 @@ model Event {
   createdBy                 String      @db.VarChar(100)
   updatedAt                 DateTime?   @updatedAt
   updatedBy                 String?     @db.VarChar(100)
+  deletedAt                 DateTime?   @db.Timestamp(0)
+  deletedBy                 String?     @db.VarChar(100)
 
   eventGroup               EventGroup?                @relation(fields: [eventGroupId], references: [id], onDelete: SetNull)
   creator                  User                       @relation("EventCreator", fields: [createdBy], references: [id])
   updater                  User?                      @relation("EventUpdater", fields: [updatedBy], references: [id])
+  deleter                  User?                      @relation("EventDeleter", fields: [deletedBy], references: [id])
   organizers               EventOrganizer[]
   ticketPackages           TicketPackage[]
   registrationForms        RegistrationForm[]

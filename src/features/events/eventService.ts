@@ -131,6 +131,24 @@ class EventService {
          ...(status !== 'PUBLISHED' && { isRegistrationOpen: false }),
       });
    }
+   async delete(id: string, user: User) {
+      const result = await eventRepository.softDelete(
+         id,
+         user.id,
+         isAdminUser(user),
+      );
+      if (result.result === 'NOT_FOUND')
+         throw new AppError('Event not found', 404);
+      if (result.result === 'FORBIDDEN')
+         throw new AppError('Event manager scope required', 403);
+      if (result.result === 'NOT_DRAFT')
+         throw new AppError('Only draft events can be deleted', 409);
+      if (result.result === 'HAS_ORDERS')
+         throw new AppError(
+            'Events with registration orders cannot be deleted',
+            409,
+         );
+   }
    async organizers(id: string, user: User) {
       await this.assertScope(id, user);
       return eventRepository.organizers(id);

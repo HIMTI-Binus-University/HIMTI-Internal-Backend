@@ -27,6 +27,7 @@ const publicSelect = {
 } satisfies Prisma.EventSelect;
 
 const whereFor = (query: EventListQuery): Prisma.EventWhereInput => ({
+   deletedAt: null,
    ...(query.status && { status: query.status }),
    ...(query.search && {
       name: { contains: query.search, mode: 'insensitive' },
@@ -45,7 +46,7 @@ class EventRepository {
    }
    getPublic(id: string) {
       return prisma.event.findFirst({
-         where: { id, status: 'PUBLISHED' },
+         where: { id, status: 'PUBLISHED', deletedAt: null },
          select: publicSelect,
       });
    }
@@ -77,8 +78,8 @@ class EventRepository {
       });
    }
    find(id: string) {
-      return prisma.event.findUnique({
-         where: { id },
+      return prisma.event.findFirst({
+         where: { id, deletedAt: null },
          include: {
             organizers: true,
             eventGroup: { include: { organizers: true } },
@@ -86,8 +87,8 @@ class EventRepository {
       });
    }
    findWithGroup(id: string) {
-      return prisma.event.findUnique({
-         where: { id },
+      return prisma.event.findFirst({
+         where: { id, deletedAt: null },
          include: { eventGroup: { include: { organizers: true } } },
       });
    }
@@ -95,14 +96,14 @@ class EventRepository {
       return prisma.event.create({ data });
    }
    update(id: string, data: Prisma.EventUpdateInput) {
-      return prisma.event.update({ where: { id }, data });
+      return prisma.event.update({ where: { id, deletedAt: null }, data });
    }
    cancel(id: string, userId: string) {
       return prisma.$transaction(
          async (tx) => {
             await tx.$queryRaw`SELECT id FROM events WHERE id = ${id} FOR UPDATE`;
             const event = await tx.event.update({
-               where: { id },
+               where: { id, deletedAt: null },
                data: {
                   status: 'CANCELLED',
                   isRegistrationOpen: false,
@@ -122,6 +123,7 @@ class EventRepository {
       return prisma.event.findFirst({
          where: {
             id,
+            deletedAt: null,
             OR: [
                { organizers: { some: { userId } } },
                { eventGroup: { organizers: { some: { userId } } } },
@@ -134,6 +136,7 @@ class EventRepository {
       return prisma.event.findFirst({
          where: {
             id,
+            deletedAt: null,
             OR: [
                { organizers: { some: { userId, role: 'MANAGER' } } },
                {
@@ -236,8 +239,8 @@ class EventRepository {
       });
    }
    registrationSettings(id: string) {
-      return prisma.event.findUnique({
-         where: { id },
+      return prisma.event.findFirst({
+         where: { id, deletedAt: null },
          select: {
             id: true,
             isRegistrationOpen: true,
@@ -256,6 +259,53 @@ class EventRepository {
             attendanceCheckoutEnabled: true,
          },
       });
+   }
+   softDelete(id: string, userId: string, admin: boolean) {
+      return prisma.$transaction(
+         async (tx) => {
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`event:${id}`}))`;
+            await tx.$queryRaw`SELECT id FROM events WHERE id = ${id} FOR UPDATE`;
+            const event = await tx.event.findFirst({
+               where: { id, deletedAt: null },
+               select: {
+                  status: true,
+                  organizers: {
+                     where: { userId, role: 'MANAGER' },
+                     select: { userId: true },
+                  },
+                  eventGroup: {
+                     select: {
+                        organizers: {
+                           where: { userId, role: 'MANAGER' },
+                           select: { userId: true },
+                        },
+                     },
+                  },
+               },
+            });
+            if (!event) return { result: 'NOT_FOUND' as const };
+            if (
+               !admin &&
+               event.organizers.length === 0 &&
+               !event.eventGroup?.organizers.length
+            )
+               return { result: 'FORBIDDEN' as const };
+            if (event.status !== 'DRAFT')
+               return { result: 'NOT_DRAFT' as const };
+            if (await tx.registrationOrder.count({ where: { eventId: id } }))
+               return { result: 'HAS_ORDERS' as const };
+            await tx.event.update({
+               where: { id, deletedAt: null },
+               data: {
+                  deletedAt: new Date(),
+                  deleter: { connect: { id: userId } },
+                  updater: { connect: { id: userId } },
+               },
+            });
+            return { result: 'DELETED' as const };
+         },
+         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
    }
 }
 export const eventRepository = new EventRepository();

@@ -7,7 +7,9 @@ class EventGroupRepository {
    listPublic(q: EventGroupList) {
       return prisma.eventGroup.findMany({
          where: { ...whereFor(q), status: 'PUBLISHED' },
-         include: { events: { where: { status: 'PUBLISHED' } } },
+         include: {
+            events: { where: { status: 'PUBLISHED', deletedAt: null } },
+         },
          skip: (q.page - 1) * q.limit,
          take: q.limit,
       });
@@ -15,7 +17,9 @@ class EventGroupRepository {
    getPublic(id: string) {
       return prisma.eventGroup.findFirst({
          where: { id, status: 'PUBLISHED' },
-         include: { events: { where: { status: 'PUBLISHED' } } },
+         include: {
+            events: { where: { status: 'PUBLISHED', deletedAt: null } },
+         },
       });
    }
    listInternal(q: EventGroupList, userId: string, admin: boolean) {

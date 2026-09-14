@@ -4,6 +4,7 @@ import { requirePermission } from '@/middleware/permissionMiddleware.js';
 import {
    addOrganizer,
    createEvent,
+   deleteEvent,
    getEventGroupOptions,
    getInternalEvent,
    getPublicEvent,
@@ -34,7 +35,8 @@ router.get(
 router
    .route('/internal/events/:eventId')
    .get(requirePermission('manage_events'), getInternalEvent)
-   .patch(requirePermission('manage_events'), updateEvent);
+   .patch(requirePermission('manage_events'), updateEvent)
+   .delete(requirePermission('manage_events'), deleteEvent);
 router.post(
    '/internal/events/:eventId/publish',
    requirePermission('manage_events'),
