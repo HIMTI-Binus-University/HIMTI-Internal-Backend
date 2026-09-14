@@ -282,4 +282,4 @@ the appropriate integration branch.
 Production and development deployment details are maintained in
 [`DEPLOYMENT.md`](./DEPLOYMENT.md). The VPS workflow builds and publishes GHCR
 images and uses server-managed Compose configuration; the repository Compose
-file is the local development stack.
+file is the local development stack. 
