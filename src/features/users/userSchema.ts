@@ -114,13 +114,32 @@ export const CompleteProfileSchema = z
       }
    });
 
-export const UpdateProfileSchema = z
-   .object({
-      name: requiredText(255),
-      phoneNumber: requiredText(20),
-      lineId: z.string().trim().max(50),
-   })
-   .strict();
+const updateProfileContactShape = {
+   name: requiredText(255),
+   phoneNumber: requiredText(20),
+   lineId: z.string().trim().max(50),
+};
+
+export const UpdateProfileSchema = z.discriminatedUnion('institutionType', [
+   z
+      .object({
+         ...updateProfileContactShape,
+         institutionType: z.literal('BINUS'),
+         universityId: requiredText(255),
+         studyProgramId: requiredText(255),
+         regionId: requiredText(255),
+         nim: requiredText(50),
+      })
+      .strict(),
+   z
+      .object({
+         ...updateProfileContactShape,
+         institutionType: z.literal('NON_BINUS'),
+         universityName: requiredText(255),
+         studyProgramName: requiredText(255),
+      })
+      .strict(),
+]);
 
 const relationSchema = z
    .object({

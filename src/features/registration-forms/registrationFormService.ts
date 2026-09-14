@@ -1,385 +1,114 @@
-import type {
-   FormFieldType,
-   FormQuestion,
-   FormQuestionOption,
-   Prisma,
-} from '@prisma/client';
-import { auth } from '@/utils/auth.js';
 import { AppError } from '@/utils/appError.js';
-import { eventCommitteeService } from '@/features/event-committee/eventCommitteeService.js';
-import { registrationFormRepository } from './registrationFormRepository.js';
-import type {
-   CreateFormQuestionOptionRequest,
-   CreateFormQuestionRequest,
-   ReorderFormQuestionsRequest,
-   UpdateFormQuestionOptionRequest,
-   UpdateFormQuestionRequest,
-} from './registrationFormTypes.js';
-import { generateUniqueFieldKey } from '@/utils/fieldKey.js';
+import { eventService } from '@/features/events/eventService.js';
+import { registrationFormRepository as repo } from './registrationFormRepository.js';
+import type { RegistrationFormBody } from './registrationFormTypes.js';
+import { reservedProfileKeys } from './registrationFormTypes.js';
 
-const optionFieldTypes: readonly FormFieldType[] = [
-   'SELECT',
-   'RADIO',
-   'CHECKBOX',
-];
+type User = { id: string; roles?: unknown };
+const bodyOf = (form: Awaited<ReturnType<typeof repo.latest>>) => {
+   if (!form) throw new AppError('Registration form not found', 404);
+   return {
+      expectedRevision: form.revision,
+      name: form.name,
+      description: form.description,
+      sections: form.sections.map((section) => ({
+         title: section.title,
+         description: section.description,
+         questions: section.questions.map((question) => ({
+            logicalId: question.logicalId,
+            fieldKey: question.fieldKey,
+            label: question.label,
+            type: question.type,
+            isRequired: question.isRequired,
+            validation: question.validation,
+            options: question.options.map(({ label, value }) => ({
+               label,
+               value,
+            })),
+         })),
+      })),
+   } as RegistrationFormBody;
+};
 
 class RegistrationFormService {
-   private async assertFormCanBeEdited(formId: string, status: string) {
-      if (status !== 'DRAFT') {
-         throw new AppError('Only draft forms can be edited', 400);
-      }
-
-      const responseCount =
-         await registrationFormRepository.countResponsesForForm(formId);
-
-      if (responseCount > 0) {
+   async get(eventId: string, user: User) {
+      await eventService.assertScope(eventId, user);
+      const form = await repo.latest(eventId);
+      if (!form) throw new AppError('Registration form not found', 404);
+      return form;
+   }
+   validate(body: RegistrationFormBody) {
+      const keys = body.sections.flatMap(({ questions }) =>
+         questions.map(({ fieldKey }) => fieldKey),
+      );
+      const reserved = keys.find((key) => reservedProfileKeys.has(key));
+      if (reserved)
+         throw new AppError(`Reserved profile field key: ${reserved}`, 400);
+      if (new Set(keys).size !== keys.length)
          throw new AppError(
-            'Cannot edit form questions after responses exist',
+            'Question field keys must be unique across the form',
             400,
          );
-      }
-   }
-
-   private async getEditableQuestion(id: string) {
-      const question = await registrationFormRepository.findQuestionById(id);
-
-      if (!question) {
-         throw new AppError('Form question not found', 404);
-      }
-
-      await this.assertFormCanBeEdited(question.form.id, question.form.status);
-
-      return question;
-   }
-
-   private async getEditableOption(id: string) {
-      const option = await registrationFormRepository.findOptionById(id);
-
-      if (!option) {
-         throw new AppError('Form question option not found', 404);
-      }
-
-      await this.assertFormCanBeEdited(
-         option.question.form.id,
-         option.question.form.status,
-      );
-
-      return option;
-   }
-
-   private assertValidOptions(
-      fieldType: FormFieldType,
-      options: CreateFormQuestionRequest['options'],
-   ) {
-      if (
-         optionFieldTypes.includes(fieldType) &&
-         (!options || !options.length)
-      ) {
-         throw new AppError(
-            'Option-based questions must have at least one option',
-            400,
-         );
-      }
-   }
-
-   async createFormQuestion(
-      payload: CreateFormQuestionRequest,
-      formId: string,
-      user: typeof auth.$Infer.Session.user,
-   ): Promise<FormQuestion> {
-      const form = await registrationFormRepository.findFormById(formId);
-
-      if (!form) {
-         throw new AppError('Registration form not found', 404);
-      }
-
-      await this.assertFormCanBeEdited(form.id, form.status);
-
-      await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
-         form.subEvent.eventId,
-         user,
-      );
-
-      this.assertValidOptions(payload.fieldType, payload.options);
-
-      const existingQuestions =
-         await registrationFormRepository.findQuestionsByFormId(form.id);
-      const fieldKey = generateUniqueFieldKey(
-         payload.label,
-         existingQuestions.map((question) => question.fieldKey),
-      );
-      const nextOrderIndex =
-         existingQuestions.length > 0
-            ? Math.max(
-                 ...existingQuestions.map((question) => question.orderIndex),
-              ) + 1
-            : 0;
-      const shouldCreateOptions = optionFieldTypes.includes(payload.fieldType);
-
-      const questionData: Prisma.FormQuestionCreateInput = {
-         form: {
-            connect: {
-               id: form.id,
-            },
-         },
-         label: payload.label,
-         fieldKey,
-         fieldType: payload.fieldType,
-         isRequired: payload.isRequired,
-         helpText: payload.helpText,
-         orderIndex: payload.orderIndex ?? nextOrderIndex,
-         creator: {
-            connect: {
-               id: user.id,
-            },
-         },
-         options:
-            shouldCreateOptions && payload.options
-               ? {
-                    create: payload.options.map((option) => ({
-                       label: option.label,
-                       value: option.value,
-                       creator: {
-                          connect: {
-                             id: user.id,
-                          },
-                       },
-                    })),
-                 }
-               : undefined,
-      };
-
-      return await registrationFormRepository.createQuestion(questionData);
-   }
-
-   async reorderFormQuestions(
-      payload: ReorderFormQuestionsRequest,
-      formId: string,
-      user: typeof auth.$Infer.Session.user,
-   ): Promise<FormQuestion[]> {
-      const form = await registrationFormRepository.findFormById(formId);
-
-      if (!form) {
-         throw new AppError('Registration form not found', 404);
-      }
-
-      await this.assertFormCanBeEdited(form.id, form.status);
-
-      await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
-         form.subEvent.eventId,
-         user,
-      );
-
-      const uniqueQuestionIds = new Set(payload.questionIds);
-
-      if (uniqueQuestionIds.size !== payload.questionIds.length) {
-         throw new AppError('Question ids must be unique', 400);
-      }
-
-      const questions = await registrationFormRepository.findQuestionsByFormId(
-         form.id,
-      );
-      const activeQuestionIds = questions
-         .filter((question) => question.status === 'ACTIVE')
-         .map((question) => question.id);
-      const activeQuestionIdSet = new Set(activeQuestionIds);
-
-      if (payload.questionIds.length !== activeQuestionIds.length) {
-         throw new AppError('All active questions must be included', 400);
-      }
-
-      const hasInvalidQuestionId = payload.questionIds.some(
-         (questionId) => !activeQuestionIdSet.has(questionId),
-      );
-
-      if (hasInvalidQuestionId) {
-         throw new AppError('All question ids must belong to this form', 400);
-      }
-
-      return await registrationFormRepository.reorderQuestions(
-         form.id,
-         payload.questionIds,
-         user.id,
-      );
-   }
-
-   async updateFormQuestion(
-      payload: UpdateFormQuestionRequest,
-      id: string,
-      user: typeof auth.$Infer.Session.user,
-   ): Promise<FormQuestion> {
-      const question = await this.getEditableQuestion(id);
-
-      await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
-         question.form.subEvent.eventId,
-         user,
-      );
-
-      const nextFieldType = payload.fieldType ?? question.fieldType;
-      const activeOptionCount = question.options.filter(
-         (option) => option.isActive,
-      ).length;
-
-      if (optionFieldTypes.includes(nextFieldType) && activeOptionCount === 0) {
-         throw new AppError(
-            'Option-based questions must have at least one active option',
-            400,
-         );
-      }
-
-      const updateData: Prisma.FormQuestionUpdateInput = {
-         label: payload.label,
-         fieldType: payload.fieldType,
-         isRequired: payload.isRequired,
-         helpText: payload.helpText,
-         orderIndex: payload.orderIndex,
-         status: payload.status,
-         updater: {
-            connect: {
-               id: user.id,
-            },
-         },
-      };
-
-      return await registrationFormRepository.updateQuestion(id, updateData);
-   }
-
-   async deleteFormQuestion(
-      id: string,
-      user: typeof auth.$Infer.Session.user,
-   ): Promise<FormQuestion> {
-      const question = await this.getEditableQuestion(id);
-
-      await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
-         question.form.subEvent.eventId,
-         user,
-      );
-
-      return await registrationFormRepository.deleteQuestion(id, user.id);
-   }
-
-   async createFormQuestionOption(
-      payload: CreateFormQuestionOptionRequest,
-      questionId: string,
-      user: typeof auth.$Infer.Session.user,
-   ): Promise<FormQuestionOption> {
-      const question = await this.getEditableQuestion(questionId);
-
-      await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
-         question.form.subEvent.eventId,
-         user,
-      );
-
-      if (!optionFieldTypes.includes(question.fieldType)) {
-         throw new AppError(
-            'Options can only be added to option-based questions',
-            400,
-         );
-      }
-
-      const existingOption =
-         await registrationFormRepository.findActiveOptionByValue(
-            question.id,
-            payload.value,
-         );
-
-      if (existingOption) {
-         throw new AppError('Option value must be unique', 400);
-      }
-
-      const optionData: Prisma.FormQuestionOptionCreateInput = {
-         question: {
-            connect: {
-               id: question.id,
-            },
-         },
-         label: payload.label,
-         value: payload.value,
-         creator: {
-            connect: {
-               id: user.id,
-            },
-         },
-      };
-
-      return await registrationFormRepository.createQuestionOption(optionData);
-   }
-
-   async updateFormQuestionOption(
-      payload: UpdateFormQuestionOptionRequest,
-      id: string,
-      user: typeof auth.$Infer.Session.user,
-   ): Promise<FormQuestionOption> {
-      const option = await this.getEditableOption(id);
-
-      await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
-         option.question.form.subEvent.eventId,
-         user,
-      );
-
-      if (
-         (payload.value && payload.value !== option.value) ||
-         payload.isActive === true
-      ) {
-         const existingOption =
-            await registrationFormRepository.findActiveOptionByValue(
-               option.formQuestionId,
-               payload.value ?? option.value,
-               option.id,
-            );
-
-         if (existingOption) {
-            throw new AppError('Option value must be unique', 400);
+      for (const section of body.sections) {
+         for (const question of section.questions) {
+            const values = question.options.map(({ value }) => value);
+            if (new Set(values).size !== values.length)
+               throw new AppError(
+                  `Option values must be unique for ${question.fieldKey}`,
+                  400,
+               );
+            const validation = question.validation as Record<string, number>;
+            if (
+               validation.minLength > validation.maxLength ||
+               validation.min > validation.max ||
+               validation.minSelections > validation.maxSelections
+            )
+               throw new AppError(
+                  `Invalid validation range for ${question.fieldKey}`,
+                  400,
+               );
          }
       }
-
-      const updateData: Prisma.FormQuestionOptionUpdateInput = {
-         label: payload.label,
-         value: payload.value,
-         isActive: payload.isActive,
-         updater: {
-            connect: {
-               id: user.id,
-            },
-         },
-      };
-
-      return await registrationFormRepository.updateQuestionOption(
-         id,
-         updateData,
-      );
+      return { valid: true as const };
    }
-
-   async deleteFormQuestionOption(
-      id: string,
-      user: typeof auth.$Infer.Session.user,
-   ): Promise<FormQuestionOption> {
-      const option = await this.getEditableOption(id);
-
-      await eventCommitteeService.assertEventSteeringCommitteeMemberOrAdmin(
-         option.question.form.subEvent.eventId,
-         user,
-      );
-
+   async put(eventId: string, body: RegistrationFormBody, user: User) {
+      await eventService.assertScope(eventId, user);
+      this.validate(body);
+      return repo.save(eventId, body);
+   }
+   async validateCurrent(eventId: string, user: User) {
+      return this.validate(bodyOf(await this.get(eventId, user)));
+   }
+   async preview(eventId: string, user: User) {
+      const form = await this.get(eventId, user);
+      this.validate(bodyOf(form));
+      return { profileSection: { readOnly: true }, form };
+   }
+   async publish(eventId: string, user: User) {
+      const form = await this.get(eventId, user);
+      if (form.status !== 'DRAFT')
+         throw new AppError(
+            'Reload and edit the current published Registration Form; saving publishes changes and assigns additional questions automatically.',
+            409,
+         );
       if (
-         optionFieldTypes.includes(option.question.fieldType) &&
-         option.isActive
-      ) {
-         const activeOptionCount =
-            await registrationFormRepository.countActiveOptionsForQuestion(
-               option.formQuestionId,
-            );
-
-         if (activeOptionCount <= 1) {
-            throw new AppError(
-               'Option-based questions must have at least one active option',
-               400,
-            );
-         }
-      }
-
-      return await registrationFormRepository.deleteQuestionOption(id, user.id);
+         form.sections.some(({ questions }) =>
+            questions.some(({ type }) => type === 'FILE'),
+         )
+      )
+         throw new AppError(
+            'FILE questions cannot be published until private answer uploads are supported',
+            422,
+            'UNSUPPORTED_FILE_QUESTION',
+         );
+      this.validate(bodyOf(form));
+      return repo.publish(eventId, form.id, form.revision);
+   }
+   async close(eventId: string, user: User) {
+      const form = await this.get(eventId, user);
+      if (form.status !== 'PUBLISHED')
+         throw new AppError('Only a published form can be closed', 409);
+      return repo.close(eventId, form.id, form.revision);
    }
 }
-
 export const registrationFormService = new RegistrationFormService();

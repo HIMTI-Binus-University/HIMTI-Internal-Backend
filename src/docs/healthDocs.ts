@@ -19,6 +19,7 @@ export const registerHealthDocs = (registry: OpenAPIRegistry) => {
    registry.registerPath({
       method: 'get',
       path: '/api/health',
+      operationId: 'getApiHealth',
       tags: [tag],
       summary: 'Check API health',
       responses: {

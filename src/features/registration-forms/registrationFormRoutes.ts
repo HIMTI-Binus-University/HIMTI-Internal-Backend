@@ -1,60 +1,39 @@
 import express from 'express';
-import type { Router } from 'express';
 import { requireAuth } from '@/middleware/authMiddleware.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
 import {
-   createFormQuestionOption,
-   createFormQuestion,
-   deleteFormQuestionOption,
-   deleteFormQuestion,
-   reorderFormQuestions,
-   updateFormQuestionOption,
-   updateFormQuestion,
+   closeRegistrationForm,
+   getRegistrationForm,
+   previewRegistrationForm,
+   publishRegistrationForm,
+   putRegistrationForm,
+   validateRegistrationForm,
 } from './registrationFormController.js';
 
-const router: Router = express.Router();
-
+const router = express.Router();
+router.use(
+   '/internal/events/:eventId/registration-form',
+   requireAuth,
+   requirePermission('manage_event_registration_form'),
+);
+router
+   .route('/internal/events/:eventId/registration-form')
+   .get(getRegistrationForm)
+   .put(putRegistrationForm);
 router.post(
-   '/:id/question',
-   requireAuth,
-   requirePermission('manage_events'),
-   createFormQuestion,
-);
-router.patch(
-   '/:id/reorder-questions',
-   requireAuth,
-   requirePermission('manage_events'),
-   reorderFormQuestions,
+   '/internal/events/:eventId/registration-form/validate',
+   validateRegistrationForm,
 );
 router.post(
-   '/question/:id/option',
-   requireAuth,
-   requirePermission('manage_events'),
-   createFormQuestionOption,
+   '/internal/events/:eventId/registration-form/preview',
+   previewRegistrationForm,
 );
-router.patch(
-   '/question/:id',
-   requireAuth,
-   requirePermission('manage_events'),
-   updateFormQuestion,
+router.post(
+   '/internal/events/:eventId/registration-form/publish',
+   publishRegistrationForm,
 );
-router.patch(
-   '/question/delete/:id',
-   requireAuth,
-   requirePermission('manage_events'),
-   deleteFormQuestion,
+router.post(
+   '/internal/events/:eventId/registration-form/close',
+   closeRegistrationForm,
 );
-router.patch(
-   '/option/:id',
-   requireAuth,
-   requirePermission('manage_events'),
-   updateFormQuestionOption,
-);
-router.patch(
-   '/option/delete/:id',
-   requireAuth,
-   requirePermission('manage_events'),
-   deleteFormQuestionOption,
-);
-
 export default router;

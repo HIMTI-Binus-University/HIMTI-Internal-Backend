@@ -1,256 +1,311 @@
-import { Prisma, Event } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
-import { parseSort } from '@/utils/sort.js';
-import type { GetEventQuery } from './eventTypes.js';
+import type { EventListQuery } from './eventTypes.js';
 
-const allowedEventSortFields = [
-   'createdAt',
-   'updatedAt',
-   'name',
-   'status',
-] as const;
+const publicSelect = {
+   id: true,
+   eventGroupId: true,
+   name: true,
+   publicDescription: true,
+   startsAt: true,
+   endsAt: true,
+   locationName: true,
+   locationAddress: true,
+   locationUrl: true,
+   coverImageUrl: true,
+   primaryColor: true,
+   secondaryColor: true,
+   status: true,
+   eventGroup: {
+      select: {
+         name: true,
+         coverImageUrl: true,
+         primaryColor: true,
+         secondaryColor: true,
+      },
+   },
+} satisfies Prisma.EventSelect;
+
+const whereFor = (query: EventListQuery): Prisma.EventWhereInput => ({
+   deletedAt: null,
+   ...(query.status && { status: query.status }),
+   ...(query.search && {
+      name: { contains: query.search, mode: 'insensitive' },
+   }),
+});
 
 class EventRepository {
-   async findPublishedForMembers() {
-      return await prisma.event.findMany({
-         where: {
-            status: 'PUBLISHED',
-            subevents: {
-               some: {
-                  status: 'OPEN',
-                  visibility: { in: ['PUBLIC', 'INTERNAL'] },
-               },
-            },
-         },
+   listPublic(query: EventListQuery) {
+      return prisma.event.findMany({
+         where: { ...whereFor(query), status: 'PUBLISHED' },
+         select: publicSelect,
+         orderBy: { startsAt: 'asc' },
+         skip: (query.page - 1) * query.limit,
+         take: query.limit,
+      });
+   }
+   getPublic(id: string) {
+      return prisma.event.findFirst({
+         where: { id, status: 'PUBLISHED', deletedAt: null },
+         select: publicSelect,
+      });
+   }
+   listInternal(query: EventListQuery, userId: string, admin: boolean) {
+      const where = {
+         ...whereFor(query),
+         ...(!admin && {
+            OR: [
+               { organizers: { some: { userId } } },
+               { eventGroup: { organizers: { some: { userId } } } },
+            ],
+         }),
+      };
+      return prisma.event.findMany({
+         where,
+         include: { organizers: true },
          orderBy: { createdAt: 'desc' },
-         select: {
-            id: true,
-            name: true,
-            publicDescription: true,
-            coverImageUrl: true,
-            subevents: {
-               where: {
-                  status: 'OPEN',
-                  visibility: { in: ['PUBLIC', 'INTERNAL'] },
-               },
-               orderBy: [{ position: 'asc' }, { date: 'asc' }, { id: 'asc' }],
-               select: {
-                  id: true,
-                  name: true,
-                  publicDescription: true,
-                  date: true,
-                  type: true,
-                  locationName: true,
-                  locationUrl: true,
-                  posterUrl: true,
-                  destinationUrl: true,
-                  position: true,
-                  price: true,
-                  maxParticipants: true,
-                  isRegistrationOpen: true,
-               },
-            },
+         skip: (query.page - 1) * query.limit,
+         take: query.limit,
+      });
+   }
+   eventGroupOptions(userId: string, admin: boolean) {
+      return prisma.eventGroup.findMany({
+         where: admin
+            ? undefined
+            : { organizers: { some: { userId, role: 'MANAGER' } } },
+         select: { id: true, name: true },
+         orderBy: { name: 'asc' },
+      });
+   }
+   find(id: string) {
+      return prisma.event.findFirst({
+         where: { id, deletedAt: null },
+         include: {
+            organizers: true,
+            eventGroup: { include: { organizers: true } },
          },
       });
    }
-
-   async findPublishedByIdForMembers(id: string) {
-      return await prisma.event.findFirst({
-         where: {
-            id,
-            status: 'PUBLISHED',
-            subevents: {
-               some: {
-                  status: 'OPEN',
-                  visibility: { in: ['PUBLIC', 'INTERNAL'] },
-               },
-            },
-         },
-         select: {
-            id: true,
-            name: true,
-            publicDescription: true,
-            coverImageUrl: true,
-            subevents: {
-               where: {
-                  status: 'OPEN',
-                  visibility: { in: ['PUBLIC', 'INTERNAL'] },
-               },
-               orderBy: [{ position: 'asc' }, { date: 'asc' }, { id: 'asc' }],
-               select: {
-                  id: true,
-                  name: true,
-                  publicDescription: true,
-                  date: true,
-                  type: true,
-                  locationName: true,
-                  locationUrl: true,
-                  posterUrl: true,
-                  destinationUrl: true,
-                  position: true,
-                  price: true,
-                  maxParticipants: true,
-                  isRegistrationOpen: true,
-               },
-            },
-         },
+   findWithGroup(id: string) {
+      return prisma.event.findFirst({
+         where: { id, deletedAt: null },
+         include: { eventGroup: { include: { organizers: true } } },
       });
    }
-
-   async findSubEventsForOrder(eventId: string) {
-      return await prisma.subevent.findMany({
-         where: { eventId },
-         orderBy: [{ position: 'asc' }, { date: 'asc' }, { id: 'asc' }],
-         select: { id: true, position: true },
-      });
+   create(data: Prisma.EventCreateInput) {
+      return prisma.event.create({ data });
    }
-
-   async reorderSubEvents(eventId: string, subEventIds: string[]) {
-      return await prisma.$transaction(
-         subEventIds.map((id, position) =>
-            prisma.subevent.update({
-               where: { id, eventId },
-               data: { position },
-            }),
-         ),
+   update(id: string, data: Prisma.EventUpdateInput) {
+      return prisma.event.update({ where: { id, deletedAt: null }, data });
+   }
+   cancel(id: string, userId: string) {
+      return prisma.$transaction(
+         async (tx) => {
+            await tx.$queryRaw`SELECT id FROM events WHERE id = ${id} FOR UPDATE`;
+            const event = await tx.event.update({
+               where: { id, deletedAt: null },
+               data: {
+                  status: 'CANCELLED',
+                  isRegistrationOpen: false,
+                  updater: { connect: { id: userId } },
+               },
+            });
+            await tx.registrationTicket.updateMany({
+               where: { eventId: id, status: 'ACTIVE' },
+               data: { status: 'REVOKED', revokedAt: new Date() },
+            });
+            return event;
+         },
+         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
    }
-   async create(data: Prisma.EventCreateInput): Promise<Event> {
-      return await prisma.event.create({ data });
-   }
-
-   async update(id: string, data: Prisma.EventUpdateInput): Promise<Event> {
-      return await prisma.event.update({ where: { id }, data });
-   }
-
-   async findById(id: string): Promise<Event | null> {
-      return await prisma.event.findUnique({ where: { id } });
-   }
-
-   async cancelEvent(id: string, userId: string): Promise<Event> {
-      return await prisma.$transaction(async (tx) => {
-         await tx.registrationForm.updateMany({
-            where: {
-               subEvent: {
-                  eventId: id,
-               },
-            },
-            data: {
-               status: 'CLOSED',
-               updatedBy: userId,
-            },
-         });
-
-         await tx.subevent.updateMany({
-            where: {
-               eventId: id,
-            },
-            data: {
-               status: 'CANCELLED',
-               isRegistrationOpen: false,
-               updatedBy: userId,
-            },
-         });
-
-         return await tx.event.update({
-            where: { id },
-            data: {
-               status: 'CANCELLED',
-               updater: {
-                  connect: {
-                     id: userId,
-                  },
-               },
-            },
-         });
+   hasScope(id: string, userId: string) {
+      return prisma.event.findFirst({
+         where: {
+            id,
+            deletedAt: null,
+            OR: [
+               { organizers: { some: { userId } } },
+               { eventGroup: { organizers: { some: { userId } } } },
+            ],
+         },
+         select: { id: true },
       });
    }
-
-   async findAllForCommitteeUser(params: GetEventQuery, userId: string) {
-      const { page, limit, search, sort, status, visibility } = params;
-
-      const where: Prisma.EventWhereInput = {
-         ...(status && { status }),
-      };
-
-      if (visibility) {
-         where.subevents = {
-            some: {
-               visibility,
-            },
-         };
-      }
-
-      if (search) {
-         where.OR = [
-            { name: { contains: search, mode: 'insensitive' } },
-            {
-               publicDescription: {
-                  contains: search,
-                  mode: 'insensitive',
-               },
-            },
-            {
-               subevents: {
-                  some: {
-                     name: { contains: search, mode: 'insensitive' },
+   hasManagerScope(id: string, userId: string) {
+      return prisma.event.findFirst({
+         where: {
+            id,
+            deletedAt: null,
+            OR: [
+               { organizers: { some: { userId, role: 'MANAGER' } } },
+               {
+                  eventGroup: {
+                     organizers: { some: { userId, role: 'MANAGER' } },
                   },
                },
-            },
-         ];
-      }
-
-      const sortOption = parseSort(sort, allowedEventSortFields, {
-         field: 'createdAt',
-         direction: 'desc',
+            ],
+         },
+         select: { id: true },
       });
-      const orderBy: Prisma.EventOrderByWithRelationInput = {
-         [sortOption.field]: sortOption.direction,
-      };
-
-      const skip = (page - 1) * limit;
-
-      const [data, total] = await prisma.$transaction([
-         prisma.event.findMany({
-            where,
-            orderBy,
-            skip,
-            take: limit,
-            select: {
-               id: true,
-               name: true,
-               publicDescription: true,
-               coverImageUrl: true,
-               status: true,
-               createdAt: true,
-               updatedAt: true,
-               subevents: {
-                  orderBy: [
-                     { position: 'asc' },
-                     { date: 'asc' },
-                     { id: 'asc' },
-                  ],
-                  select: {
-                     id: true,
-                     eventId: true,
-                     name: true,
-                     date: true,
-                     type: true,
-                     locationUrl: true,
-                     posterUrl: true,
-                     destinationUrl: true,
-                     position: true,
-                     visibility: true,
-                     status: true,
+   }
+   hasEventGroupScope(id: string, userId: string) {
+      return prisma.eventGroup.findFirst({
+         where: { id, organizers: { some: { userId } } },
+         select: { id: true },
+      });
+   }
+   findEventGroup(id: string) {
+      return prisma.eventGroup.findUnique({
+         where: { id },
+         select: { id: true },
+      });
+   }
+   hasEventGroupManagerScope(id: string, userId: string) {
+      return prisma.eventGroup.findFirst({
+         where: { id, organizers: { some: { userId, role: 'MANAGER' } } },
+         select: { id: true },
+      });
+   }
+   organizers(id: string) {
+      return prisma.eventOrganizer.findMany({
+         where: { eventId: id },
+         include: { user: { select: { id: true, name: true, email: true } } },
+      });
+   }
+   addOrganizer(
+      eventId: string,
+      userId: string,
+      role: 'MANAGER' | 'ORGANIZER',
+      assignedBy: string,
+   ) {
+      return prisma.eventOrganizer.create({
+         data: { eventId, userId, role, assignedBy },
+      });
+   }
+   updateOrganizer(
+      eventId: string,
+      userId: string,
+      role: 'MANAGER' | 'ORGANIZER',
+   ) {
+      return prisma.eventOrganizer.update({
+         where: { eventId_userId: { eventId, userId } },
+         data: { role },
+      });
+   }
+   removeOrganizer(eventId: string, userId: string) {
+      return prisma.eventOrganizer.delete({
+         where: { eventId_userId: { eventId, userId } },
+      });
+   }
+   changeOrganizer(
+      eventId: string,
+      userId: string,
+      role: 'MANAGER' | 'ORGANIZER' | null,
+   ) {
+      return prisma.$transaction(async (tx) => {
+         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`event:${eventId}`}))`;
+         const organizer = await tx.eventOrganizer.findUnique({
+            where: { eventId_userId: { eventId, userId } },
+         });
+         if (!organizer) return { result: 'NOT_FOUND' as const };
+         if (
+            organizer.role === 'MANAGER' &&
+            role !== 'MANAGER' &&
+            (await tx.eventOrganizer.count({
+               where: { eventId, role: 'MANAGER' },
+            })) === 1
+         )
+            return { result: 'LAST_MANAGER' as const };
+         const data = role
+            ? await tx.eventOrganizer.update({
+                 where: { eventId_userId: { eventId, userId } },
+                 data: { role },
+              })
+            : await tx.eventOrganizer.delete({
+                 where: { eventId_userId: { eventId, userId } },
+              });
+         return { result: 'UPDATED' as const, data };
+      });
+   }
+   organizer(eventId: string, userId: string) {
+      return prisma.eventOrganizer.findUnique({
+         where: { eventId_userId: { eventId, userId } },
+      });
+   }
+   managerCount(eventId: string) {
+      return prisma.eventOrganizer.count({
+         where: { eventId, role: 'MANAGER' },
+      });
+   }
+   registrationSettings(id: string) {
+      return prisma.event.findFirst({
+         where: { id, deletedAt: null },
+         select: {
+            id: true,
+            isRegistrationOpen: true,
+            registrationOpensAt: true,
+            registrationClosesAt: true,
+            cancellationClosesAt: true,
+            capacity: true,
+            paymentCurrency: true,
+            paymentBankName: true,
+            paymentAccountNumber: true,
+            paymentAccountHolder: true,
+            paymentInstructions: true,
+            paymentProofTypes: true,
+            paymentProofMaxBytes: true,
+            attendanceEnabled: true,
+            attendanceCheckoutEnabled: true,
+         },
+      });
+   }
+   softDelete(id: string, userId: string, admin: boolean) {
+      return prisma.$transaction(
+         async (tx) => {
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`event:${id}`}))`;
+            await tx.$queryRaw`SELECT id FROM events WHERE id = ${id} FOR UPDATE`;
+            const event = await tx.event.findFirst({
+               where: { id, deletedAt: null },
+               select: {
+                  status: true,
+                  organizers: {
+                     where: { userId, role: 'MANAGER' },
+                     select: { userId: true },
+                  },
+                  eventGroup: {
+                     select: {
+                        organizers: {
+                           where: { userId, role: 'MANAGER' },
+                           select: { userId: true },
+                        },
+                     },
                   },
                },
-            },
-         }),
-         prisma.event.count({ where }),
-      ]);
-
-      return { data, total };
+            });
+            if (!event) return { result: 'NOT_FOUND' as const };
+            if (
+               !admin &&
+               event.organizers.length === 0 &&
+               !event.eventGroup?.organizers.length
+            )
+               return { result: 'FORBIDDEN' as const };
+            if (event.status !== 'DRAFT')
+               return { result: 'NOT_DRAFT' as const };
+            if (await tx.registrationOrder.count({ where: { eventId: id } }))
+               return { result: 'HAS_ORDERS' as const };
+            await tx.event.update({
+               where: { id, deletedAt: null },
+               data: {
+                  deletedAt: new Date(),
+                  deleter: { connect: { id: userId } },
+                  updater: { connect: { id: userId } },
+               },
+            });
+            return { result: 'DELETED' as const };
+         },
+         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
    }
 }
-
 export const eventRepository = new EventRepository();

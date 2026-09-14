@@ -23,6 +23,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - private_uploads:/var/lib/himti/private-uploads
 
   migrate:
     build: .
@@ -55,3 +57,4 @@ services:
 
 volumes:
   postgres_data:
+  private_uploads:

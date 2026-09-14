@@ -110,6 +110,23 @@ class UserRepository {
       });
    }
 
+   async updateProfile(
+      id: string,
+      data: Prisma.UserUncheckedUpdateManyInput,
+      requireVerifiedOutlook: boolean,
+   ) {
+      return await prisma.user.updateMany({
+         where: {
+            id,
+            ...(requireVerifiedOutlook && {
+               outlookEmail: { not: null },
+               outlookEmailVerified: true,
+            }),
+         },
+         data,
+      });
+   }
+
    async findAll(params: GetUserSchema, paginate = true) {
       const { page, limit, sort } = params;
       const where = this.getWhere(params);
