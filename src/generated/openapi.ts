@@ -735,7 +735,6 @@ export interface paths {
                                     mission: string;
                                     name: string;
                                     photoUrl: string | null;
-                                    position: number;
                                     slogan: string | null;
                                     videoUrl: string | null;
                                     vision: string;
@@ -959,7 +958,6 @@ export interface paths {
                                     mission: string;
                                     name: string;
                                     photoUrl: string | null;
-                                    position: number;
                                     slogan: string | null;
                                     videoUrl: string | null;
                                     vision: string;
@@ -1541,7 +1539,6 @@ export interface paths {
                         name: string;
                         /** Format: uri */
                         photoUrl?: string | null;
-                        position?: number;
                         slogan?: string | null;
                         /** Format: uri */
                         videoUrl?: string | null;
@@ -1568,7 +1565,6 @@ export interface paths {
                                 mission: string;
                                 name: string;
                                 photoUrl: string | null;
-                                position: number;
                                 slogan: string | null;
                                 videoUrl: string | null;
                                 vision: string;
@@ -2558,6 +2554,7 @@ export interface paths {
                         "application/json": {
                             data: {
                                 ballotCount: number;
+                                eligibleVoterCount: number;
                                 participationCount: number;
                                 valid: boolean;
                             };
@@ -2705,7 +2702,6 @@ export interface paths {
                         name?: string;
                         /** Format: uri */
                         photoUrl?: string | null;
-                        position?: number;
                         slogan?: string | null;
                         /** Format: uri */
                         videoUrl?: string | null;
@@ -2732,7 +2728,6 @@ export interface paths {
                                 mission: string;
                                 name: string;
                                 photoUrl: string | null;
-                                position: number;
                                 slogan: string | null;
                                 videoUrl: string | null;
                                 vision: string;
@@ -8926,7 +8921,6 @@ export interface components {
                 mission: string;
                 name: string;
                 photoUrl: string | null;
-                position: number;
                 slogan: string | null;
                 videoUrl: string | null;
                 vision: string;
@@ -8957,7 +8951,6 @@ export interface components {
                     mission: string;
                     name: string;
                     photoUrl: string | null;
-                    position: number;
                     slogan: string | null;
                     videoUrl: string | null;
                     vision: string;
@@ -9005,7 +8998,6 @@ export interface components {
                         mission: string;
                         name: string;
                         photoUrl: string | null;
-                        position: number;
                         slogan: string | null;
                         videoUrl: string | null;
                         vision: string;

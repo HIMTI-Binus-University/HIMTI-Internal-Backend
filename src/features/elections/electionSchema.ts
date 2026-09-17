@@ -81,7 +81,6 @@ export const CreateCandidateSchema = z
          .array(z.string().trim().min(1).max(500))
          .max(30)
          .optional(),
-      position: z.number().int().min(0).optional(),
       isActive: z.boolean().optional(),
    })
    .strict();

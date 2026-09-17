@@ -202,11 +202,10 @@ class ElectionService {
    }
 
    async getTurnout(electionId: string) {
-      const tally = await electionRepository.tally(electionId);
+      const turnout = await electionRepository.turnout(electionId);
       return {
-         participationCount: tally.participationCount,
-         ballotCount: tally.ballotCount,
-         valid: tally.participationCount === tally.ballotCount,
+         ...turnout,
+         valid: turnout.participationCount === turnout.ballotCount,
       };
    }
 

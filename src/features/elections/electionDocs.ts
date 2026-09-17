@@ -34,7 +34,6 @@ const candidateSchema = z.object({
    videoUrl: z.string().nullable(),
    workPrograms: z.array(z.string()),
    experiences: z.array(z.string()),
-   position: z.number(),
    isActive: z.boolean(),
 });
 
@@ -309,6 +308,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
          responseSchema: response(
             z.object({
                participationCount: z.number(),
+               eligibleVoterCount: z.number(),
                ballotCount: z.number(),
                valid: z.boolean(),
             }),

@@ -13,6 +13,7 @@ describe('election OpenAPI contract', () => {
          '/api/internal/elections',
          '/api/internal/elections/{electionId}/debate-schedule',
          '/api/internal/elections/{electionId}/public-details',
+         '/api/internal/elections/{electionId}/turnout',
          '/api/internal/elections/{electionId}/tally',
       ]) {
          assert.ok(document.paths?.[path], `${path} is missing`);
@@ -23,5 +24,15 @@ describe('election OpenAPI contract', () => {
             ?.responses?.['201'];
       assert.ok(voteSchema);
       assert.doesNotMatch(JSON.stringify(voteSchema), /candidateId/);
+
+      const turnoutSchema =
+         document.paths?.['/api/internal/elections/{electionId}/turnout']?.get
+            ?.responses?.['200'];
+      assert.ok(turnoutSchema);
+      assert.match(JSON.stringify(turnoutSchema), /eligibleVoterCount/);
+      assert.doesNotMatch(
+         JSON.stringify(turnoutSchema),
+         /candidateId|candidate|votes|results/,
+      );
    });
 });
