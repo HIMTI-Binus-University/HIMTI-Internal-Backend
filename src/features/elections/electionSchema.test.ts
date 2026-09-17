@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
    CastVoteSchema,
+   CreateCandidateSchema,
    CreateElectionSchema,
    UpdateElectionSchema,
    UpdateDebateScheduleSchema,
@@ -36,6 +37,23 @@ describe('election request schemas', () => {
             candidateId: 'candidate-1',
             userId: 'forged-user',
          }).success,
+         false,
+      );
+   });
+
+   it('uses ballot number as the only candidate ordering field', () => {
+      const candidate = {
+         ballotNumber: 1,
+         name: 'Candidate One',
+         photoUrl: null,
+         vision: 'Vision',
+         mission: 'Mission',
+         videoUrl: null,
+      };
+
+      assert.equal(CreateCandidateSchema.safeParse(candidate).success, true);
+      assert.equal(
+         CreateCandidateSchema.safeParse({ ...candidate, position: 0 }).success,
          false,
       );
    });

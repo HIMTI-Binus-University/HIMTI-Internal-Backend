@@ -559,9 +559,6 @@
                            "nullable": true,
                            "type": "string"
                         },
-                        "position": {
-                           "type": "number"
-                        },
                         "slogan": {
                            "nullable": true,
                            "type": "string"
@@ -593,7 +590,6 @@
                         "videoUrl",
                         "workPrograms",
                         "experiences",
-                        "position",
                         "isActive"
                      ],
                      "type": "object"
@@ -697,9 +693,6 @@
                                  "nullable": true,
                                  "type": "string"
                               },
-                              "position": {
-                                 "type": "number"
-                              },
                               "slogan": {
                                  "nullable": true,
                                  "type": "string"
@@ -731,7 +724,6 @@
                               "videoUrl",
                               "workPrograms",
                               "experiences",
-                              "position",
                               "isActive"
                            ],
                            "type": "object"
@@ -879,9 +871,6 @@
                                        "nullable": true,
                                        "type": "string"
                                     },
-                                    "position": {
-                                       "type": "number"
-                                    },
                                     "slogan": {
                                        "nullable": true,
                                        "type": "string"
@@ -913,7 +902,6 @@
                                     "videoUrl",
                                     "workPrograms",
                                     "experiences",
-                                    "position",
                                     "isActive"
                                  ],
                                  "type": "object"
@@ -7707,9 +7695,6 @@
                                                 "nullable": true,
                                                 "type": "string"
                                              },
-                                             "position": {
-                                                "type": "number"
-                                             },
                                              "slogan": {
                                                 "nullable": true,
                                                 "type": "string"
@@ -7741,7 +7726,6 @@
                                              "videoUrl",
                                              "workPrograms",
                                              "experiences",
-                                             "position",
                                              "isActive"
                                           ],
                                           "type": "object"
@@ -9137,9 +9121,6 @@
                                                    "nullable": true,
                                                    "type": "string"
                                                 },
-                                                "position": {
-                                                   "type": "number"
-                                                },
                                                 "slogan": {
                                                    "nullable": true,
                                                    "type": "string"
@@ -9171,7 +9152,6 @@
                                                 "videoUrl",
                                                 "workPrograms",
                                                 "experiences",
-                                                "position",
                                                 "isActive"
                                              ],
                                              "type": "object"
@@ -10570,10 +10550,6 @@
                               "nullable": true,
                               "type": "string"
                            },
-                           "position": {
-                              "minimum": 0,
-                              "type": "integer"
-                           },
                            "slogan": {
                               "maxLength": 1000,
                               "nullable": true,
@@ -10651,9 +10627,6 @@
                                        "nullable": true,
                                        "type": "string"
                                     },
-                                    "position": {
-                                       "type": "number"
-                                    },
                                     "slogan": {
                                        "nullable": true,
                                        "type": "string"
@@ -10685,7 +10658,6 @@
                                     "videoUrl",
                                     "workPrograms",
                                     "experiences",
-                                    "position",
                                     "isActive"
                                  ],
                                  "type": "object"
@@ -12841,6 +12813,9 @@
                                     "ballotCount": {
                                        "type": "number"
                                     },
+                                    "eligibleVoterCount": {
+                                       "type": "number"
+                                    },
                                     "participationCount": {
                                        "type": "number"
                                     },
@@ -12850,6 +12825,7 @@
                                  },
                                  "required": [
                                     "participationCount",
+                                    "eligibleVoterCount",
                                     "ballotCount",
                                     "valid"
                                  ],
@@ -13200,10 +13176,6 @@
                               "nullable": true,
                               "type": "string"
                            },
-                           "position": {
-                              "minimum": 0,
-                              "type": "integer"
-                           },
                            "slogan": {
                               "maxLength": 1000,
                               "nullable": true,
@@ -13275,9 +13247,6 @@
                                        "nullable": true,
                                        "type": "string"
                                     },
-                                    "position": {
-                                       "type": "number"
-                                    },
                                     "slogan": {
                                        "nullable": true,
                                        "type": "string"
@@ -13309,7 +13278,6 @@
                                     "videoUrl",
                                     "workPrograms",
                                     "experiences",
-                                    "position",
                                     "isActive"
                                  ],
                                  "type": "object"

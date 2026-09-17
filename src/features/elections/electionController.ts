@@ -152,6 +152,7 @@ export const closeElection = async (req: Request, res: Response) => {
 
 export const getElectionTurnout = async (req: Request, res: Response) => {
    const { electionId } = ElectionIdSchema.parse(req.params);
+   res.setHeader('Cache-Control', 'private, no-store');
    return success(res, await electionService.getTurnout(electionId));
 };
 

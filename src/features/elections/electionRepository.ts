@@ -22,7 +22,6 @@ const candidateSelect = {
    videoUrl: true,
    workPrograms: true,
    experiences: true,
-   position: true,
    isActive: true,
 } satisfies Prisma.ElectionCandidateSelect;
 
@@ -42,7 +41,7 @@ const electionSelect = {
    updatedAt: true,
    candidates: {
       select: candidateSelect,
-      orderBy: [{ position: 'asc' as const }, { ballotNumber: 'asc' as const }],
+      orderBy: { ballotNumber: 'asc' as const },
    },
 } satisfies Prisma.ElectionSelect;
 
@@ -297,6 +296,47 @@ class ElectionRepository {
       );
    }
 
+   async turnout(electionId: string) {
+      const [election, participationCount, ballotCount, eligibleVoters] =
+         await prisma.$transaction([
+            prisma.election.findUnique({
+               where: { id: electionId },
+               select: { id: true },
+            }),
+            prisma.electionParticipation.count({ where: { electionId } }),
+            prisma.electionBallot.count({ where: { electionId } }),
+            prisma.$queryRaw<Array<{ count: bigint }>>`
+               SELECT COUNT(*)::bigint AS count
+               FROM "users" AS u
+               LEFT JOIN "study_programs" AS sp ON sp.id = u."studyProgramId"
+               WHERE u.status = 'ACTIVE'
+                 AND u."registrationCompletedAt" IS NOT NULL
+                 AND u."outlookEmailVerified" = true
+                 AND (
+                    (
+                       u."memberType" = 'STUDENT'
+                       AND split_part(lower(trim(u."outlookEmail")), '@', 2) = 'binus.ac.id'
+                       AND lower(regexp_replace(trim(COALESCE(sp.name, u."studyProgramName", '')), '\s+', ' ', 'g'))
+                          SIMILAR TO '%(computer science|data science|game application and technology)%'
+                    )
+                    OR (
+                       u."memberType" = 'LECTURER'
+                       AND split_part(lower(trim(u."outlookEmail")), '@', 2) = 'binus.edu'
+                       AND lower(regexp_replace(trim(COALESCE(u.department, '')), '\s+', ' ', 'g'))
+                          = 'school of computer science'
+                    )
+                 )
+            `,
+         ]);
+      if (!election) throw new AppError('Election not found', 404);
+
+      return {
+         participationCount,
+         eligibleVoterCount: Number(eligibleVoters[0]?.count ?? 0),
+         ballotCount,
+      };
+   }
+
    async tally(electionId: string) {
       const [election, participationCount, ballotCount, grouped] =
          await prisma.$transaction([
@@ -318,7 +358,7 @@ class ElectionRepository {
       const candidates = await prisma.electionCandidate.findMany({
          where: { electionId },
          select: candidateSelect,
-         orderBy: [{ position: 'asc' }, { ballotNumber: 'asc' }],
+         orderBy: { ballotNumber: 'asc' },
       });
       const groupedCounts = grouped as Array<{
          candidateId: string;
