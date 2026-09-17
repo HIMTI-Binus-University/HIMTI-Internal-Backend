@@ -12,7 +12,9 @@ import {
     CreateAttendeeSchema,
     BulkImportAttendeesSchema,
     AttendeeParamsSchema,
-    AttendeeQuerySchema
+    AttendeeQuerySchema,
+    UpsertKitAppearanceSchema,
+    UpdateKitAppearanceSchema
 } from './himtiKitSchema.js'
 
 // ==========================================
@@ -42,3 +44,10 @@ export type CreateAttendeeInput = z.infer<typeof CreateAttendeeSchema>;
 export type BulkImportAttendeesInput = z.infer<typeof BulkImportAttendeesSchema>;
 export type AttendeeParams = z.infer<typeof AttendeeParamsSchema>;
 export type AttendeeQuery = z.infer<typeof AttendeeQuerySchema>;
+
+// ==========================================
+// TYPES UNTUK WEBSITE APPEARANCE
+// ==========================================
+ 
+export type UpsertKitAppearanceInput = z.infer<typeof UpsertKitAppearanceSchema>;
+export type UpdateKitAppearanceInput = z.infer<typeof UpdateKitAppearanceSchema>;

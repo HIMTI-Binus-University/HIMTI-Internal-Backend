@@ -1,11 +1,3 @@
-/**
- * ==========================================
- * SWAGGER / OPENAPI DOCUMENTATION - HIMTI KIT
- * ==========================================
- * Digunakan oleh swagger-jsdoc / swagger-ui-express.
- * Sesuaikan base path (mis. /api/himti-kit) dengan konfigurasi router utama.
- */
- 
 export const himtiKitDocs = {
   paths: {
     // ==========================================
@@ -264,6 +256,54 @@ export const himtiKitDocs = {
               },
             },
           },
+        },
+      },
+    },
+
+    // ==========================================
+    // DOCS UNTUK WEBSITE APPEARANCE
+    // ==========================================
+    '/himti-kit/appearance': {
+      get: {
+        tags: ['HIMTI Kit - Appearance'],
+        summary: 'Get current website appearance settings',
+        responses: {
+          200: { description: 'Current appearance settings returned successfully' },
+        },
+      },
+      patch: {
+        tags: ['HIMTI Kit - Appearance'],
+        summary: 'Update website appearance settings (admin only)',
+        requestBody: {
+          required: false,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  accentColor: { type: 'string', example: '#0284c7' },
+                  backgroundImageUrl: { type: 'string', nullable: true },
+                  overlayEnabled: { type: 'boolean' },
+                  overlayDarkness: { type: 'integer', minimum: 0, maximum: 100, example: 65 },
+                  blurEnabled: { type: 'boolean' },
+                  blurIntensity: { type: 'integer', minimum: 0, maximum: 24, example: 4 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Appearance updated successfully' },
+          400: { description: 'Validation error' },
+        },
+      },
+    },
+    '/himti-kit/appearance/reset': {
+      post: {
+        tags: ['HIMTI Kit - Appearance'],
+        summary: 'Reset website appearance settings back to default (admin only)',
+        responses: {
+          200: { description: 'Appearance reset to default successfully' },
         },
       },
     },

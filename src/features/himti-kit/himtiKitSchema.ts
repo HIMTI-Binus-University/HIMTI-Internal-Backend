@@ -90,3 +90,30 @@ export const AttendeeParamsSchema = z.object({
 export const AttendeeQuerySchema = z.object({
   search: z.string().optional()
 });
+
+// ==========================================
+// SCHEMA UNTUK APPEARANCE
+// ==========================================
+
+const hexColorSchema = z
+   .string()
+   .regex(/^#([0-9A-Fa-f]{6})$/, 'Enter a valid hex color code (e.g. #0284c7)');
+
+export const UpsertKitAppearanceSchema = z.object({
+   accentColor: hexColorSchema,
+   backgroundImageUrl: z.string().url("Enter a valid web link"),
+   overlayEnabled: z.boolean(),
+   overlayDarkness: z
+      .number()
+      .int()
+      .min(0, 'Minimum is 0%')
+      .max(100, 'Maximum is 100%'),
+   blurEnabled: z.boolean(),
+   blurIntensity: z
+      .number()
+      .int()
+      .min(0, 'Minimum is 0px')
+      .max(24, 'Maximum is 24px'),
+});
+ 
+export const UpdateKitAppearanceSchema = UpsertKitAppearanceSchema.partial();

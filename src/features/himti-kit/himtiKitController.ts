@@ -3,6 +3,7 @@ import {
   ResourceService,
   SoftwareService,
   EligibleAttendeeService,
+  AppearanceService,
 } from './himtiKitService.js';
 import {
   CreateKitResourcesInput,
@@ -17,6 +18,7 @@ import {
   BulkImportAttendeesInput,
   AttendeeParams,
   AttendeeQuery,
+  UpdateKitAppearanceInput,
 } from './himtiKitTypes.js';
 
 // ==========================================
@@ -189,6 +191,42 @@ export class EligibleAttendeeController {
       const { nim } = req.params as { nim: string };
       const result = await this.attendeeService.validateAttendee(nim);
       res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  };
+}
+
+// ==========================================
+// CONTROLLER UNTUK APPEARANCE
+// ==========================================
+ 
+export class AppearanceController {
+  constructor(private readonly appearanceService: AppearanceService) {}
+ 
+  getAppearance = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const appearance = await this.appearanceService.getAppearance();
+      res.status(200).json({ success: true, data: appearance });
+    } catch (error) {
+      next(error);
+    }
+  };
+ 
+  updateAppearance = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = req.body as UpdateKitAppearanceInput;
+      const appearance = await this.appearanceService.updateAppearance(data);
+      res.status(200).json({ success: true, data: appearance });
+    } catch (error) {
+      next(error);
+    }
+  };
+ 
+  resetAppearance = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const appearance = await this.appearanceService.resetAppearance();
+      res.status(200).json({ success: true, data: appearance });
     } catch (error) {
       next(error);
     }

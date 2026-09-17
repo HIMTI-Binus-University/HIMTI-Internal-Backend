@@ -1,7 +1,9 @@
+import { nanoid } from 'nanoid';
 import {
   ResourceRepository,
   SoftwareRepository,
   EligibleAttendeeRepository,
+  AppearanceRepository,
 } from './himtiKitRepository.js';
 import {
   CreateKitResourcesInput,
@@ -13,6 +15,7 @@ import {
   CreateAttendeeInput,
   BulkImportAttendeesInput,
   AttendeeQuery,
+  UpdateKitAppearanceInput,
 } from './himtiKitTypes.js';
 import { AppError } from '@/utils/appError.js';
 
@@ -125,5 +128,27 @@ export class EligibleAttendeeService {
     }
  
     return { eligible: true, name: attendee.name };
+  }
+}
+
+// ==========================================
+// SERVICE UNTUK APPEARANCE
+// ==========================================
+ 
+export class AppearanceService {
+  constructor(private readonly appearanceRepository: AppearanceRepository) {}
+ 
+  async getAppearance() {
+    return this.appearanceRepository.getOrCreate(nanoid());
+  }
+ 
+  async updateAppearance(data: UpdateKitAppearanceInput) {
+    const current = await this.appearanceRepository.getOrCreate(nanoid());
+    return this.appearanceRepository.update(current.id, data);
+  }
+ 
+  async resetAppearance() {
+    const current = await this.appearanceRepository.getOrCreate(nanoid());
+    return this.appearanceRepository.resetToDefault(current.id);
   }
 }

@@ -1212,3 +1212,16 @@ model HimtiKitAttendee {
   createdAt DateTime @default(now()) @db.Timestamp(0)
   updatedAt DateTime? @updatedAt
 }
+
+model HimtiKitAppearance {
+  id                 String   @id @default(nanoid())
+  accentColor        String   @default("#0284c7")
+  backgroundImageUrl String   @db.Text
+  overlayEnabled     Boolean  @default(true)
+  overlayDarkness    Int      @default(65)
+  blurEnabled        Boolean  @default(true)
+  blurIntensity      Int      @default(4)
+
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+}

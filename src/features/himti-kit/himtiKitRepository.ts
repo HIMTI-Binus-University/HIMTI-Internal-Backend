@@ -1,4 +1,4 @@
-import { PrismaClient, HimtiKitResource, HimtiKitSoftware, HimtiKitAttendee} from '@prisma/client';
+import { PrismaClient, HimtiKitResource, HimtiKitSoftware, HimtiKitAttendee, HimtiKitAppearance} from '@prisma/client';
 import {
   CreateKitResourcesInput,
   UpdateKitResourcesInput,
@@ -7,7 +7,8 @@ import {
   UpdateKitSoftwareInput,
   SoftwareQuery,
   CreateAttendeeInput,
-  AttendeeQuery
+  AttendeeQuery,
+  UpdateKitAppearanceInput,
 } from './himtiKitTypes.js';
 
 // ==========================================
@@ -119,5 +120,42 @@ export class EligibleAttendeeRepository {
  
   async delete(id: string): Promise<HimtiKitAttendee> {
     return this.prisma.himtiKitAttendee.delete({ where: { id } });
+  }
+}
+
+// ==========================================
+// REPOSITORY UNTUK WEBSITE APPEARANCE
+// ==========================================
+ 
+const DEFAULT_APPEARANCE = {
+  accentColor: '#0284c7',
+  backgroundImageUrl: "",
+  overlayEnabled: true,
+  overlayDarkness: 65,
+  blurEnabled: true,
+  blurIntensity: 4,
+};
+ 
+export class AppearanceRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+ 
+  async getOrCreate(id: string): Promise<HimtiKitAppearance> {
+    const existing = await this.prisma.himtiKitAppearance.findFirst();
+    if (existing) return existing;
+ 
+    return this.prisma.himtiKitAppearance.create({
+      data: { id, ...DEFAULT_APPEARANCE },
+    });
+  }
+ 
+  async update(id: string, data: UpdateKitAppearanceInput): Promise<HimtiKitAppearance> {
+    return this.prisma.himtiKitAppearance.update({ where: { id }, data });
+  }
+ 
+  async resetToDefault(id: string): Promise<HimtiKitAppearance> {
+    return this.prisma.himtiKitAppearance.update({
+      where: { id },
+      data: DEFAULT_APPEARANCE,
+    });
   }
 }

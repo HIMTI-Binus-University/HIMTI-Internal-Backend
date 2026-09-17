@@ -7,16 +7,19 @@ import {
   ResourceRepository,
   SoftwareRepository,
   EligibleAttendeeRepository,
+  AppearanceRepository,
 } from './himtiKitRepository.js';
 import {
   ResourceService,
   SoftwareService,
   EligibleAttendeeService,
+  AppearanceService,
 } from './himtiKitService.js';
 import {
   ResourceController,
   SoftwareController,
   EligibleAttendeeController,
+  AppearanceController,
 } from './himtiKitController.js';
 import {
   CreateKitResourcesSchema,
@@ -31,6 +34,7 @@ import {
   BulkImportAttendeesSchema,
   AttendeeParamsSchema,
   AttendeeQuerySchema,
+  UpdateKitAppearanceSchema,
 } from './himtiKitSchema.js';
 
 const router = Router();
@@ -47,6 +51,10 @@ const softwareController = new SoftwareController(softwareService);
 const attendeeRepository = new EligibleAttendeeRepository(prisma);
 const attendeeService = new EligibleAttendeeService(attendeeRepository);
 const attendeeController = new EligibleAttendeeController(attendeeService);
+
+const appearanceRepository = new AppearanceRepository(prisma);
+const appearanceService = new AppearanceService(appearanceRepository);
+const appearanceController = new AppearanceController(appearanceService);
 
 // ==========================================
 // ROUTES PUBLIK
@@ -77,6 +85,9 @@ publicRouter.get(
   validateRequest({ params: softwareParamsSchema }),
   softwareController.getSoftwareById
 );
+
+publicRouter.get('/appearance', appearanceController.getAppearance);
+
 
 // ==========================================
 // AUTH GUARD (semua route di bawah ini adalah internal tool, wajib login admin)
@@ -156,6 +167,14 @@ router.delete(
   validateRequest({ params: AttendeeParamsSchema }),
   attendeeController.deleteAttendee
 );
+
+router.patch(
+  '/appearance',
+  validateRequest({ body: UpdateKitAppearanceSchema }),
+  appearanceController.updateAppearance
+);
+ 
+router.post('/appearance/reset', appearanceController.resetAppearance);
  
 export default router;
 export { publicRouter as himtiKitPublicRoutes };
