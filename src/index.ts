@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = process.env.PORT || 8000;
+const port = Number(process.env.PORT || 8000);
 const shouldEnableApiDocs = process.env.ENABLE_API_DOCS === 'true';
 
 app.use(limiter);
@@ -37,7 +37,7 @@ if (shouldEnableApiDocs) {
 app.use('/api', routes);
 app.use(globalErrorHandler);
 
-app.listen(port, () => {
+app.listen(port, process.env.ENABLE_DEV_AUTO_LOGIN === 'true' && !process.env.CONTAINER ? '127.0.0.1' : '0.0.0.0', () => {
    startPaymentExpiry();
    console.log(`⚡️[server]: server is running at http://localhost:${port}`);
 });

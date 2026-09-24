@@ -14,6 +14,7 @@ import {
    UpdateDebateScheduleSchema,
    UpdateElectionSchema,
    UpdateElectionPublicDetailsSchema,
+   UpdateVotingEndSchema,
 } from './electionSchema.js';
 
 const tag = 'Elections';
@@ -45,6 +46,7 @@ const electionSchema = z.object({
    status: electionStatusSchema,
    startsAt: z.string().datetime(),
    endsAt: z.string().datetime(),
+   originalEndsAt: z.string().datetime(),
    debateAt: z.string().datetime().nullable(),
    openedAt: z.string().datetime().nullable(),
    closedAt: z.string().datetime().nullable(),
@@ -245,6 +247,13 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
          path: '/api/internal/elections/{electionId}/debate-schedule',
          summary: 'Update a draft or open election debate schedule',
          body: UpdateDebateScheduleSchema,
+         responseSchema: ElectionResponse,
+      },
+      {
+         method: 'patch' as const,
+         path: '/api/internal/elections/{electionId}/voting-end',
+         summary: 'Update draft or open voting end, not earlier than its original end',
+         body: UpdateVotingEndSchema,
          responseSchema: ElectionResponse,
       },
       {

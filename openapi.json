@@ -760,6 +760,10 @@
                         "nullable": true,
                         "type": "string"
                      },
+                     "originalEndsAt": {
+                        "format": "date-time",
+                        "type": "string"
+                     },
                      "publishedAt": {
                         "format": "date-time",
                         "nullable": true,
@@ -798,6 +802,7 @@
                      "status",
                      "startsAt",
                      "endsAt",
+                     "originalEndsAt",
                      "debateAt",
                      "openedAt",
                      "closedAt",
@@ -7762,6 +7767,10 @@
                                        "nullable": true,
                                        "type": "string"
                                     },
+                                    "originalEndsAt": {
+                                       "format": "date-time",
+                                       "type": "string"
+                                    },
                                     "publishedAt": {
                                        "format": "date-time",
                                        "nullable": true,
@@ -7800,6 +7809,7 @@
                                     "status",
                                     "startsAt",
                                     "endsAt",
+                                    "originalEndsAt",
                                     "debateAt",
                                     "openedAt",
                                     "closedAt",
@@ -9188,6 +9198,10 @@
                                           "nullable": true,
                                           "type": "string"
                                        },
+                                       "originalEndsAt": {
+                                          "format": "date-time",
+                                          "type": "string"
+                                       },
                                        "publishedAt": {
                                           "format": "date-time",
                                           "nullable": true,
@@ -9226,6 +9240,7 @@
                                        "status",
                                        "startsAt",
                                        "endsAt",
+                                       "originalEndsAt",
                                        "debateAt",
                                        "openedAt",
                                        "closedAt",
@@ -13117,6 +13132,323 @@
                }
             ],
             "summary": "Get aggregate turnout",
+            "tags": [
+               "Elections"
+            ]
+         }
+      },
+      "/api/internal/elections/{electionId}/voting-end": {
+         "patch": {
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "electionId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "additionalProperties": false,
+                        "properties": {
+                           "endsAt": {
+                              "format": "date-time",
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "endsAt"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/ElectionResponse"
+                        }
+                     }
+                  },
+                  "description": "Operation completed."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Validation error."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Not eligible or missing permission."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Election or candidate not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Election state or duplicate-vote conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Update draft or open voting end, not earlier than its original end",
             "tags": [
                "Elections"
             ]

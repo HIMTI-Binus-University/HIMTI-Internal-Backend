@@ -33,6 +33,7 @@ const electionSelect = {
    status: true,
    startsAt: true,
    endsAt: true,
+   originalEndsAt: true,
    debateAt: true,
    openedAt: true,
    closedAt: true,
@@ -92,11 +93,37 @@ class ElectionRepository {
             ...payload,
             startsAt: new Date(payload.startsAt),
             endsAt: new Date(payload.endsAt),
+            originalEndsAt: new Date(payload.endsAt),
             debateAt: payload.debateAt ? new Date(payload.debateAt) : null,
             createdBy: userId,
          },
          select: electionSelect,
       });
+   }
+
+   async updateVotingEnd(id: string, endsAt: Date, userId: string) {
+      const updated = await prisma.election.updateMany({
+         where: {
+            id,
+            status: { in: ['DRAFT', 'OPEN'] },
+            originalEndsAt: { lte: endsAt },
+            startsAt: { lt: endsAt },
+         },
+         data: { endsAt, updatedBy: userId },
+      });
+      if (!updated.count) {
+         const election = await prisma.election.findUnique({
+            where: { id },
+            select: { status: true, startsAt: true, originalEndsAt: true },
+         });
+         if (!election) throw new AppError('Election not found', 404);
+         if (election.status !== 'DRAFT' && election.status !== 'OPEN') {
+            throw new AppError('Voting end can be edited only in draft or open elections', 409, 'INVALID_ELECTION_STATE');
+         }
+         if (endsAt < election.originalEndsAt) throw new AppError('endsAt must not precede originalEndsAt', 400);
+         throw new AppError('endsAt must be after startsAt', 400);
+      }
+      return prisma.election.findUniqueOrThrow({ where: { id }, select: electionSelect });
    }
 
    async update(

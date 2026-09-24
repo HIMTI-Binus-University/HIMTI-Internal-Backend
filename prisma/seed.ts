@@ -78,12 +78,18 @@ async function main() {
    console.log('⏳ Seeding System User...');
    const systemUser = await prisma.user.upsert({
       where: { email: 'system@himti.internal' },
-      update: {},
+      update: {
+         status: 'ACTIVE',
+         registrationCompletedAt: new Date(),
+         institutionType: 'NON_BINUS',
+      },
       create: {
          name: 'System',
          email: 'system@himti.internal',
          emailVerified: true,
          status: 'ACTIVE',
+         registrationCompletedAt: new Date(),
+         institutionType: 'NON_BINUS',
       },
    });
 
@@ -177,6 +183,16 @@ async function main() {
          });
       }
    }
+
+   const adminRole = await prisma.role.findUniqueOrThrow({ where: { roleName: 'Admin' } });
+   if (adminRole.status !== 'ACTIVE') {
+      await prisma.role.update({ where: { id: adminRole.id }, data: { status: 'ACTIVE' } });
+   }
+   await prisma.userHasRole.upsert({
+      where: { userId_roleId: { userId: systemUser.id, roleId: adminRole.id } },
+      update: {},
+      create: { userId: systemUser.id, roleId: adminRole.id },
+   });
 
    // ==========================================
    // SEED MEMBERSHIP PERIOD
