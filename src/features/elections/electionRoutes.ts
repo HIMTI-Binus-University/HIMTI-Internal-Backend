@@ -114,7 +114,7 @@ internalElectionRouter.get(
 internalElectionRouter.get(
    '/:electionId/tally',
    requireAuth,
-   requirePermission('view_election_results'),
+   requirePermission('manage_elections'),
    getElectionTally,
 );
 internalElectionRouter.post(

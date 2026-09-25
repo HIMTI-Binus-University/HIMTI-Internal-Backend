@@ -65,8 +65,13 @@ class ElectionRepository {
             select: electionSelect,
             orderBy: { openedAt: 'desc' },
          })) ??
+         (await prisma.election.findFirst({
+            where: { status: 'PUBLISHED' },
+            select: electionSelect,
+            orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+         })) ??
          prisma.election.findFirst({
-            where: { status: { in: ['CLOSED', 'PUBLISHED'] } },
+            where: { status: 'CLOSED' },
             select: electionSelect,
             orderBy: { createdAt: 'desc' },
          })
@@ -118,12 +123,20 @@ class ElectionRepository {
          });
          if (!election) throw new AppError('Election not found', 404);
          if (election.status !== 'DRAFT' && election.status !== 'OPEN') {
-            throw new AppError('Voting end can be edited only in draft or open elections', 409, 'INVALID_ELECTION_STATE');
+            throw new AppError(
+               'Voting end can be edited only in draft or open elections',
+               409,
+               'INVALID_ELECTION_STATE',
+            );
          }
-         if (endsAt < election.originalEndsAt) throw new AppError('endsAt must not precede originalEndsAt', 400);
+         if (endsAt < election.originalEndsAt)
+            throw new AppError('endsAt must not precede originalEndsAt', 400);
          throw new AppError('endsAt must be after startsAt', 400);
       }
-      return prisma.election.findUniqueOrThrow({ where: { id }, select: electionSelect });
+      return prisma.election.findUniqueOrThrow({
+         where: { id },
+         select: electionSelect,
+      });
    }
 
    async update(
@@ -202,50 +215,87 @@ class ElectionRepository {
       nextStatus: 'OPEN' | 'CLOSED' | 'PUBLISHED',
       userId: string,
    ) {
-      return prisma.$transaction(
-         async (tx) => {
-            const election = await tx.election.findUnique({
-               where: { id },
-               select: {
-                  status: true,
-                  startsAt: true,
-                  endsAt: true,
-                  _count: {
-                     select: { candidates: { where: { isActive: true } } },
+      try {
+         return await prisma.$transaction(
+            async (tx) => {
+               const election = await tx.election.findUnique({
+                  where: { id },
+                  select: {
+                     status: true,
+                     startsAt: true,
+                     endsAt: true,
+                     _count: {
+                        select: { candidates: { where: { isActive: true } } },
+                     },
                   },
-               },
-            });
-            if (!election) throw new AppError('Election not found', 404);
-            if (election.status !== expectedStatus) {
-               throw new AppError(
-                  `Election must be ${expectedStatus.toLowerCase()}`,
-                  409,
-                  'INVALID_ELECTION_STATE',
-               );
-            }
-            if (nextStatus === 'OPEN' && election._count.candidates < 2) {
-               throw new AppError(
-                  'At least two active candidates are required',
-                  409,
-                  'INSUFFICIENT_CANDIDATES',
-               );
-            }
+               });
+               if (!election) throw new AppError('Election not found', 404);
+               if (election.status !== expectedStatus) {
+                  throw new AppError(
+                     `Election must be ${expectedStatus.toLowerCase()}`,
+                     409,
+                     'INVALID_ELECTION_STATE',
+                  );
+               }
+               if (nextStatus === 'OPEN' && election._count.candidates < 2) {
+                  throw new AppError(
+                     'At least two active candidates are required',
+                     409,
+                     'INSUFFICIENT_CANDIDATES',
+                  );
+               }
+               if (nextStatus === 'OPEN') {
+                  const open = await tx.election.findFirst({
+                     where: { status: 'OPEN', id: { not: id } },
+                     select: { id: true },
+                  });
+                  if (open) {
+                     throw new AppError(
+                        'Close the open election before opening another',
+                        409,
+                        'ELECTION_ALREADY_OPEN',
+                     );
+                  }
+               }
 
-            const now = new Date();
-            return tx.election.update({
-               where: { id },
-               data: {
-                  status: nextStatus,
-                  updatedBy: userId,
-                  ...(nextStatus === 'OPEN' && { openedAt: now }),
-                  ...(nextStatus === 'CLOSED' && { closedAt: now }),
-                  ...(nextStatus === 'PUBLISHED' && { publishedAt: now }),
-               },
-               select: electionSelect,
+               const now = new Date();
+               return tx.election.update({
+                  where: { id },
+                  data: {
+                     status: nextStatus,
+                     updatedBy: userId,
+                     ...(nextStatus === 'OPEN' && { openedAt: now }),
+                     ...(nextStatus === 'CLOSED' && { closedAt: now }),
+                     ...(nextStatus === 'PUBLISHED' && { publishedAt: now }),
+                  },
+                  select: electionSelect,
+               });
+            },
+            { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+         );
+      } catch (error) {
+         if (
+            nextStatus === 'OPEN' &&
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            (error.code === 'P2034' ||
+               (error.code === 'P2002' &&
+                  String(error.meta?.target).includes(
+                     'elections_one_open_idx',
+                  )))
+         ) {
+            const open = await prisma.election.findFirst({
+               where: { status: 'OPEN', id: { not: id } },
+               select: { id: true },
             });
-         },
-         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-      );
+            if (open)
+               throw new AppError(
+                  'Close the open election before opening another',
+                  409,
+                  'ELECTION_ALREADY_OPEN',
+               );
+         }
+         throw error;
+      }
    }
 
    async findEligibilityUser(userId: string) {

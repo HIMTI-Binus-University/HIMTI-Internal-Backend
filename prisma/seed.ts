@@ -116,7 +116,6 @@ async function main() {
       'view_event_attendance',
       'correct_event_attendance',
       'manage_elections',
-      'view_election_results',
       'manage_certificates',
    ];
 
@@ -162,7 +161,6 @@ async function main() {
                permissions.view_event_attendance.id,
                permissions.correct_event_attendance.id,
                permissions.manage_elections.id,
-               permissions.view_election_results.id,
             ].includes(perm.id) &&
             roleName !== 'Admin'
          ) {
@@ -184,9 +182,14 @@ async function main() {
       }
    }
 
-   const adminRole = await prisma.role.findUniqueOrThrow({ where: { roleName: 'Admin' } });
+   const adminRole = await prisma.role.findUniqueOrThrow({
+      where: { roleName: 'Admin' },
+   });
    if (adminRole.status !== 'ACTIVE') {
-      await prisma.role.update({ where: { id: adminRole.id }, data: { status: 'ACTIVE' } });
+      await prisma.role.update({
+         where: { id: adminRole.id },
+         data: { status: 'ACTIVE' },
+      });
    }
    await prisma.userHasRole.upsert({
       where: { userId_roleId: { userId: systemUser.id, roleId: adminRole.id } },
