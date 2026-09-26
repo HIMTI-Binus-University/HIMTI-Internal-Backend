@@ -6,6 +6,9 @@ import type {
    UpdatePermissionRequest,
 } from './permissionTypes.js';
 import { auth } from '@/utils/auth.js';
+import { AppError } from '@/utils/appError.js';
+import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
+import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
 import { permissionRepository } from './permissionRepository.js';
 
 class PermissionService {
@@ -35,17 +38,44 @@ class PermissionService {
       return await permissionRepository.update(id, updateData);
    }
 
+   async deletePermission(
+      id: string,
+      user: typeof auth.$Infer.Session.user,
+   ): Promise<Permission> {
+      const permission = await permissionRepository.findById(id);
+
+      if (!permission) {
+         throw new AppError('Permission not found', 404);
+      }
+
+      const updateData: Prisma.PermissionUpdateInput = {
+         name: buildDeletedUniqueValue(permission.name, permission.id, 255),
+         status: 'INACTIVE',
+         updater: {
+            connect: {
+               id: user.id,
+            },
+         },
+      };
+      return await permissionRepository.update(id, updateData);
+   }
+
    async getPermissions(
       params: GetPermissionSchema,
+      user: typeof auth.$Infer.Session.user,
    ): Promise<GetPermissionResponse> {
-      const { data, total } = await permissionRepository.findAll(params);
+      const query = {
+         ...params,
+         status: getAuthorizedStatusFilter(params.status, user),
+      };
+      const { data, total } = await permissionRepository.findAll(query);
       return {
          data,
          meta: {
-            page: params.page,
-            limit: params.limit,
+            page: query.page,
+            limit: query.limit,
             totalRecords: total,
-            totalPages: Math.ceil(total / params.limit),
+            totalPages: Math.ceil(total / query.limit),
          },
       };
    }

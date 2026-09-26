@@ -1,21 +1,33 @@
 import express from 'express';
-import { Router } from 'express';
+import type { Request, Response, Router } from 'express';
 import urlRoutes from '@/features/url-shortener/urlRoutes.js';
-import blasterRoutes from '@/features/email-blaster/blasterRoutes.js';
-import registRoutes from '@/features/registration/registRoutes.js';
 import eventRoutes from '@/features/events/eventRoutes.js';
+import eventCommitteeRoutes from '@/features/event-committee/eventCommitteeRoutes.js';
 import subEventRoutes from '@/features/sub-events/subEventRoutes.js';
+import registrationFormRoutes from '@/features/registration-forms/registrationFormRoutes.js';
 import permissionRoutes from '@/features/permissions/permissionRoutes.js';
 import userRoutes from '@/features/users/userRoutes.js';
 import roleRoutes from '@/features/roles/roleRoutes.js';
+import membershipRoutes from '@/features/membership/membershipRoutes.js';
+import linkWorkspaceRoutes from '@/features/link-workspaces/linkWorkspaceRoutes.js';
 
 const router: Router = express.Router();
 
+router.get('/health', (_req: Request, res: Response) => {
+   res.status(200).json({
+      status: 'ok',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+   });
+});
+
 router.use('/url', urlRoutes);
-router.use('/email-blast', blasterRoutes);
-router.use('/registration', registRoutes);
+router.use('/link-workspaces', linkWorkspaceRoutes);
+router.use('/membership', membershipRoutes);
 router.use('/event', eventRoutes);
+router.use('/event-committee', eventCommitteeRoutes);
 router.use('/sub-event', subEventRoutes);
+router.use('/registration-form', registrationFormRoutes);
 router.use('/', permissionRoutes);
 router.use('/', userRoutes);
 router.use('/', roleRoutes);

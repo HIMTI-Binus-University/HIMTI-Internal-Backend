@@ -8,6 +8,11 @@ import type {
 } from './urlTypes.js';
 import { auth } from '@/utils/auth.js';
 import { urlRepository } from './urlRepository.js';
+import { AppError } from '@/utils/appError.js';
+import { buildDeletedUniqueValue } from '@/utils/softDelete.js';
+import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
+import { isAdminUser } from '@/utils/statusAccess.js';
+import { canResolveWorkspaceLink } from '@/features/link-workspaces/linkWorkspacePolicy.js';
 
 class UrlService {
    async createUrl(
@@ -32,6 +37,10 @@ class UrlService {
       id: string,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Url> {
+      const url = await urlRepository.findById(id);
+      if (!url || !(await this.canManagePersonalUrl(url, user))) {
+         throw new AppError('Url not found', 404);
+      }
       const updateData: Prisma.UrlUpdateInput = {
          originalUrl: payload.originalUrl,
          shortCode: payload.shortCode,
@@ -47,14 +56,18 @@ class UrlService {
    }
 
    async deleteUrl(
-      payload: UpdateUrlRequest,
       id: string,
       user: typeof auth.$Infer.Session.user,
    ): Promise<Url> {
-      const timestamp = Date.now();
+      const url = await urlRepository.findById(id);
+
+      if (!url || !(await this.canManagePersonalUrl(url, user))) {
+         throw new AppError('Url not found', 404);
+      }
+
       const updateData: Prisma.UrlUpdateInput = {
-         shortCode: `${payload.shortCode}_del_${timestamp}`,
-         status: payload.status,
+         shortCode: buildDeletedUniqueValue(url.shortCode, url.id, 100),
+         status: 'INACTIVE',
          updater: {
             connect: {
                id: user.id,
@@ -65,25 +78,33 @@ class UrlService {
    }
 
    async getUrlByCode(shortCode: string) {
-      return await urlRepository.findByCode(shortCode);
+      const url = await urlRepository.findByCode(shortCode);
+      if (!url || !canResolveWorkspaceLink(url.workspaceLink)) return null;
+      return url;
    }
 
-   async getUrlById(id: string) {
-      return await urlRepository.findById(id);
+   async getUrlById(id: string, user: typeof auth.$Infer.Session.user) {
+      const url = await urlRepository.findById(id);
+      if (!url || !(await this.canManagePersonalUrl(url, user))) return null;
+      return url;
    }
 
    async getUrls(
       params: GetUrlSchema,
       user: typeof auth.$Infer.Session.user,
    ): Promise<GetUrlResponse> {
-      const { data, total } = await urlRepository.findAll(params, user.id);
+      const query = {
+         ...params,
+         status: getAuthorizedStatusFilter(params.status, user),
+      };
+      const { data, total } = await urlRepository.findAll(query, user.id);
       return {
          data,
          meta: {
-            page: params.page,
-            limit: params.limit,
+            page: query.page,
+            limit: query.limit,
             totalRecords: total,
-            totalPages: Math.ceil(total / params.limit),
+            totalPages: Math.ceil(total / query.limit),
          },
       };
    }
@@ -105,6 +126,15 @@ class UrlService {
          isp: payload.isp,
          timezone: payload.timezone,
       });
+   }
+
+   private async canManagePersonalUrl(
+      url: Url,
+      user: typeof auth.$Infer.Session.user,
+   ) {
+      const personalUrl = await urlRepository.findPersonalById(url.id);
+      if (!personalUrl) return false;
+      return isAdminUser(user) || personalUrl.createdBy === user.id;
    }
 }
 

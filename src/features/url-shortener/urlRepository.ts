@@ -1,7 +1,15 @@
-import { PrismaClient, Prisma, Url, UrlDetail } from '@prisma/client';
+import { Prisma, Url, UrlDetail } from '@prisma/client';
 import { GetUrlSchema } from './urlTypes.js';
+import { parseSort } from '@/utils/sort.js';
+import { prisma } from '@/config/prisma.js';
 
-const prisma = new PrismaClient();
+const allowedUrlSortFields = [
+   'createdAt',
+   'shortCode',
+   'originalUrl',
+   'status',
+   'expiresAt',
+] as const;
 
 class UrlRepository {
    async create(data: Prisma.UrlCreateInput): Promise<Url> {
@@ -21,9 +29,18 @@ class UrlRepository {
       });
    }
 
-   async findByCode(shortCode: string): Promise<Url | null> {
+   async findPersonalById(id: string): Promise<Url | null> {
+      return await prisma.url.findFirst({
+         where: { id, workspaceLink: null },
+      });
+   }
+
+   async findByCode(shortCode: string) {
       return await prisma.url.findUnique({
          where: { shortCode },
+         include: {
+            workspaceLink: { select: { status: true } },
+         },
       });
    }
 
@@ -31,7 +48,8 @@ class UrlRepository {
       const { page, limit, search, sort, status } = params;
 
       const where: Prisma.UrlWhereInput = {
-         status: status,
+         ...(status && { status }),
+         workspaceLink: null,
       };
 
       const adminRole = await prisma.userHasRole.findFirst({
@@ -56,13 +74,13 @@ class UrlRepository {
          ];
       }
 
-      let orderBy: Prisma.UrlOrderByWithRelationInput = { createdAt: 'desc' };
-      if (sort) {
-         const [field, direction] = sort.split(':');
-         if (['asc', 'desc'].includes(direction)) {
-            orderBy = { [field]: direction as 'asc' | 'desc' };
-         }
-      }
+      const sortOption = parseSort(sort, allowedUrlSortFields, {
+         field: 'createdAt',
+         direction: 'desc',
+      });
+      const orderBy: Prisma.UrlOrderByWithRelationInput = {
+         [sortOption.field]: sortOption.direction,
+      };
 
       const skip = (page - 1) * limit;
 
@@ -72,6 +90,14 @@ class UrlRepository {
             orderBy,
             skip,
             take: limit,
+            include: {
+               creator: {
+                  select: {
+                     id: true,
+                     name: true,
+                  },
+               },
+            },
          }),
          prisma.url.count({ where }),
       ]);

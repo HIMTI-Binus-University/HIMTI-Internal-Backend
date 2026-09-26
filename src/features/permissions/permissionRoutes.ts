@@ -2,6 +2,7 @@ import { requireAuth } from '@/middleware/authMiddleware.js';
 import express from 'express';
 import {
    createPermission,
+   deletePermission,
    getPermissions,
    updatePermission,
 } from './permissionController.js';
@@ -29,6 +30,13 @@ router.patch(
    requireAuth,
    requirePermission('manage_permissions'),
    updatePermission,
+);
+
+router.patch(
+   '/permission/delete/:id',
+   requireAuth,
+   requirePermission('manage_permissions'),
+   deletePermission,
 );
 
 export default router;

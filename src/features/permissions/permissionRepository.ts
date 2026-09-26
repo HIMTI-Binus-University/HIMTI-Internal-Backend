@@ -1,7 +1,9 @@
-import { PrismaClient, Prisma, Permission } from '@prisma/client';
+import { Prisma, Permission } from '@prisma/client';
 import { GetPermissionSchema } from './permissionTypes.js';
+import { parseSort } from '@/utils/sort.js';
+import { prisma } from '@/config/prisma.js';
 
-const prisma = new PrismaClient();
+const allowedPermissionSortFields = ['createdAt', 'name', 'status'] as const;
 
 class PermissionRepository {
    async create(data: Prisma.PermissionCreateInput): Promise<Permission> {
@@ -35,15 +37,13 @@ class PermissionRepository {
          where.OR = [{ name: { contains: search, mode: 'insensitive' } }];
       }
 
-      let orderBy: Prisma.PermissionOrderByWithRelationInput = {
-         createdAt: 'desc',
+      const sortOption = parseSort(sort, allowedPermissionSortFields, {
+         field: 'createdAt',
+         direction: 'desc',
+      });
+      const orderBy: Prisma.PermissionOrderByWithRelationInput = {
+         [sortOption.field]: sortOption.direction,
       };
-      if (sort) {
-         const [field, direction] = sort.split(':');
-         if (['asc', 'desc'].includes(direction)) {
-            orderBy = { [field]: direction as 'asc' | 'desc' };
-         }
-      }
 
       const skip = (page - 1) * limit;
 

@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/prisma.js';
 
 export const requirePermission = (permissionName: string) => {
    return async (_req: Request, res: Response, next: NextFunction) => {
@@ -9,13 +7,16 @@ export const requirePermission = (permissionName: string) => {
       const userWithPermission = await prisma.user.findFirst({
          where: {
             id: user.id,
+            status: 'ACTIVE',
             userHasRoles: {
                some: {
                   role: {
+                     status: 'ACTIVE',
                      roleHasPermissions: {
                         some: {
                            permission: {
                               name: permissionName,
+                              status: 'ACTIVE',
                            },
                         },
                      },
@@ -29,6 +30,50 @@ export const requirePermission = (permissionName: string) => {
          return res.status(403).json({
             success: false,
             message: `You do not have the permission to access this feature.`,
+         });
+      }
+
+      next();
+   };
+};
+
+export const requirePermissionOrRole = (
+   permissionName: string,
+   roleName: string,
+) => {
+   return async (_req: Request, res: Response, next: NextFunction) => {
+      const user = res.locals.user;
+      const authorizedUser = await prisma.user.findFirst({
+         where: {
+            id: user.id,
+            status: 'ACTIVE',
+            userHasRoles: {
+               some: {
+                  role: {
+                     status: 'ACTIVE',
+                     OR: [
+                        { roleName },
+                        {
+                           roleHasPermissions: {
+                              some: {
+                                 permission: {
+                                    name: permissionName,
+                                    status: 'ACTIVE',
+                                 },
+                              },
+                           },
+                        },
+                     ],
+                  },
+               },
+            },
+         },
+      });
+
+      if (!authorizedUser) {
+         return res.status(403).json({
+            success: false,
+            message: 'You do not have permission to access this feature.',
          });
       }
 

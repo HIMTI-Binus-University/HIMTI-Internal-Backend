@@ -6,13 +6,16 @@ import {
    GetRoleSchema,
    RemovePermissionFromRoleSchema,
    RemoveRoleFromUserSchema,
+   DeleteRoleSchema,
    UpdateRoleSchema,
 } from './roleSchema.js';
 import { roleService } from './roleService.js';
+import { AppError } from '@/utils/appError.js';
 
 export const getRoles = async (req: Request, res: Response) => {
    const query = GetRoleSchema.parse(req.query);
-   const result = await roleService.getRoles(query);
+   const userData = res.locals.user;
+   const result = await roleService.getRoles(query, userData);
    res.status(200).json({ msg: 'success', ...result });
 };
 
@@ -46,10 +49,24 @@ export const updateRole = async (req: Request, res: Response) => {
    res.status(200).json({ msg: 'success', data: result });
 };
 
+export const deleteRole = async (req: Request, res: Response) => {
+   const { id } = req.params;
+   const userData = res.locals.user;
+   const validation = DeleteRoleSchema.safeParse(req.body ?? {});
+   if (!validation.success) {
+      return res.status(400).json({ errors: validation.error.format() });
+   }
+   const result = await roleService.deleteRole(id, userData);
+   res.status(200).json({ msg: 'success', data: result });
+};
+
 export const assignRoleToUser = async (req: Request, res: Response) => {
    const validation = AssignRoleToUserSchema.safeParse(req.body);
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
+   }
+   if (validation.data.userId === res.locals.user.id) {
+      throw new AppError('You cannot change your own roles', 403);
    }
    const result = await roleService.assignRoleToUser(validation.data);
    res.status(200).json({ msg: 'success', data: result });
@@ -59,6 +76,9 @@ export const removeRoleFromUser = async (req: Request, res: Response) => {
    const validation = RemoveRoleFromUserSchema.safeParse(req.body);
    if (!validation.success) {
       return res.status(400).json({ errors: validation.error.format() });
+   }
+   if (validation.data.userId === res.locals.user.id) {
+      throw new AppError('You cannot change your own roles', 403);
    }
    await roleService.removeRoleFromUser(validation.data);
    res.status(200).json({ msg: 'success' });
