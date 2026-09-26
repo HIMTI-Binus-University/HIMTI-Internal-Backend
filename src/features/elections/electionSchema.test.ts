@@ -6,6 +6,7 @@ import {
    CreateElectionSchema,
    UpdateElectionSchema,
    UpdateDebateScheduleSchema,
+   UpdateVotingEndSchema,
 } from './electionSchema.js';
 
 describe('election request schemas', () => {
@@ -79,5 +80,13 @@ describe('election request schemas', () => {
             false,
          );
       }
+   });
+   it('requires an offset voting end and rejects baseline tampering', () => {
+      assert.equal(UpdateVotingEndSchema.safeParse({ endsAt: '2027-01-10T20:00:00+07:00' }).success, true);
+      for (const body of [
+         {},
+         { endsAt: '2027-01-10T20:00:00' },
+         { endsAt: '2027-01-10T20:00:00+07:00', originalEndsAt: '2027-01-01T00:00:00Z' },
+      ]) assert.equal(UpdateVotingEndSchema.safeParse(body).success, false);
    });
 });

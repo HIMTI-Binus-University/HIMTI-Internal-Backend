@@ -11,6 +11,7 @@ import {
    UpdateDebateScheduleSchema,
    UpdateElectionSchema,
    UpdateElectionPublicDetailsSchema,
+   UpdateVotingEndSchema,
 } from './electionSchema.js';
 
 const success = (res: Response, data: unknown, status = 200) =>
@@ -82,6 +83,12 @@ export const updateElection = async (req: Request, res: Response) => {
       res,
       await electionService.update(electionId, body, res.locals.user.id),
    );
+};
+
+export const updateVotingEnd = async (req: Request, res: Response) => {
+   const { electionId } = ElectionIdSchema.parse(req.params);
+   const body = UpdateVotingEndSchema.parse(req.body);
+   return success(res, await electionService.updateVotingEnd(electionId, body, res.locals.user.id));
 };
 
 export const updateDebateSchedule = async (req: Request, res: Response) => {

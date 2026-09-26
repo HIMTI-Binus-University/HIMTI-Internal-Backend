@@ -50,6 +50,8 @@ export const UpdateDebateScheduleSchema = z
    .object({ debateAt: dateTimeSchema.nullable() })
    .strict();
 
+export const UpdateVotingEndSchema = z.object({ endsAt: dateTimeSchema }).strict();
+
 export const UpdateElectionPublicDetailsSchema = z
    .object({
       title: z.string().trim().min(3).max(255),

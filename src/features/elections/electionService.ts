@@ -11,6 +11,7 @@ import type {
    UpdateDebateScheduleRequest,
    UpdateElectionRequest,
    UpdateElectionPublicDetailsRequest,
+   UpdateVotingEndRequest,
 } from './electionTypes.js';
 
 const publicElection = <T extends { candidates: { isActive: boolean }[] }>(
@@ -151,7 +152,14 @@ class ElectionService {
       if (startsAt >= endsAt) {
          throw new AppError('endsAt must be after startsAt', 400);
       }
+      if (endsAt < election.originalEndsAt) {
+         throw new AppError('endsAt must not precede originalEndsAt', 400);
+      }
       return electionRepository.update(electionId, payload, userId);
+   }
+
+   async updateVotingEnd(electionId: string, payload: UpdateVotingEndRequest, userId: string) {
+      return electionRepository.updateVotingEnd(electionId, new Date(payload.endsAt), userId);
    }
 
    async updateDebateSchedule(

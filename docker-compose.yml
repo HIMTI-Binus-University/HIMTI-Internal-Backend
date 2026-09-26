@@ -1,16 +1,20 @@
+name: himti-internal-backend
+
 services:
   app:
     build: .
     image: himti-internal-backend:local
     restart: unless-stopped
     ports:
-      - "${APP_PORT:-8000}:8000"
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
     env_file:
       - .env
     environment:
       DATABASE_URL: postgresql://${DB_USER:-himtiadmin}:${DB_PASSWORD:-himtiadmin}@db:5432/${DB_NAME:-himti-internal}?schema=public
+      ENABLE_DEV_AUTO_LOGIN: ${ENABLE_DEV_AUTO_LOGIN:-false}
+      CONTAINER: "true"
     depends_on:
-      migrate:
+      seed:
         condition: service_completed_successfully
     healthcheck:
       test:
@@ -37,6 +41,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  seed:
+    build: .
+    image: himti-internal-backend:local
+    command: ["npm", "run", "seed"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-himtiadmin}:${DB_PASSWORD:-himtiadmin}@db:5432/${DB_NAME:-himti-internal}?schema=public
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
   db:
     image: postgres:17
