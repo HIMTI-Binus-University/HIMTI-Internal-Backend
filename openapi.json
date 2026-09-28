@@ -13899,7 +13899,7 @@
                   "sessionCookie": []
                }
             ],
-            "summary": "Update a draft candidate",
+            "summary": "Update a draft or open candidate; deactivation removes them from the public ballot without deleting votes",
             "tags": [
                "Elections"
             ]

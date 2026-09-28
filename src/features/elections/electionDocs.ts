@@ -293,7 +293,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
       {
          method: 'put' as const,
          path: '/api/internal/elections/candidates/{candidateId}',
-         summary: 'Update a draft candidate',
+         summary: 'Update a draft or open candidate; deactivation removes them from the public ballot without deleting votes',
          body: UpdateCandidateSchema,
          responseSchema: response(candidateSchema),
          candidate: true,

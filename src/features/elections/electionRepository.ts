@@ -57,6 +57,15 @@ const eligibilityUserSelect = {
    studyProgram: { select: { name: true } },
 } satisfies Prisma.UserSelect;
 
+export const assertCandidateEditable = (status: string) => {
+   if (status !== 'DRAFT' && status !== 'OPEN')
+      throw new AppError(
+         'Candidates can be edited only in draft or open elections',
+         409,
+         'INVALID_ELECTION_STATE',
+      );
+};
+
 class ElectionRepository {
    async findCurrent() {
       return (
@@ -192,13 +201,7 @@ class ElectionRepository {
                select: { election: { select: { status: true } } },
             });
             if (!candidate) throw new AppError('Candidate not found', 404);
-            if (candidate.election.status !== 'DRAFT') {
-               throw new AppError(
-                  'Candidates can be edited only in draft elections',
-                  409,
-                  'INVALID_ELECTION_STATE',
-               );
-            }
+            assertCandidateEditable(candidate.election.status);
             return tx.electionCandidate.update({
                where: { id },
                data: payload,
