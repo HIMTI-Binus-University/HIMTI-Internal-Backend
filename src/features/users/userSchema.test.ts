@@ -78,6 +78,35 @@ describe('CompleteProfileSchema', () => {
       }
    });
 
+   test('keeps WhatsApp numbers as digit-only strings across completion and edits', () => {
+      const payload = {
+         ...common,
+         memberType: 'OTHER',
+         institutionType: 'NON_BINUS',
+         universityName: 'Example Organization',
+         affiliation: 'Volunteer',
+      };
+      assert.equal(
+         CompleteProfileSchema.parse(payload).phoneNumber,
+         '08123456789',
+      );
+      for (const phoneNumber of ['+62 812', '0812-345', 'abc']) {
+         assert.equal(
+            CompleteProfileSchema.safeParse({ ...payload, phoneNumber })
+               .success,
+            false,
+         );
+         assert.equal(
+            UpdateProfileSchema.safeParse({
+               name: common.name,
+               phoneNumber,
+               lineId: '',
+            }).success,
+            false,
+         );
+      }
+   });
+
    test('accepts membership positions and rejects invalid values', () => {
       const payload = {
          ...common,
@@ -215,5 +244,15 @@ describe('admin user schemas', () => {
       assert.equal(result.emailVerified, true);
       assert.equal(result.regionId, 'region-id');
       assert.equal(result.outlookEmailVerified, false);
+   });
+   test('rejects nonnumeric admin phone updates', () => {
+      assert.equal(
+         UpdateUserSchema.parse({ phoneNumber: '08123456789' }).phoneNumber,
+         '08123456789',
+      );
+      assert.equal(
+         UpdateUserSchema.safeParse({ phoneNumber: '+62 812' }).success,
+         false,
+      );
    });
 });

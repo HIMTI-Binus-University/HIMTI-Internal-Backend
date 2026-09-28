@@ -101,7 +101,6 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
                   'PROFILE_INCOMPLETE',
                   'OUTLOOK_NOT_VERIFIED',
                   'OUTLOOK_DOMAIN_NOT_ALLOWED',
-                  'NOT_COMPUTER_SCIENCE',
                   'ELECTION_NOT_OPEN',
                   'ALREADY_VOTED',
                ])
