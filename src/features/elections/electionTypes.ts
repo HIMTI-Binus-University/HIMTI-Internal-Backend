@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { MemberType, UserStatus } from '@prisma/client';
+import type { UserStatus } from '@prisma/client';
 import {
    CastVoteSchema,
    CreateCandidateSchema,
@@ -29,7 +29,6 @@ export const electionEligibilityReasons = [
    'PROFILE_INCOMPLETE',
    'OUTLOOK_NOT_VERIFIED',
    'OUTLOOK_DOMAIN_NOT_ALLOWED',
-   'NOT_COMPUTER_SCIENCE',
 ] as const;
 
 export type ElectionEligibilityReason =
@@ -40,20 +39,7 @@ type EligibilityUser = {
    registrationCompletedAt: Date | null;
    outlookEmail: string | null;
    outlookEmailVerified: boolean;
-   memberType: MemberType | null;
-   studyProgramName: string | null;
-   department: string | null;
-   studyProgram: { name: string } | null;
 };
-
-const normalize = (value: string) =>
-   value.trim().replace(/\s+/g, ' ').toLowerCase();
-
-const studentProgramPhrases = [
-   'computer science',
-   'data science',
-   'game application and technology',
-];
 
 export const getElectionEligibilityReason = (
    user: EligibilityUser,
@@ -64,24 +50,11 @@ export const getElectionEligibilityReason = (
       return 'OUTLOOK_NOT_VERIFIED';
    }
 
-   const domain = user.outlookEmail.trim().toLowerCase().split('@').at(1);
-
-   if (user.memberType === 'STUDENT') {
-      if (domain !== 'binus.ac.id') return 'OUTLOOK_DOMAIN_NOT_ALLOWED';
-      const program = normalize(
-         user.studyProgram?.name ?? user.studyProgramName ?? '',
-      );
-      return studentProgramPhrases.some((phrase) => program.includes(phrase))
-         ? null
-         : 'NOT_COMPUTER_SCIENCE';
-   }
-
-   if (user.memberType === 'LECTURER') {
-      if (domain !== 'binus.edu') return 'OUTLOOK_DOMAIN_NOT_ALLOWED';
-      return normalize(user.department ?? '') === 'school of computer science'
-         ? null
-         : 'NOT_COMPUTER_SCIENCE';
-   }
-
-   return 'NOT_COMPUTER_SCIENCE';
+   const email = user.outlookEmail.trim().toLowerCase();
+   const parts = email.split('@');
+   return parts.length === 2 &&
+      parts[0] &&
+      ['binus.ac.id', 'binus.edu'].includes(parts[1])
+      ? null
+      : 'OUTLOOK_DOMAIN_NOT_ALLOWED';
 };

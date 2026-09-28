@@ -27,7 +27,13 @@ export const UpdateUserSchema = z.object({
    graduateBatch: z.string().max(20).optional().nullable(),
 
    // Contact
-   phoneNumber: z.string().max(20).optional().nullable(),
+   phoneNumber: z
+      .string()
+      .trim()
+      .max(20)
+      .regex(/^\d+$/, 'WhatsApp number must contain digits only')
+      .optional()
+      .nullable(),
    lineId: z.string().max(50).optional().nullable(),
 });
 
@@ -48,11 +54,15 @@ export const UserFilterSchema = GetUserSchema.omit({ page: true, limit: true });
 
 const requiredText = (max: number) => z.string().trim().min(1).max(max);
 const optionalText = (max: number) => requiredText(max).optional();
+const phoneNumber = requiredText(20).regex(
+   /^\d+$/,
+   'WhatsApp number must contain digits only',
+);
 
 export const CompleteProfileSchema = z
    .object({
       name: requiredText(255),
-      phoneNumber: requiredText(20),
+      phoneNumber,
       lineId: z.string().trim().max(50).optional(),
       membershipPosition: MembershipPositionSchema.default('MEMBER'),
       memberType: z.enum(['STUDENT', 'LECTURER', 'OTHER']),
@@ -116,7 +126,7 @@ export const CompleteProfileSchema = z
 
 const updateProfileContactShape = {
    name: requiredText(255),
-   phoneNumber: requiredText(20),
+   phoneNumber,
    lineId: z.string().trim().max(50),
 };
 

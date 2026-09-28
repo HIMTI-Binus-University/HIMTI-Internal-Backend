@@ -51,10 +51,6 @@ const eligibilityUserSelect = {
    registrationCompletedAt: true,
    outlookEmail: true,
    outlookEmailVerified: true,
-   memberType: true,
-   studyProgramName: true,
-   department: true,
-   studyProgram: { select: { name: true } },
 } satisfies Prisma.UserSelect;
 
 export const assertCandidateEditable = (status: string) => {
@@ -388,24 +384,13 @@ class ElectionRepository {
             prisma.$queryRaw<Array<{ count: bigint }>>`
                SELECT COUNT(*)::bigint AS count
                FROM "users" AS u
-               LEFT JOIN "study_programs" AS sp ON sp.id = u."studyProgramId"
                WHERE u.status = 'ACTIVE'
                  AND u."registrationCompletedAt" IS NOT NULL
                  AND u."outlookEmailVerified" = true
-                 AND (
-                    (
-                       u."memberType" = 'STUDENT'
-                       AND split_part(lower(trim(u."outlookEmail")), '@', 2) = 'binus.ac.id'
-                       AND lower(regexp_replace(trim(COALESCE(sp.name, u."studyProgramName", '')), '\s+', ' ', 'g'))
-                          SIMILAR TO '%(computer science|data science|game application and technology)%'
-                    )
-                    OR (
-                       u."memberType" = 'LECTURER'
-                       AND split_part(lower(trim(u."outlookEmail")), '@', 2) = 'binus.edu'
-                       AND lower(regexp_replace(trim(COALESCE(u.department, '')), '\s+', ' ', 'g'))
-                          = 'school of computer science'
-                    )
-                 )
+                 AND u."outlookEmail" IS NOT NULL
+                 AND split_part(lower(trim(u."outlookEmail")), '@', 2) IN ('binus.ac.id', 'binus.edu')
+                 AND length(trim(split_part(u."outlookEmail", '@', 1))) > 0
+                 AND length(u."outlookEmail") - length(replace(u."outlookEmail", '@', '')) = 1
             `,
          ]);
       if (!election) throw new AppError('Election not found', 404);
