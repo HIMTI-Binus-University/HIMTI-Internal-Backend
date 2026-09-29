@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { userRepository } from './userRepository.js';
+import { BinusNimSchema } from './userSchema.js';
 import {
    GetUserSchema,
    UpdateUserRequest,
@@ -55,6 +56,22 @@ class UserService {
       user: typeof auth.$Infer.Session.user,
    ) {
       const isBinus = payload.institutionType === 'BINUS';
+      if (
+         payload.nim !== undefined ||
+         payload.institutionType !== undefined ||
+         payload.memberType !== undefined
+      ) {
+         const existing = await userRepository.findCurrentById(id);
+         if (!existing) throw new AppError('User not found', 404);
+         if (
+            (payload.institutionType ?? existing.institutionType) === 'BINUS' &&
+            (payload.memberType ?? existing.memberType) === 'STUDENT'
+         ) {
+            BinusNimSchema.parse(
+               payload.nim !== undefined ? payload.nim : existing.nim,
+            );
+         }
+      }
       const isNonBinus = payload.institutionType === 'NON_BINUS';
       const isStudent = payload.memberType === 'STUDENT';
       const isLecturer = payload.memberType === 'LECTURER';
