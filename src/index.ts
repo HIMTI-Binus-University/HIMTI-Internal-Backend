@@ -31,6 +31,10 @@ app.use(
    }),
 );
 app.use(express.static(path.join(__dirname, '../public')));
+app.get('/api/auth/error', (_req, res) => {
+   res.set('Cache-Control', 'no-store');
+   res.sendFile(path.join(__dirname, '../public/auth-error.html'));
+});
 app.all('/api/auth/*splat', toNodeHandler(auth));
 if (shouldEnableApiDocs) {
    app.use('/api', docsRoutes);

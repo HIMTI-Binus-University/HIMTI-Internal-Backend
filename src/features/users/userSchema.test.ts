@@ -1,11 +1,33 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
+   BinusNimSchema,
    CompleteProfileSchema,
    GetUserSchema,
    UpdateProfileSchema,
    UpdateUserSchema,
 } from './userSchema.js';
+
+test('rejects malformed BINUS NIMs, zero-only contacts, and fractional pagination', () => {
+   for (const nim of [
+      '0',
+      '0000000000',
+      '0123456789',
+      '26abc',
+      '260000000',
+      '26000000000',
+   ]) {
+      assert.equal(BinusNimSchema.safeParse(nim).success, false);
+   }
+   assert.equal(BinusNimSchema.safeParse('2600000000').success, true);
+   assert.equal(UpdateUserSchema.safeParse({ nim: '0' }).success, false);
+   assert.equal(UpdateUserSchema.safeParse({ nim: 'AB123' }).success, true);
+   for (const phoneNumber of ['0', '000000', 'abc', '+628123']) {
+      assert.equal(UpdateUserSchema.safeParse({ phoneNumber }).success, false);
+   }
+   assert.equal(UpdateUserSchema.safeParse({ name: '   ' }).success, false);
+   assert.equal(GetUserSchema.safeParse({ page: 1.5 }).success, false);
+});
 
 const common = {
    name: 'HIMTI Member',

@@ -92,6 +92,7 @@
                "nim": {
                   "maxLength": 50,
                   "minLength": 1,
+                  "pattern": "^(?!0+$).+$",
                   "type": "string"
                },
                "outlookEmail": {
@@ -101,7 +102,7 @@
                },
                "phoneNumber": {
                   "maxLength": 20,
-                  "minLength": 1,
+                  "pattern": "^(?=.*[1-9])[0-9]+$",
                   "type": "string"
                },
                "regionId": {
@@ -4782,13 +4783,12 @@
                         "type": "string"
                      },
                      "nim": {
-                        "maxLength": 50,
-                        "minLength": 1,
+                        "pattern": "^[1-9][0-9]{9}$",
                         "type": "string"
                      },
                      "phoneNumber": {
                         "maxLength": 20,
-                        "minLength": 1,
+                        "pattern": "^(?=.*[1-9])[0-9]+$",
                         "type": "string"
                      },
                      "regionId": {
@@ -4839,7 +4839,7 @@
                      },
                      "phoneNumber": {
                         "maxLength": 20,
-                        "minLength": 1,
+                        "pattern": "^(?=.*[1-9])[0-9]+$",
                         "type": "string"
                      },
                      "studyProgramName": {
@@ -4962,11 +4962,14 @@
                },
                "name": {
                   "maxLength": 255,
+                  "minLength": 1,
                   "type": "string"
                },
                "nim": {
                   "maxLength": 50,
+                  "minLength": 1,
                   "nullable": true,
+                  "pattern": "^(?!0+$).+$",
                   "type": "string"
                },
                "outlookEmail": {
@@ -4981,6 +4984,7 @@
                "phoneNumber": {
                   "maxLength": 20,
                   "nullable": true,
+                  "pattern": "^(?=.*[1-9])[0-9]+$",
                   "type": "string"
                },
                "regionId": {
@@ -27769,6 +27773,7 @@
                         "properties": {
                            "email": {
                               "format": "email",
+                              "maxLength": 100,
                               "type": "string"
                            }
                         },
@@ -28070,7 +28075,7 @@
                   "schema": {
                      "default": 1,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -28081,7 +28086,7 @@
                      "default": 10,
                      "maximum": 100,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -28318,7 +28323,7 @@
                   "schema": {
                      "default": 1,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -28329,7 +28334,7 @@
                      "default": 10,
                      "maximum": 100,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -28455,7 +28460,7 @@
                   "schema": {
                      "default": 1,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -28466,7 +28471,7 @@
                      "default": 10,
                      "maximum": 100,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
