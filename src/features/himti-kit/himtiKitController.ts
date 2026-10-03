@@ -159,8 +159,14 @@ export class EligibleAttendeeController {
   createAttendee = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body as CreateAttendeeInput;
-      const attendee = await this.attendeeService.createAttendee(data);
-      res.status(201).json({ success: true, data: attendee });
+      const { attendee, created } = await this.attendeeService.createAttendee(data);
+      res.status(created ? 201 : 200).json({
+        success: true,
+        data: attendee,
+        message: created
+          ? 'Attendee added successfully'
+          : 'NIM already registered, attendee name has been updated',
+      });
     } catch (error) {
       next(error);
     }

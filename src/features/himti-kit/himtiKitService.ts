@@ -100,19 +100,36 @@ export class EligibleAttendeeService {
 
   async createAttendee(data: CreateAttendeeInput) {
     const existing = await this.attendeeRepository.findByNim(data.nim);
-    if (existing) {
-      throw new AppError('NIM is already registered', 409);
-    }
-    return this.attendeeRepository.create(data);
+    const attendee = await this.attendeeRepository.upsertByNim(nanoid(), data);
+    return { attendee, created: !existing };
   }
 
   async bulkImportAttendees(data: BulkImportAttendeesInput) {
-    const totalImported = await this.attendeeRepository.createMany(data.attendees);
-
+    const latestByNim = new Map<string, CreateAttendeeInput>();
+    for (const attendee of data.attendees) {
+      latestByNim.set(attendee.nim, attendee);
+    }
+    const uniqueAttendees = Array.from(latestByNim.values());
+ 
+    const existingNims = new Set(
+      await this.attendeeRepository.findExistingNims(
+        uniqueAttendees.map((attendee) => attendee.nim),
+      ),
+    );
+ 
+    await this.attendeeRepository.upsertMany(
+      uniqueAttendees.map((attendee) => ({ id: nanoid(), ...attendee })),
+    );
+ 
+    const totalUpdated = uniqueAttendees.filter((attendee) =>
+      existingNims.has(attendee.nim),
+    ).length;
+ 
     return {
       totalSubmitted: data.attendees.length,
-      totalImported,
-      totalSkipped: data.attendees.length - totalImported,
+      totalCreated: uniqueAttendees.length - totalUpdated,
+      totalUpdated,
+      totalDuplicatesInPayload: data.attendees.length - uniqueAttendees.length,
     };
   }
 

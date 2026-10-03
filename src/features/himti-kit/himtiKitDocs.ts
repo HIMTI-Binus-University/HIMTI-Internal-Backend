@@ -9,7 +9,7 @@ export const himtiKitDocs = {
         summary: 'Get all learning resources (public, no login required)',
         parameters: [
           { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search by title' },
-          { name: 'major', in: 'query', schema: { type: 'string' }, description: 'Filter by major' },
+          { name: 'major', in: 'query', schema: { type: 'string' }, description: 'Show only resources that include this major' },
         ],
         responses: {
           200: { description: 'List of resources returned successfully' },
@@ -24,11 +24,11 @@ export const himtiKitDocs = {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['title', 'major', 'downloadUrl'],
+                required: ['title', 'majors', 'downloadUrl'],
                 properties: {
                   title: { type: 'string' },
                   description: { type: 'string' },
-                  major: { type: 'string' },
+                  majors: { type: 'array', minItems: 1, items: { type: 'string' }, example: ['COMPUTER_SCIENCE', 'DATA_SCIENCE'] },
                   downloadUrl: { type: 'string' },
                   coverImageUrl: { type: 'string', nullable: true },
                 },
@@ -158,7 +158,7 @@ export const himtiKitDocs = {
       },
       post: {
         tags: ['HIMTI Kit - Attendees'],
-        summary: 'Add a single eligible attendee manually',
+        summary: 'Add a single eligible attendee manually (existing NIM = update name)',
         requestBody: {
           required: true,
           content: {
@@ -176,7 +176,7 @@ export const himtiKitDocs = {
         },
         responses: {
           201: { description: 'Attendee added successfully' },
-          409: { description: 'NIM is already registered' },
+          200: { description: 'NIM already registered, attendee name has been updated' },
         },
       },
     },
@@ -210,7 +210,7 @@ export const himtiKitDocs = {
           },
         },
         responses: {
-          201: { description: 'Attendees imported successfully (duplicate NIM entries are skipped)' },
+          201: { description: 'Attendees imported. New NIMs are created, existing NIMs get their name updated' },
           400: { description: 'Validation error' },
         },
       },
@@ -259,14 +259,14 @@ export const himtiKitDocs = {
         },
       },
     },
-
+ 
     // ==========================================
     // DOCS UNTUK WEBSITE APPEARANCE
     // ==========================================
     '/himti-kit/appearance': {
       get: {
         tags: ['HIMTI Kit - Appearance'],
-        summary: 'Get current website appearance settings',
+        summary: 'Get current website appearance settings (public, used by the portal to render itself)',
         responses: {
           200: { description: 'Current appearance settings returned successfully' },
         },
@@ -281,7 +281,7 @@ export const himtiKitDocs = {
               schema: {
                 type: 'object',
                 properties: {
-                  accentColor: { type: 'string', example: '#0284c7' },
+                  accentColor: { type: 'string', example: '#2782B0' },
                   backgroundImageUrl: { type: 'string', nullable: true },
                   overlayEnabled: { type: 'boolean' },
                   overlayDarkness: { type: 'integer', minimum: 0, maximum: 100, example: 65 },
@@ -309,3 +309,4 @@ export const himtiKitDocs = {
     },
   },
 };
+ 

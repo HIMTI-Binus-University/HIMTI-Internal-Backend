@@ -21,7 +21,7 @@ export class ResourceRepository {
   async findMany(query: ResourceQuery): Promise<HimtiKitResource[]> {
     return this.prisma.himtiKitResource.findMany({
       where: {
-        major: query.major,
+        ...(query.major && { majors: { has: query.major } }),
         ...(query.search && {
           title: { contains: query.search, mode: 'insensitive' },
         }),
@@ -110,12 +110,32 @@ export class EligibleAttendeeRepository {
     return this.prisma.himtiKitAttendee.create({ data: { ...data } });
   }
  
-  async createMany(rows: CreateAttendeeInput[]): Promise<number> {
-    const result = await this.prisma.himtiKitAttendee.createMany({
-      data: rows,
-      skipDuplicates: true,
+  async upsertByNim(id: string, data: CreateAttendeeInput): Promise<HimtiKitAttendee> {
+    return this.prisma.himtiKitAttendee.upsert({
+      where: { nim: data.nim },
+      update: { name: data.name },
+      create: { id, ...data },
     });
-    return result.count;
+  }
+ 
+  async findExistingNims(nims: string[]): Promise<string[]> {
+    const rows = await this.prisma.himtiKitAttendee.findMany({
+      where: { nim: { in: nims } },
+      select: { nim: true },
+    });
+    return rows.map((row) => row.nim);
+  }
+ 
+  async upsertMany(rows: Array<{ id: string } & CreateAttendeeInput>): Promise<void> {
+    await this.prisma.$transaction(
+      rows.map((row) =>
+        this.prisma.himtiKitAttendee.upsert({
+          where: { nim: row.nim },
+          update: { name: row.name },
+          create: row,
+        }),
+      ),
+    );
   }
  
   async delete(id: string): Promise<HimtiKitAttendee> {

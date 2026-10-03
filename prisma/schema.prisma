@@ -1188,7 +1188,7 @@ model HimtiKitResource {
   description   String?
   downloadUrl   String
   coverImageUrl String? @db.Text
-  major         MajorHIMTIKit
+  majors         MajorHIMTIKit[]
 
   createdAt DateTime  @default(now()) @db.Timestamp(0)
   updatedAt DateTime? @updatedAt
