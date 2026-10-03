@@ -101,19 +101,13 @@ curl http://localhost:8000/api/health
 
 The checked-in Compose file is intended for local development. It builds the
 backend, starts PostgreSQL, waits for it to become healthy, applies migrations,
-and then starts the API.
+seeds application reference data, and then starts the API.
 
 ```bash
 cp .env.example .env
 docker compose up --build -d
 docker compose ps
 curl http://localhost:8000/api/health
-```
-
-Run the seed explicitly if a fresh environment needs application reference data:
-
-```bash
-docker compose run --rm app npm run seed
 ```
 
 View logs or stop the stack:
@@ -149,6 +143,18 @@ Back up any required data before running it. If the data must be retained, creat
 or migrate the required PostgreSQL role and database instead of deleting the
 volume.
 
+## Opt-in local System Admin sign-in
+
+Run the seed and set `ENABLE_DEV_AUTO_LOGIN=true` with `NODE_ENV=development` in
+the backend environment to expose `POST /api/auth/dev-login`. The endpoint
+creates a normal Better Auth session cookie for the seeded, registration-complete
+System user with the Admin role; no password or Google account is created.
+`GET /api/auth/dev-login` reports `{ "enabled": true | false }` so local clients
+can hide this option when unavailable. The flag defaults to false; enabling it
+outside development fails startup. Native development binds to `127.0.0.1` when
+enabled, and Compose publishes the API only on host loopback. Never expose this
+development container port publicly or enable the flag in a shared environment.
+
 ## Development User Access
 
 Internal Tools requires a valid Better Auth session, completed registration, and
@@ -156,11 +162,8 @@ the appropriate active role or permission. For local development, registration
 can be marked complete directly in the database without filling every membership
 profile field.
 
-1. Seed the roles, permissions, reference data, and membership period:
-
-   ```bash
-   docker compose run --rm app npm run seed
-   ```
+1. The Compose `seed` service populates roles, permissions, reference data, and
+   the membership period before the API starts.
 
 2. Sign in through Google once. This creates the Better Auth user, account, and
    session records. Do not create only a `User` row manually because that does

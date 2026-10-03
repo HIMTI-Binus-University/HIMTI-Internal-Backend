@@ -33,6 +33,7 @@ const electionSelect = {
    status: true,
    startsAt: true,
    endsAt: true,
+   originalEndsAt: true,
    debateAt: true,
    openedAt: true,
    closedAt: true,
@@ -50,11 +51,16 @@ const eligibilityUserSelect = {
    registrationCompletedAt: true,
    outlookEmail: true,
    outlookEmailVerified: true,
-   memberType: true,
-   studyProgramName: true,
-   department: true,
-   studyProgram: { select: { name: true } },
 } satisfies Prisma.UserSelect;
+
+export const assertCandidateEditable = (status: string) => {
+   if (status !== 'DRAFT' && status !== 'OPEN')
+      throw new AppError(
+         'Candidates can be edited only in draft or open elections',
+         409,
+         'INVALID_ELECTION_STATE',
+      );
+};
 
 class ElectionRepository {
    async findCurrent() {
@@ -64,8 +70,13 @@ class ElectionRepository {
             select: electionSelect,
             orderBy: { openedAt: 'desc' },
          })) ??
+         (await prisma.election.findFirst({
+            where: { status: 'PUBLISHED' },
+            select: electionSelect,
+            orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+         })) ??
          prisma.election.findFirst({
-            where: { status: { in: ['CLOSED', 'PUBLISHED'] } },
+            where: { status: 'CLOSED' },
             select: electionSelect,
             orderBy: { createdAt: 'desc' },
          })
@@ -92,9 +103,43 @@ class ElectionRepository {
             ...payload,
             startsAt: new Date(payload.startsAt),
             endsAt: new Date(payload.endsAt),
+            originalEndsAt: new Date(payload.endsAt),
             debateAt: payload.debateAt ? new Date(payload.debateAt) : null,
             createdBy: userId,
          },
+         select: electionSelect,
+      });
+   }
+
+   async updateVotingEnd(id: string, endsAt: Date, userId: string) {
+      const updated = await prisma.election.updateMany({
+         where: {
+            id,
+            status: { in: ['DRAFT', 'OPEN'] },
+            originalEndsAt: { lte: endsAt },
+            startsAt: { lt: endsAt },
+         },
+         data: { endsAt, updatedBy: userId },
+      });
+      if (!updated.count) {
+         const election = await prisma.election.findUnique({
+            where: { id },
+            select: { status: true, startsAt: true, originalEndsAt: true },
+         });
+         if (!election) throw new AppError('Election not found', 404);
+         if (election.status !== 'DRAFT' && election.status !== 'OPEN') {
+            throw new AppError(
+               'Voting end can be edited only in draft or open elections',
+               409,
+               'INVALID_ELECTION_STATE',
+            );
+         }
+         if (endsAt < election.originalEndsAt)
+            throw new AppError('endsAt must not precede originalEndsAt', 400);
+         throw new AppError('endsAt must be after startsAt', 400);
+      }
+      return prisma.election.findUniqueOrThrow({
+         where: { id },
          select: electionSelect,
       });
    }
@@ -152,13 +197,7 @@ class ElectionRepository {
                select: { election: { select: { status: true } } },
             });
             if (!candidate) throw new AppError('Candidate not found', 404);
-            if (candidate.election.status !== 'DRAFT') {
-               throw new AppError(
-                  'Candidates can be edited only in draft elections',
-                  409,
-                  'INVALID_ELECTION_STATE',
-               );
-            }
+            assertCandidateEditable(candidate.election.status);
             return tx.electionCandidate.update({
                where: { id },
                data: payload,
@@ -175,50 +214,87 @@ class ElectionRepository {
       nextStatus: 'OPEN' | 'CLOSED' | 'PUBLISHED',
       userId: string,
    ) {
-      return prisma.$transaction(
-         async (tx) => {
-            const election = await tx.election.findUnique({
-               where: { id },
-               select: {
-                  status: true,
-                  startsAt: true,
-                  endsAt: true,
-                  _count: {
-                     select: { candidates: { where: { isActive: true } } },
+      try {
+         return await prisma.$transaction(
+            async (tx) => {
+               const election = await tx.election.findUnique({
+                  where: { id },
+                  select: {
+                     status: true,
+                     startsAt: true,
+                     endsAt: true,
+                     _count: {
+                        select: { candidates: { where: { isActive: true } } },
+                     },
                   },
-               },
-            });
-            if (!election) throw new AppError('Election not found', 404);
-            if (election.status !== expectedStatus) {
-               throw new AppError(
-                  `Election must be ${expectedStatus.toLowerCase()}`,
-                  409,
-                  'INVALID_ELECTION_STATE',
-               );
-            }
-            if (nextStatus === 'OPEN' && election._count.candidates < 2) {
-               throw new AppError(
-                  'At least two active candidates are required',
-                  409,
-                  'INSUFFICIENT_CANDIDATES',
-               );
-            }
+               });
+               if (!election) throw new AppError('Election not found', 404);
+               if (election.status !== expectedStatus) {
+                  throw new AppError(
+                     `Election must be ${expectedStatus.toLowerCase()}`,
+                     409,
+                     'INVALID_ELECTION_STATE',
+                  );
+               }
+               if (nextStatus === 'OPEN' && election._count.candidates < 2) {
+                  throw new AppError(
+                     'At least two active candidates are required',
+                     409,
+                     'INSUFFICIENT_CANDIDATES',
+                  );
+               }
+               if (nextStatus === 'OPEN') {
+                  const open = await tx.election.findFirst({
+                     where: { status: 'OPEN', id: { not: id } },
+                     select: { id: true },
+                  });
+                  if (open) {
+                     throw new AppError(
+                        'Close the open election before opening another',
+                        409,
+                        'ELECTION_ALREADY_OPEN',
+                     );
+                  }
+               }
 
-            const now = new Date();
-            return tx.election.update({
-               where: { id },
-               data: {
-                  status: nextStatus,
-                  updatedBy: userId,
-                  ...(nextStatus === 'OPEN' && { openedAt: now }),
-                  ...(nextStatus === 'CLOSED' && { closedAt: now }),
-                  ...(nextStatus === 'PUBLISHED' && { publishedAt: now }),
-               },
-               select: electionSelect,
+               const now = new Date();
+               return tx.election.update({
+                  where: { id },
+                  data: {
+                     status: nextStatus,
+                     updatedBy: userId,
+                     ...(nextStatus === 'OPEN' && { openedAt: now }),
+                     ...(nextStatus === 'CLOSED' && { closedAt: now }),
+                     ...(nextStatus === 'PUBLISHED' && { publishedAt: now }),
+                  },
+                  select: electionSelect,
+               });
+            },
+            { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+         );
+      } catch (error) {
+         if (
+            nextStatus === 'OPEN' &&
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            (error.code === 'P2034' ||
+               (error.code === 'P2002' &&
+                  String(error.meta?.target).includes(
+                     'elections_one_open_idx',
+                  )))
+         ) {
+            const open = await prisma.election.findFirst({
+               where: { status: 'OPEN', id: { not: id } },
+               select: { id: true },
             });
-         },
-         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-      );
+            if (open)
+               throw new AppError(
+                  'Close the open election before opening another',
+                  409,
+                  'ELECTION_ALREADY_OPEN',
+               );
+         }
+         throw error;
+      }
    }
 
    async findEligibilityUser(userId: string) {
@@ -308,24 +384,13 @@ class ElectionRepository {
             prisma.$queryRaw<Array<{ count: bigint }>>`
                SELECT COUNT(*)::bigint AS count
                FROM "users" AS u
-               LEFT JOIN "study_programs" AS sp ON sp.id = u."studyProgramId"
                WHERE u.status = 'ACTIVE'
                  AND u."registrationCompletedAt" IS NOT NULL
                  AND u."outlookEmailVerified" = true
-                 AND (
-                    (
-                       u."memberType" = 'STUDENT'
-                       AND split_part(lower(trim(u."outlookEmail")), '@', 2) = 'binus.ac.id'
-                       AND lower(regexp_replace(trim(COALESCE(sp.name, u."studyProgramName", '')), '\s+', ' ', 'g'))
-                          SIMILAR TO '%(computer science|data science|game application and technology)%'
-                    )
-                    OR (
-                       u."memberType" = 'LECTURER'
-                       AND split_part(lower(trim(u."outlookEmail")), '@', 2) = 'binus.edu'
-                       AND lower(regexp_replace(trim(COALESCE(u.department, '')), '\s+', ' ', 'g'))
-                          = 'school of computer science'
-                    )
-                 )
+                 AND u."outlookEmail" IS NOT NULL
+                 AND split_part(lower(trim(u."outlookEmail")), '@', 2) IN ('binus.ac.id', 'binus.edu')
+                 AND length(trim(split_part(u."outlookEmail", '@', 1))) > 0
+                 AND length(u."outlookEmail") - length(replace(u."outlookEmail", '@', '')) = 1
             `,
          ]);
       if (!election) throw new AppError('Election not found', 404);

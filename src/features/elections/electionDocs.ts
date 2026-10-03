@@ -14,6 +14,7 @@ import {
    UpdateDebateScheduleSchema,
    UpdateElectionSchema,
    UpdateElectionPublicDetailsSchema,
+   UpdateVotingEndSchema,
 } from './electionSchema.js';
 
 const tag = 'Elections';
@@ -45,6 +46,7 @@ const electionSchema = z.object({
    status: electionStatusSchema,
    startsAt: z.string().datetime(),
    endsAt: z.string().datetime(),
+   originalEndsAt: z.string().datetime(),
    debateAt: z.string().datetime().nullable(),
    openedAt: z.string().datetime().nullable(),
    closedAt: z.string().datetime().nullable(),
@@ -99,7 +101,6 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
                   'PROFILE_INCOMPLETE',
                   'OUTLOOK_NOT_VERIFIED',
                   'OUTLOOK_DOMAIN_NOT_ALLOWED',
-                  'NOT_COMPUTER_SCIENCE',
                   'ELECTION_NOT_OPEN',
                   'ALREADY_VOTED',
                ])
@@ -249,6 +250,13 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
       },
       {
          method: 'patch' as const,
+         path: '/api/internal/elections/{electionId}/voting-end',
+         summary: 'Update draft or open voting end, not earlier than its original end',
+         body: UpdateVotingEndSchema,
+         responseSchema: ElectionResponse,
+      },
+      {
+         method: 'patch' as const,
          path: '/api/internal/elections/{electionId}/public-details',
          summary: 'Update draft or open election public details',
          body: UpdateElectionPublicDetailsSchema,
@@ -284,7 +292,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
       {
          method: 'put' as const,
          path: '/api/internal/elections/candidates/{candidateId}',
-         summary: 'Update a draft candidate',
+         summary: 'Update a draft or open candidate; deactivation removes them from the public ballot without deleting votes',
          body: UpdateCandidateSchema,
          responseSchema: response(candidateSchema),
          candidate: true,

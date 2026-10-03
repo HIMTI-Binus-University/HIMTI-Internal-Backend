@@ -17,7 +17,10 @@ describe('election migration invariants', () => {
       assert.ok(ballotTable);
       assert.doesNotMatch(ballotTable, /"userId"|"receiptCode"|"votedAt"/);
       assert.match(sql, /PRIMARY KEY \("electionId", "userId"\)/);
-      assert.match(sql, /elections_one_open_idx/);
+      assert.match(
+         sql,
+         /CREATE UNIQUE INDEX "elections_one_open_idx" ON "elections" \(\(1\)\) WHERE "status" = 'OPEN'/,
+      );
       assert.match(sql, /FOREIGN KEY \("candidateId", "electionId"\)/);
       assert.match(sql, /'ACTIVE'::"Status"/);
    });

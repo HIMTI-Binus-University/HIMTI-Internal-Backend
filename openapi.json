@@ -92,6 +92,7 @@
                "nim": {
                   "maxLength": 50,
                   "minLength": 1,
+                  "pattern": "^(?!0+$).+$",
                   "type": "string"
                },
                "outlookEmail": {
@@ -101,7 +102,7 @@
                },
                "phoneNumber": {
                   "maxLength": 20,
-                  "minLength": 1,
+                  "pattern": "^(?=.*[1-9])[0-9]+$",
                   "type": "string"
                },
                "regionId": {
@@ -625,7 +626,6 @@
                            "PROFILE_INCOMPLETE",
                            "OUTLOOK_NOT_VERIFIED",
                            "OUTLOOK_DOMAIN_NOT_ALLOWED",
-                           "NOT_COMPUTER_SCIENCE",
                            "ELECTION_NOT_OPEN",
                            "ALREADY_VOTED",
                            null
@@ -760,6 +760,10 @@
                         "nullable": true,
                         "type": "string"
                      },
+                     "originalEndsAt": {
+                        "format": "date-time",
+                        "type": "string"
+                     },
                      "publishedAt": {
                         "format": "date-time",
                         "nullable": true,
@@ -798,6 +802,7 @@
                      "status",
                      "startsAt",
                      "endsAt",
+                     "originalEndsAt",
                      "debateAt",
                      "openedAt",
                      "closedAt",
@@ -4778,13 +4783,12 @@
                         "type": "string"
                      },
                      "nim": {
-                        "maxLength": 50,
-                        "minLength": 1,
+                        "pattern": "^[1-9][0-9]{9}$",
                         "type": "string"
                      },
                      "phoneNumber": {
                         "maxLength": 20,
-                        "minLength": 1,
+                        "pattern": "^(?=.*[1-9])[0-9]+$",
                         "type": "string"
                      },
                      "regionId": {
@@ -4835,7 +4839,7 @@
                      },
                      "phoneNumber": {
                         "maxLength": 20,
-                        "minLength": 1,
+                        "pattern": "^(?=.*[1-9])[0-9]+$",
                         "type": "string"
                      },
                      "studyProgramName": {
@@ -4958,11 +4962,14 @@
                },
                "name": {
                   "maxLength": 255,
+                  "minLength": 1,
                   "type": "string"
                },
                "nim": {
                   "maxLength": 50,
+                  "minLength": 1,
                   "nullable": true,
+                  "pattern": "^(?!0+$).+$",
                   "type": "string"
                },
                "outlookEmail": {
@@ -4977,6 +4984,7 @@
                "phoneNumber": {
                   "maxLength": 20,
                   "nullable": true,
+                  "pattern": "^(?=.*[1-9])[0-9]+$",
                   "type": "string"
                },
                "regionId": {
@@ -7762,6 +7770,10 @@
                                        "nullable": true,
                                        "type": "string"
                                     },
+                                    "originalEndsAt": {
+                                       "format": "date-time",
+                                       "type": "string"
+                                    },
                                     "publishedAt": {
                                        "format": "date-time",
                                        "nullable": true,
@@ -7800,6 +7812,7 @@
                                     "status",
                                     "startsAt",
                                     "endsAt",
+                                    "originalEndsAt",
                                     "debateAt",
                                     "openedAt",
                                     "closedAt",
@@ -9188,6 +9201,10 @@
                                           "nullable": true,
                                           "type": "string"
                                        },
+                                       "originalEndsAt": {
+                                          "format": "date-time",
+                                          "type": "string"
+                                       },
                                        "publishedAt": {
                                           "format": "date-time",
                                           "nullable": true,
@@ -9226,6 +9243,7 @@
                                        "status",
                                        "startsAt",
                                        "endsAt",
+                                       "originalEndsAt",
                                        "debateAt",
                                        "openedAt",
                                        "closedAt",
@@ -13122,6 +13140,323 @@
             ]
          }
       },
+      "/api/internal/elections/{electionId}/voting-end": {
+         "patch": {
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "electionId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "additionalProperties": false,
+                        "properties": {
+                           "endsAt": {
+                              "format": "date-time",
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "endsAt"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/ElectionResponse"
+                        }
+                     }
+                  },
+                  "description": "Operation completed."
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "enum": [
+                                          "VALIDATION_ERROR"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Validation error."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Not eligible or missing permission."
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Election or candidate not found."
+               },
+               "409": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "anyOf": [
+                              {
+                                 "properties": {
+                                    "code": {
+                                       "type": "string"
+                                    },
+                                    "details": {
+                                       "nullable": true
+                                    },
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "enum": [
+                                          "fail",
+                                          "error"
+                                       ],
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "required": [
+                                    "status",
+                                    "code",
+                                    "message",
+                                    "msg"
+                                 ],
+                                 "type": "object"
+                              },
+                              {
+                                 "properties": {
+                                    "errors": {
+                                       "nullable": true
+                                    },
+                                    "message": {
+                                       "type": "string"
+                                    },
+                                    "msg": {
+                                       "type": "string"
+                                    },
+                                    "status": {
+                                       "type": "string"
+                                    },
+                                    "success": {
+                                       "type": "boolean"
+                                    }
+                                 },
+                                 "type": "object"
+                              }
+                           ]
+                        }
+                     }
+                  },
+                  "description": "Election state or duplicate-vote conflict."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Update draft or open voting end, not earlier than its original end",
+            "tags": [
+               "Elections"
+            ]
+         }
+      },
       "/api/internal/elections/candidates/{candidateId}": {
          "put": {
             "parameters": [
@@ -13567,7 +13902,7 @@
                   "sessionCookie": []
                }
             ],
-            "summary": "Update a draft candidate",
+            "summary": "Update a draft or open candidate; deactivation removes them from the public ballot without deleting votes",
             "tags": [
                "Elections"
             ]
@@ -27438,6 +27773,7 @@
                         "properties": {
                            "email": {
                               "format": "email",
+                              "maxLength": 100,
                               "type": "string"
                            }
                         },
@@ -27739,7 +28075,7 @@
                   "schema": {
                      "default": 1,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -27750,7 +28086,7 @@
                      "default": 10,
                      "maximum": 100,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -27987,7 +28323,7 @@
                   "schema": {
                      "default": 1,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -27998,7 +28334,7 @@
                      "default": 10,
                      "maximum": 100,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -28124,7 +28460,7 @@
                   "schema": {
                      "default": 1,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {
@@ -28135,7 +28471,7 @@
                      "default": 10,
                      "maximum": 100,
                      "minimum": 1,
-                     "type": "number"
+                     "type": "integer"
                   }
                },
                {

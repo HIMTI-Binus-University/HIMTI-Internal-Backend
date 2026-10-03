@@ -1104,6 +1104,7 @@ model Election {
   status      ElectionStatus @default(DRAFT)
   startsAt    DateTime       @db.Timestamp(0)
   endsAt      DateTime       @db.Timestamp(0)
+  originalEndsAt DateTime       @db.Timestamp(0)
   debateAt    DateTime?      @db.Timestamp(0)
   openedAt    DateTime?      @db.Timestamp(0)
   closedAt    DateTime?      @db.Timestamp(0)

@@ -1,9 +1,31 @@
 import { z } from 'zod';
 import { MembershipPositionSchema } from '@/features/membership/membershipSchema.js';
 
+const studentId = z
+   .string()
+   .trim()
+   .min(1)
+   .max(50)
+   .regex(/^(?!0+$).+$/, 'Student ID cannot be all zeros');
+export const BinusNimSchema = z
+   .string()
+   .trim()
+   .regex(
+      /^[1-9][0-9]{9}$/,
+      'BINUS NIM must be 10 digits and cannot start with zero',
+   );
+const phoneNumber = z
+   .string()
+   .trim()
+   .max(20)
+   .regex(
+      /^(?=.*[1-9])[0-9]+$/,
+      'WhatsApp number must contain digits and cannot be all zeros',
+   );
+
 export const UpdateUserSchema = z.object({
    // Identity
-   name: z.string().max(255).optional(),
+   name: z.string().trim().min(1).max(255).optional(),
    email: z.string().email().max(100).optional(),
    emailVerified: z.boolean().optional(),
    outlookEmail: z.string().email().max(100).optional().nullable(),
@@ -20,20 +42,20 @@ export const UpdateUserSchema = z.object({
    affiliation: z.string().max(255).optional().nullable(),
 
    // Academic
-   nim: z.string().max(50).optional().nullable(),
+   nim: studentId.optional().nullable(),
    universityId: z.string().optional().nullable(),
    studyProgramId: z.string().optional().nullable(),
    regionId: z.string().optional().nullable(),
    graduateBatch: z.string().max(20).optional().nullable(),
 
    // Contact
-   phoneNumber: z.string().max(20).optional().nullable(),
+   phoneNumber: phoneNumber.optional().nullable(),
    lineId: z.string().max(50).optional().nullable(),
 });
 
 export const GetUserSchema = z.object({
-   page: z.coerce.number().min(1).default(1),
-   limit: z.coerce.number().min(1).max(100).default(10),
+   page: z.coerce.number().int().min(1).default(1),
+   limit: z.coerce.number().int().min(1).max(100).default(10),
    search: z.string().optional(),
    sort: z.string().default('createdAt:desc'),
    status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
@@ -52,7 +74,7 @@ const optionalText = (max: number) => requiredText(max).optional();
 export const CompleteProfileSchema = z
    .object({
       name: requiredText(255),
-      phoneNumber: requiredText(20),
+      phoneNumber,
       lineId: z.string().trim().max(50).optional(),
       membershipPosition: MembershipPositionSchema.default('MEMBER'),
       memberType: z.enum(['STUDENT', 'LECTURER', 'OTHER']),
@@ -63,7 +85,7 @@ export const CompleteProfileSchema = z
       outlookEmail: z.string().trim().toLowerCase().email().max(100).optional(),
       studyProgramId: optionalText(255),
       studyProgramName: optionalText(255),
-      nim: optionalText(50),
+      nim: studentId.optional(),
       graduateBatch: optionalText(20),
       department: optionalText(255),
       affiliation: optionalText(255),
@@ -81,6 +103,14 @@ export const CompleteProfileSchema = z
       };
 
       if (data.institutionType === 'BINUS') {
+         if (data.nim && !BinusNimSchema.safeParse(data.nim).success) {
+            ctx.addIssue({
+               code: 'custom',
+               path: ['nim'],
+               message:
+                  'BINUS NIM must be 10 digits and cannot start with zero',
+            });
+         }
          required('universityId');
          required('regionId');
          required('outlookEmail');
@@ -116,7 +146,7 @@ export const CompleteProfileSchema = z
 
 const updateProfileContactShape = {
    name: requiredText(255),
-   phoneNumber: requiredText(20),
+   phoneNumber,
    lineId: z.string().trim().max(50),
 };
 
@@ -128,7 +158,7 @@ export const UpdateProfileSchema = z.discriminatedUnion('institutionType', [
          universityId: requiredText(255),
          studyProgramId: requiredText(255),
          regionId: requiredText(255),
-         nim: requiredText(50),
+         nim: BinusNimSchema,
       })
       .strict(),
    z
@@ -195,6 +225,7 @@ export const OutlookEmailSchema = z.object({
       .trim()
       .toLowerCase()
       .email()
+      .max(100)
       .refine(
          (email) =>
             email.endsWith('@binus.ac.id') || email.endsWith('@binus.edu'),

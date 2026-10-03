@@ -1,11 +1,33 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
+   BinusNimSchema,
    CompleteProfileSchema,
    GetUserSchema,
    UpdateProfileSchema,
    UpdateUserSchema,
 } from './userSchema.js';
+
+test('rejects malformed BINUS NIMs, zero-only contacts, and fractional pagination', () => {
+   for (const nim of [
+      '0',
+      '0000000000',
+      '0123456789',
+      '26abc',
+      '260000000',
+      '26000000000',
+   ]) {
+      assert.equal(BinusNimSchema.safeParse(nim).success, false);
+   }
+   assert.equal(BinusNimSchema.safeParse('2600000000').success, true);
+   assert.equal(UpdateUserSchema.safeParse({ nim: '0' }).success, false);
+   assert.equal(UpdateUserSchema.safeParse({ nim: 'AB123' }).success, true);
+   for (const phoneNumber of ['0', '000000', 'abc', '+628123']) {
+      assert.equal(UpdateUserSchema.safeParse({ phoneNumber }).success, false);
+   }
+   assert.equal(UpdateUserSchema.safeParse({ name: '   ' }).success, false);
+   assert.equal(GetUserSchema.safeParse({ page: 1.5 }).success, false);
+});
 
 const common = {
    name: 'HIMTI Member',
@@ -75,6 +97,35 @@ describe('CompleteProfileSchema', () => {
          if (result.success) {
             assert.equal(result.data.membershipPosition, 'MEMBER');
          }
+      }
+   });
+
+   test('keeps WhatsApp numbers as digit-only strings across completion and edits', () => {
+      const payload = {
+         ...common,
+         memberType: 'OTHER',
+         institutionType: 'NON_BINUS',
+         universityName: 'Example Organization',
+         affiliation: 'Volunteer',
+      };
+      assert.equal(
+         CompleteProfileSchema.parse(payload).phoneNumber,
+         '08123456789',
+      );
+      for (const phoneNumber of ['+62 812', '0812-345', 'abc']) {
+         assert.equal(
+            CompleteProfileSchema.safeParse({ ...payload, phoneNumber })
+               .success,
+            false,
+         );
+         assert.equal(
+            UpdateProfileSchema.safeParse({
+               name: common.name,
+               phoneNumber,
+               lineId: '',
+            }).success,
+            false,
+         );
       }
    });
 
@@ -215,5 +266,15 @@ describe('admin user schemas', () => {
       assert.equal(result.emailVerified, true);
       assert.equal(result.regionId, 'region-id');
       assert.equal(result.outlookEmailVerified, false);
+   });
+   test('rejects nonnumeric admin phone updates', () => {
+      assert.equal(
+         UpdateUserSchema.parse({ phoneNumber: '08123456789' }).phoneNumber,
+         '08123456789',
+      );
+      assert.equal(
+         UpdateUserSchema.safeParse({ phoneNumber: '+62 812' }).success,
+         false,
+      );
    });
 });
