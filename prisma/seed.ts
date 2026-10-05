@@ -61,15 +61,11 @@ async function main() {
       ['semarang', 'Semarang'],
    ] as const;
    for (const [id, name] of regions) {
-      const existing = await prisma.region.findUnique({ where: { name } });
-      if (existing) {
-         await prisma.region.update({
-            where: { id: existing.id },
-            data: { id, status: 'ACTIVE' },
-         });
-      } else {
-         await prisma.region.create({ data: { id, name } });
-      }
+      await prisma.region.upsert({
+         where: { name },
+         update: {},
+         create: { id, name },
+      });
    }
 
    // ==========================================
@@ -202,14 +198,17 @@ async function main() {
    // ==========================================
    console.log('⏳ Seeding Membership Period...');
    await prisma.$transaction(async (tx) => {
-      await tx.membershipPeriod.updateMany({
+      const activePeriod = await tx.membershipPeriod.findFirst({
          where: { isActive: true },
-         data: { isActive: false },
       });
       await tx.membershipPeriod.upsert({
          where: { id: '2026-2027' },
-         update: { label: '2026/2027', isActive: true },
-         create: { id: '2026-2027', label: '2026/2027', isActive: true },
+         update: {},
+         create: {
+            id: '2026-2027',
+            label: '2026/2027',
+            isActive: !activePeriod,
+         },
       });
    });
 

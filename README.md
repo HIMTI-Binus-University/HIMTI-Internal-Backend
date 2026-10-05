@@ -45,12 +45,12 @@ cp .env.example .env
 ```
 
 The example contains safe local database and port defaults. Configure these
-service credentials before testing their associated features:
+service credentials before starting the backend or testing their associated features:
 
 - `BETTER_AUTH_SECRET`: unique random secret; generate one with `openssl rand -base64 32`
 - `TICKET_CREDENTIAL_KEY_V1`: base64-encoded 32-byte AES key for recoverable participant QR credentials; generate one with `openssl rand -base64 32`
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Google OAuth credentials
-- `RESEND_API_KEY`: email delivery for BINUS email verification
+- `RESEND_API_KEY`: required at startup by the mail client, even when no email is sent; use a valid key for BINUS verification delivery
 
 `FRONTEND_URL` and `REGISTRATION_FRONTEND_URL` control browser redirects and
 verification links. `ENABLE_API_DOCS=true` exposes authenticated API docs at
@@ -82,8 +82,8 @@ deployment secret store or a secure password manager.
    npm run seed
    ```
 
-   The seed changes application data and sets an active membership period. Do
-   not run it against an existing shared or production database without review.
+   The seed creates missing reference data and preserves existing region state
+   and active membership periods. Review it before using a shared database.
 
 5. Start the development server:
 
@@ -99,9 +99,11 @@ curl http://localhost:8000/api/health
 
 ## Run With Docker
 
-The checked-in Compose file is intended for local development. It builds the
-backend, starts PostgreSQL, waits for it to become healthy, applies migrations,
-seeds application reference data, and then starts the API.
+The default Compose stack builds the compiled backend, starts PostgreSQL, waits
+for it to become healthy, applies migrations, seeds application reference data,
+and then starts the API. A migration or seed failure prevents API startup.
+Backend source edits require `docker compose up --build -d`; use native
+`npm run dev` for backend watch mode. `docker compose build` only builds images.
 
 ```bash
 cp .env.example .env
@@ -110,6 +112,19 @@ docker compose ps
 curl http://localhost:8000/api/health
 ```
 
+Run the same `docker compose up --build -d` command separately in the internal
+frontend, registration frontend, and election frontend directories. Their
+default Docker servers hot reload on ports **3000**, **3001**, and **3002**,
+respectively; all connect to this backend on **8000**. Prepare each `.env` from
+its `.env.example` without overwriting existing values, and check the public
+origins match those ports. No aggregate Compose command is required.
+
+Seeding runs automatically through the `seed` service after migrations. It
+creates missing roles and reference data without resetting existing active
+membership periods. To repeat it explicitly, use
+`docker compose run --rm seed`. Admin access uses Google sign-in plus the steps
+below, or the existing opt-in development System Admin sign-in.
+
 View logs or stop the stack:
 
 ```bash
@@ -117,9 +132,9 @@ docker compose logs -f app
 docker compose down
 ```
 
-Database data persists in the `postgres_data` volume. To remove the local
-database as well, use `docker compose down --volumes` only when its data is no
-longer needed.
+Database and private-upload data persist in the `postgres_data` and
+`private_uploads` volumes. `docker compose down --volumes` permanently deletes
+both; use it only when all of that local data is disposable.
 
 The host database port defaults to `5432`, the API port to `8000`, and both can
 be changed using `DB_PORT` and `APP_PORT` in `.env`.
@@ -138,7 +153,7 @@ docker compose down --volumes
 docker compose up --build -d
 ```
 
-Warning: `docker compose down --volumes` permanently deletes the local database.
+Warning: `docker compose down --volumes` deletes the database and private uploads.
 Back up any required data before running it. If the data must be retained, create
 or migrate the required PostgreSQL role and database instead of deleting the
 volume.
@@ -254,7 +269,7 @@ contracts.
 
 - PostgreSQL is required for application startup and normal operation.
 - Google OAuth credentials are required for sign-in.
-- Resend is required to send verification email.
+- `RESEND_API_KEY` must be nonempty for startup; a valid Resend key is required to send verification email.
 - The registration frontend must be reachable at the configured URL for the
   profile-completion and verification flows.
 
