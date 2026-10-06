@@ -1,16 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { getElectionEligibilityReason } from './electionTypes.js';
+import { getElectionEligibilityReason, socsStudyProgramNames } from './electionTypes.js';
 
 const binusUser = {
    status: 'ACTIVE' as const,
    registrationCompletedAt: new Date(),
    outlookEmail: 'student@binus.ac.id',
    outlookEmailVerified: true,
+   studyProgram: { name: 'Computer Science - Regular Class' },
+   memberType: 'STUDENT' as const,
+   userHasRoles: [{ role: { roleName: 'SoCS Student', status: 'ACTIVE' } }],
 };
 
 describe('election eligibility', () => {
-   it('allows verified BINUS members regardless of program or department', () => {
+   it('allows verified SoCS members with student or lecturer domains', () => {
       for (const outlookEmail of [
          'student@binus.ac.id',
          'lecturer@binus.edu',
@@ -20,6 +23,23 @@ describe('election eligibility', () => {
             null,
          );
       }
+   });
+
+   it('requires a canonical related SoCS program, not editable profile text', () => {
+      for (const studyProgram of [null, { name: 'Business Management' }, { name: 'School of Computer Science' }]) {
+         assert.equal(getElectionEligibilityReason({ ...binusUser, studyProgram, ...{ department: 'SoCS', studyProgramName: 'Computer Science - Regular Class' } }), 'NOT_SOCS');
+      }
+      for (const name of socsStudyProgramNames) {
+         assert.equal(getElectionEligibilityReason({ ...binusUser, studyProgram: { name } }), null);
+      }
+   });
+
+   it('requires active admin-attested membership for students and lecturers', () => {
+      assert.equal(getElectionEligibilityReason({ ...binusUser, userHasRoles: [] }), 'NOT_SOCS');
+      assert.equal(getElectionEligibilityReason({ ...binusUser, userHasRoles: [{ role: { roleName: 'SoCS Student', status: 'INACTIVE' } }] }), 'NOT_SOCS');
+      const lecturer = { ...binusUser, memberType: 'LECTURER' as const, studyProgram: null };
+      assert.equal(getElectionEligibilityReason(lecturer), 'NOT_SOCS');
+      assert.equal(getElectionEligibilityReason({ ...lecturer, userHasRoles: [{ role: { roleName: 'SoCS Lecturer', status: 'ACTIVE' } }] }), null);
    });
 
    it('rejects non-BINUS and lookalike email domains', () => {

@@ -626,6 +626,7 @@
                            "PROFILE_INCOMPLETE",
                            "OUTLOOK_NOT_VERIFIED",
                            "OUTLOOK_DOMAIN_NOT_ALLOWED",
+                           "NOT_SOCS",
                            "ELECTION_NOT_OPEN",
                            "ALREADY_VOTED",
                            null
@@ -6745,7 +6746,7 @@
                   "sessionCookie": []
                }
             ],
-            "summary": "Check current voter eligibility",
+            "summary": "Check active verified BINUS voter eligibility; requires admin-attested SoCS Student (canonical program) or SoCS Lecturer membership",
             "tags": [
                "Elections"
             ]
@@ -13475,10 +13476,6 @@
                      "schema": {
                         "additionalProperties": false,
                         "properties": {
-                           "ballotNumber": {
-                              "minimum": 1,
-                              "type": "integer"
-                           },
                            "biography": {
                               "maxLength": 10000,
                               "nullable": true,
@@ -13902,7 +13899,7 @@
                   "sessionCookie": []
                }
             ],
-            "summary": "Update a draft or open candidate; deactivation removes them from the public ballot without deleting votes",
+            "summary": "Update a draft or open candidate; ballot number is excluded and immutable; deactivation preserves votes",
             "tags": [
                "Elections"
             ]

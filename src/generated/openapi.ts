@@ -149,7 +149,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Check current voter eligibility */
+        /** Check active verified BINUS voter eligibility; requires admin-attested SoCS Student (canonical program) or SoCS Lecturer membership */
         get: {
             parameters: {
                 query?: never;
@@ -2830,7 +2830,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update a draft or open candidate; deactivation removes them from the public ballot without deleting votes */
+        /** Update a draft or open candidate; ballot number is excluded and immutable; deactivation preserves votes */
         put: {
             parameters: {
                 query?: never;
@@ -2843,7 +2843,6 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        ballotNumber?: number;
                         biography?: string | null;
                         experiences?: string[];
                         isActive?: boolean;
@@ -9083,7 +9082,7 @@ export interface components {
                 eligible: boolean;
                 hasVoted: boolean;
                 /** @enum {string|null} */
-                reason: "ACCOUNT_INACTIVE" | "PROFILE_INCOMPLETE" | "OUTLOOK_NOT_VERIFIED" | "OUTLOOK_DOMAIN_NOT_ALLOWED" | "ELECTION_NOT_OPEN" | "ALREADY_VOTED" | null;
+                reason: "ACCOUNT_INACTIVE" | "PROFILE_INCOMPLETE" | "OUTLOOK_NOT_VERIFIED" | "OUTLOOK_DOMAIN_NOT_ALLOWED" | "NOT_SOCS" | "ELECTION_NOT_OPEN" | "ALREADY_VOTED" | null;
             };
             /** @enum {string} */
             msg: "success";

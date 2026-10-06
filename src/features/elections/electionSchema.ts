@@ -87,7 +87,7 @@ export const CreateCandidateSchema = z
    })
    .strict();
 
-export const UpdateCandidateSchema = CreateCandidateSchema.partial()
+export const UpdateCandidateSchema = CreateCandidateSchema.omit({ ballotNumber: true }).partial()
    .strict()
    .refine((value) => Object.keys(value).length > 0, {
       message: 'At least one field is required',

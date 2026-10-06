@@ -132,6 +132,13 @@ async function main() {
    // SEED ROLES & ASSIGN PERMISSIONS
    // ==========================================
    console.log('⏳ Seeding Roles and Assigning Permissions...');
+   // Administrators attest SoCS membership; these roles grant no management permissions.
+   for (const roleName of ['SoCS Student', 'SoCS Lecturer']) {
+      await prisma.role.upsert({
+         where: { roleName }, update: {},
+         create: { roleName, creator: { connect: { id: systemUser.id } } },
+      });
+   }
    const roleNames = ['General Manager', 'Manager', 'DPI Umum', 'DPI', 'Admin'];
 
    for (const roleName of roleNames) {
