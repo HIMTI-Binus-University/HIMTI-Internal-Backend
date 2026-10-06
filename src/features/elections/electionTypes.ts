@@ -29,16 +29,36 @@ export const electionEligibilityReasons = [
    'PROFILE_INCOMPLETE',
    'OUTLOOK_NOT_VERIFIED',
    'OUTLOOK_DOMAIN_NOT_ALLOWED',
+   'NOT_SOCS',
 ] as const;
 
 export type ElectionEligibilityReason =
    (typeof electionEligibilityReasons)[number];
+export const socsStudentRole = 'SoCS Student';
+export const socsLecturerRole = 'SoCS Lecturer';
+
+
+// Canonical SoCS programs from the registration reference seed, not profile free text.
+export const socsStudyProgramNames = [
+   'Artificial Intelligence',
+   'Computer Science - Global Class',
+   'Computer Science - Regular Class',
+   'Computer Science - Master Track',
+   'Computer Science - Software Engineering',
+   'Cyber Security',
+   'Data Science',
+   'Digital Psychology',
+   'Game Application and Technology',
+];
 
 type EligibilityUser = {
    status: UserStatus;
    registrationCompletedAt: Date | null;
    outlookEmail: string | null;
    outlookEmailVerified: boolean;
+   studyProgram: { name: string } | null;
+   memberType: 'STUDENT' | 'LECTURER' | 'OTHER' | null;
+   userHasRoles: Array<{ role: { roleName: string; status: string } }>;
 };
 
 export const getElectionEligibilityReason = (
@@ -52,9 +72,16 @@ export const getElectionEligibilityReason = (
 
    const email = user.outlookEmail.trim().toLowerCase();
    const parts = email.split('@');
-   return parts.length === 2 &&
-      parts[0] &&
-      ['binus.ac.id', 'binus.edu'].includes(parts[1])
+   if (
+      parts.length !== 2 ||
+      !parts[0] ||
+      !['binus.ac.id', 'binus.edu'].includes(parts[1])
+   ) return 'OUTLOOK_DOMAIN_NOT_ALLOWED';
+   const roles = user.userHasRoles.filter(({ role }) => role.status === 'ACTIVE');
+   if (user.memberType === 'LECTURER' && roles.some(({ role }) => role.roleName === socsLecturerRole)) return null;
+   return user.memberType === 'STUDENT' &&
+      user.studyProgram && socsStudyProgramNames.includes(user.studyProgram.name) &&
+      roles.some(({ role }) => role.roleName === socsStudentRole)
       ? null
-      : 'OUTLOOK_DOMAIN_NOT_ALLOWED';
+      : 'NOT_SOCS';
 };

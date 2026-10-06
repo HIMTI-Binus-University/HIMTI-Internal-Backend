@@ -101,6 +101,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
                   'PROFILE_INCOMPLETE',
                   'OUTLOOK_NOT_VERIFIED',
                   'OUTLOOK_DOMAIN_NOT_ALLOWED',
+                  'NOT_SOCS',
                   'ELECTION_NOT_OPEN',
                   'ALREADY_VOTED',
                ])
@@ -174,7 +175,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
       method: 'get',
       path: '/api/elections/{electionId}/eligibility',
       tags: [tag],
-      summary: 'Check current voter eligibility',
+      summary: 'Check active verified BINUS voter eligibility; requires admin-attested SoCS Student (canonical program) or SoCS Lecturer membership',
       security: [protectedEndpoint],
       request: { params },
       responses: {
@@ -292,7 +293,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
       {
          method: 'put' as const,
          path: '/api/internal/elections/candidates/{candidateId}',
-         summary: 'Update a draft or open candidate; deactivation removes them from the public ballot without deleting votes',
+         summary: 'Update a draft or open candidate; ballot number is excluded and immutable; deactivation preserves votes',
          body: UpdateCandidateSchema,
          responseSchema: response(candidateSchema),
          candidate: true,

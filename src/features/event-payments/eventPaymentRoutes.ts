@@ -1,9 +1,7 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { requireAuth } from '@/middleware/authMiddleware.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
-import { PAYMENT_PROOF_MAX_BYTES } from '@/features/events/eventService.js';
-import { AppError } from '@/utils/appError.js';
+import { parsePaymentProof } from './eventPaymentUpload.js';
 import {
    participantPayment,
    paymentQueue,
@@ -15,24 +13,6 @@ import {
 } from './eventPaymentController.js';
 
 const router = Router();
-const upload = multer({
-   storage: multer.memoryStorage(),
-   limits: { fileSize: PAYMENT_PROOF_MAX_BYTES, files: 1, fields: 1 },
-});
-const uploadError = (error: multer.MulterError) => {
-   if (error.code === 'LIMIT_FILE_SIZE')
-      return new AppError('Payment proof must be 1.5 MB or smaller', 413);
-   if (error.code === 'LIMIT_FILE_COUNT')
-      return new AppError('Upload exactly one payment proof file', 400);
-   if (error.code === 'LIMIT_FIELD_COUNT')
-      return new AppError('Payment proof upload contains too many fields', 400);
-   if (error.code === 'LIMIT_UNEXPECTED_FILE')
-      return new AppError(
-         'Payment proof must be uploaded using the file field',
-         400,
-      );
-   return new AppError('Payment proof upload could not be processed', 400);
-};
 router.get(
    '/me/event-registrations/:registrationId/payment',
    requireAuth,
@@ -41,13 +21,7 @@ router.get(
 router.post(
    '/me/event-payments/:paymentId/acknowledgement',
    requireAuth,
-   (req, res, next) => {
-      upload.single('file')(req, res, (error: unknown) => {
-         if (error instanceof multer.MulterError)
-            return next(uploadError(error));
-         next(error);
-      });
-   },
+   parsePaymentProof,
    uploadAcknowledgement,
 );
 router.get(

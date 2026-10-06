@@ -61,15 +61,11 @@ async function main() {
       ['semarang', 'Semarang'],
    ] as const;
    for (const [id, name] of regions) {
-      const existing = await prisma.region.findUnique({ where: { name } });
-      if (existing) {
-         await prisma.region.update({
-            where: { id: existing.id },
-            data: { id, status: 'ACTIVE' },
-         });
-      } else {
-         await prisma.region.create({ data: { id, name } });
-      }
+      await prisma.region.upsert({
+         where: { name },
+         update: {},
+         create: { id, name },
+      });
    }
 
    // ==========================================
@@ -136,6 +132,13 @@ async function main() {
    // SEED ROLES & ASSIGN PERMISSIONS
    // ==========================================
    console.log('⏳ Seeding Roles and Assigning Permissions...');
+   // Administrators attest SoCS membership; these roles grant no management permissions.
+   for (const roleName of ['SoCS Student', 'SoCS Lecturer']) {
+      await prisma.role.upsert({
+         where: { roleName }, update: {},
+         create: { roleName, creator: { connect: { id: systemUser.id } } },
+      });
+   }
    const roleNames = ['General Manager', 'Manager', 'DPI Umum', 'DPI', 'Admin'];
 
    for (const roleName of roleNames) {
@@ -202,14 +205,17 @@ async function main() {
    // ==========================================
    console.log('⏳ Seeding Membership Period...');
    await prisma.$transaction(async (tx) => {
-      await tx.membershipPeriod.updateMany({
+      const activePeriod = await tx.membershipPeriod.findFirst({
          where: { isActive: true },
-         data: { isActive: false },
       });
       await tx.membershipPeriod.upsert({
          where: { id: '2026-2027' },
-         update: { label: '2026/2027', isActive: true },
-         create: { id: '2026-2027', label: '2026/2027', isActive: true },
+         update: {},
+         create: {
+            id: '2026-2027',
+            label: '2026/2027',
+            isActive: !activePeriod,
+         },
       });
    });
 

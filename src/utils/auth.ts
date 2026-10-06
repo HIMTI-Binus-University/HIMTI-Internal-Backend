@@ -58,6 +58,7 @@ export const auth = betterAuth({
       devLoginPlugin,
       customSession(async ({ user, session }) => {
          const [currentUser, userRoles] = await Promise.all([
+            // Authorization must use current status, never the cached session user.
             prisma.user.findUnique({
                where: { id: user.id },
                select: { status: true },
@@ -95,6 +96,7 @@ export const auth = betterAuth({
          status: {
             type: 'string',
             required: false,
+            input: false,
             defaultValue: 'ACTIVE',
          },
       },
