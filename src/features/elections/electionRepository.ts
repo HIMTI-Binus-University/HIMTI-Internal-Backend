@@ -74,14 +74,14 @@ class ElectionRepository {
             orderBy: { openedAt: 'desc' },
          })) ??
          (await prisma.election.findFirst({
+            where: { status: 'CLOSED' },
+            select: electionSelect,
+            orderBy: [{ closedAt: 'desc' }, { createdAt: 'desc' }],
+         })) ??
+         prisma.election.findFirst({
             where: { status: 'PUBLISHED' },
             select: electionSelect,
             orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-         })) ??
-         prisma.election.findFirst({
-            where: { status: 'CLOSED' },
-            select: electionSelect,
-            orderBy: { createdAt: 'desc' },
          })
       );
    }

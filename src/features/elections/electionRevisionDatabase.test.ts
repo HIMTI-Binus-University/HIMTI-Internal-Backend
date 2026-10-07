@@ -21,7 +21,9 @@ test('SoCS electorate and immutable ballot numbers survive concurrent edits/stat
    const key = randomUUID();
    const userIds: string[] = [];
    const programIds: string[] = [];
+   const electionIds: string[] = [];
    let electionId: string | undefined;
+   let priorElectionId: string | undefined;
    const code = (expected: string) => (error: unknown) => error instanceof AppError && error.code === expected;
    try {
       const socs = await prisma.studyProgram.upsert({
@@ -46,11 +48,20 @@ test('SoCS electorate and immutable ballot numbers survive concurrent edits/stat
       }
       const start = new Date(Date.now() - 60000);
       const end = new Date(Date.now() + 3600000);
+      const priorElection = await prisma.election.create({ data: {
+         slug: `${key}-prior`, title: 'Prior published election', startsAt: start, endsAt: end,
+         originalEndsAt: end, createdBy: userIds[0], status: 'PUBLISHED',
+         openedAt: new Date(Date.now() - 120000), closedAt: new Date(Date.now() - 60000),
+         publishedAt: new Date(Date.now() - 30000),
+      } });
+      priorElectionId = priorElection.id;
+      electionIds.push(priorElection.id);
       const election = await prisma.election.create({ data: {
          slug: key, title: 'Isolated revision election', startsAt: start, endsAt: end,
          originalEndsAt: end, createdBy: userIds[0],
       } });
       electionId = election.id;
+      electionIds.push(election.id);
       const candidate = await electionRepository.createCandidate(election.id, {
          ballotNumber: 1, name: 'Original candidate', vision: 'Vision', mission: 'Mission',
       });
@@ -83,17 +94,20 @@ test('SoCS electorate and immutable ballot numbers survive concurrent edits/stat
          assert.equal(concurrent[3].reason.code, 'P2034');
          await electionRepository.transition(election.id, 'OPEN', 'CLOSED', userIds[0]);
       }
+      const current = await electionRepository.findCurrent();
+      assert.equal(current?.id, election.id);
+      assert.notEqual(current?.id, priorElectionId);
       const saved = await prisma.electionCandidate.findUniqueOrThrow({ where: { id: candidate.id } });
       assert.equal(saved.ballotNumber, 1);
       assert.equal(saved.name, 'Updated in open');
       assert.equal(saved.isActive, false);
       await assert.rejects(electionRepository.updateCandidate(candidate.id, { name: 'Too late' }), code('INVALID_ELECTION_STATE'));
    } finally {
-      if (electionId) {
-         await prisma.electionBallot.deleteMany({ where: { electionId } });
-         await prisma.electionParticipation.deleteMany({ where: { electionId } });
-         await prisma.electionCandidate.deleteMany({ where: { electionId } });
-         await prisma.election.delete({ where: { id: electionId } });
+      if (electionIds.length > 0) {
+         await prisma.electionBallot.deleteMany({ where: { electionId: { in: electionIds } } });
+         await prisma.electionParticipation.deleteMany({ where: { electionId: { in: electionIds } } });
+         await prisma.electionCandidate.deleteMany({ where: { electionId: { in: electionIds } } });
+         await prisma.election.deleteMany({ where: { id: { in: electionIds } } });
       }
       await prisma.userHasRole.deleteMany({ where: { userId: { in: userIds } } });
       await prisma.user.deleteMany({ where: { id: { in: userIds } } });
