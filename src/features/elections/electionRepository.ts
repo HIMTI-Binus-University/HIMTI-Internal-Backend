@@ -74,14 +74,14 @@ class ElectionRepository {
             orderBy: { openedAt: 'desc' },
          })) ??
          (await prisma.election.findFirst({
+            where: { status: 'CLOSED' },
+            select: electionSelect,
+            orderBy: [{ closedAt: 'desc' }, { createdAt: 'desc' }],
+         })) ??
+         prisma.election.findFirst({
             where: { status: 'PUBLISHED' },
             select: electionSelect,
             orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-         })) ??
-         prisma.election.findFirst({
-            where: { status: 'CLOSED' },
-            select: electionSelect,
-            orderBy: { createdAt: 'desc' },
          })
       );
    }
@@ -249,6 +249,13 @@ class ElectionRepository {
                   );
                }
                if (nextStatus === 'OPEN') {
+                  if (election.endsAt <= new Date()) {
+                     throw new AppError(
+                        'Election end time must be in the future',
+                        409,
+                        'INVALID_ELECTION_WINDOW',
+                     );
+                  }
                   const open = await tx.election.findFirst({
                      where: { status: 'OPEN', id: { not: id } },
                      select: { id: true },
