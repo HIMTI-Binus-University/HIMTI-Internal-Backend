@@ -18,7 +18,7 @@ This backend uses Node.js, Express, TypeScript, Prisma, PostgreSQL, Zod, and Ope
 
 ## Feature File Pattern
 
-Feature modules usually follow this structure:
+Feature modules must use only this production file structure:
 
 ```txt
 src/features/<domain>/
@@ -40,6 +40,17 @@ Responsibilities:
 - `*Schema.ts`: contain Zod request validation schemas.
 - `*Types.ts`: contain shared feature TypeScript types.
 - `*Docs.ts`: register OpenAPI documentation for the feature.
+
+Do not create additional production files such as `*Policy.ts`, `*Utils.ts`,
+`*Helpers.ts`, `*Constants.ts`, `*Mapper.ts`, or `*Validator.ts` inside a
+feature folder. Put domain rules and orchestration in `*Service.ts`, database
+logic in `*Repository.ts`, validation in `*Schema.ts`, and shared types,
+constants, or pure domain functions in `*Types.ts`. Colocated `*.test.ts` files
+are allowed and do not count against the seven production files.
+
+Before finishing feature work, list the feature directory and confirm every
+non-test TypeScript file is one of Routes, Controller, Service, Repository,
+Schema, Types, or Docs.
 
 ## Concrete Feature Example
 
@@ -191,11 +202,7 @@ import { prisma } from '@/config/prisma.js';
 import { parseSort } from '@/utils/sort.js';
 import type { GetAnnouncementQuery } from './announcementTypes.js';
 
-const allowedAnnouncementSortFields = [
-   'createdAt',
-   'title',
-   'status',
-] as const;
+const allowedAnnouncementSortFields = ['createdAt', 'title', 'status'] as const;
 
 class AnnouncementRepository {
    async create(data: Prisma.AnnouncementCreateInput): Promise<Announcement> {
@@ -540,7 +547,8 @@ export const registerAnnouncementDocs = (registry: OpenAPIRegistry) => {
       path: '/api/announcements/create-announcement',
       tags: [tag],
       summary: 'Create an announcement',
-      description: 'Requires authentication and the manage_announcements permission.',
+      description:
+         'Requires authentication and the manage_announcements permission.',
       security: [protectedEndpoint],
       request: {
          body: {
@@ -630,6 +638,8 @@ export const registerAnnouncementDocs = (registry: OpenAPIRegistry) => {
 ## Architecture Rules
 
 - Keep Prisma queries inside repository modules.
+- Restrict each feature folder to Routes, Controller, Service, Repository,
+  Schema, Types, and Docs production files; tests may be colocated.
 - Do not put database access directly in routes or controllers unless the existing feature already does so.
 - Keep controllers thin; move domain decisions into services.
 - Use Zod schemas for request validation.

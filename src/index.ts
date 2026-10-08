@@ -11,12 +11,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import limiter from './config/rateLimiter.js';
 import { trustedOrigins } from './config/origins.js';
+import { startPaymentExpiry } from './features/event-payments/eventPaymentService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = process.env.PORT || 8000;
+const port = Number(process.env.PORT || 8000);
 const shouldEnableApiDocs = process.env.ENABLE_API_DOCS === 'true';
 
 app.set('trust proxy', 1);
@@ -25,11 +26,15 @@ app.use(express.json());
 app.use(
    cors({
       origin: trustedOrigins,
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
       credentials: true,
    }),
 );
 app.use(express.static(path.join(__dirname, '../public')));
+app.get('/api/auth/error', (_req, res) => {
+   res.set('Cache-Control', 'no-store');
+   res.sendFile(path.join(__dirname, '../public/auth-error.html'));
+});
 app.all('/api/auth/*splat', toNodeHandler(auth));
 if (shouldEnableApiDocs) {
    app.use('/api', docsRoutes);
@@ -37,6 +42,13 @@ if (shouldEnableApiDocs) {
 app.use('/api', routes);
 app.use(globalErrorHandler);
 
-app.listen(port, () => {
-   console.log(`⚡️[server]: server is running at http://localhost:${port}`);
-});
+app.listen(
+   port,
+   process.env.ENABLE_DEV_AUTO_LOGIN === 'true' && !process.env.CONTAINER
+      ? '127.0.0.1'
+      : '0.0.0.0',
+   () => {
+      startPaymentExpiry();
+      console.log(`⚡️[server]: server is running at http://localhost:${port}`);
+   },
+);

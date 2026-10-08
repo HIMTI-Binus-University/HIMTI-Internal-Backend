@@ -9,16 +9,36 @@ export const idParamSchema = z.object({
    id: z.string(),
 });
 
-export const errorResponseSchema = z.object({
+export const canonicalErrorResponseSchema = z.object({
+   status: z.enum(['fail', 'error']),
+   code: z.string(),
+   message: z.string(),
+   msg: z.string(),
+   success: z.boolean().optional(),
+   details: z.unknown().optional(),
+   errors: z.unknown().optional(),
+});
+
+export const canonicalValidationErrorResponseSchema =
+   canonicalErrorResponseSchema.extend({
+      code: z.literal('VALIDATION_ERROR'),
+      errors: z.unknown(),
+   });
+
+const legacyErrorResponseSchema = z.object({
    status: z.string().optional(),
    success: z.boolean().optional(),
    msg: z.string().optional(),
    message: z.string().optional(),
+   errors: z.unknown().optional(),
 });
 
-export const validationErrorResponseSchema = z.object({
-   errors: z.unknown(),
-});
+export const errorResponseSchema = canonicalErrorResponseSchema.or(
+   legacyErrorResponseSchema,
+);
+
+export const validationErrorResponseSchema =
+   canonicalValidationErrorResponseSchema.or(z.object({ errors: z.unknown() }));
 
 export const successResponseSchema = z.object({
    msg: z.literal('success'),

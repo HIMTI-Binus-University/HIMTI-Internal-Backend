@@ -2,14 +2,21 @@ import express from 'express';
 import type { Request, Response, Router } from 'express';
 import urlRoutes from '@/features/url-shortener/urlRoutes.js';
 import eventRoutes from '@/features/events/eventRoutes.js';
-import eventCommitteeRoutes from '@/features/event-committee/eventCommitteeRoutes.js';
-import subEventRoutes from '@/features/sub-events/subEventRoutes.js';
+import eventGroupRoutes from '@/features/event-groups/eventGroupRoutes.js';
+import eventPackageRoutes from '@/features/event-packages/eventPackageRoutes.js';
 import registrationFormRoutes from '@/features/registration-forms/registrationFormRoutes.js';
+import eventRegistrationRoutes from '@/features/event-registrations/eventRegistrationRoutes.js';
+import eventPaymentRoutes from '@/features/event-payments/eventPaymentRoutes.js';
+import eventTicketRoutes from '@/features/event-tickets/eventTicketRoutes.js';
 import permissionRoutes from '@/features/permissions/permissionRoutes.js';
 import userRoutes from '@/features/users/userRoutes.js';
 import roleRoutes from '@/features/roles/roleRoutes.js';
 import membershipRoutes from '@/features/membership/membershipRoutes.js';
 import linkWorkspaceRoutes from '@/features/link-workspaces/linkWorkspaceRoutes.js';
+import {
+   electionRouter,
+   internalElectionRouter,
+} from '@/features/elections/electionRoutes.js';
 
 const router: Router = express.Router();
 
@@ -24,10 +31,15 @@ router.get('/health', (_req: Request, res: Response) => {
 router.use('/url', urlRoutes);
 router.use('/link-workspaces', linkWorkspaceRoutes);
 router.use('/membership', membershipRoutes);
-router.use('/event', eventRoutes);
-router.use('/event-committee', eventCommitteeRoutes);
-router.use('/sub-event', subEventRoutes);
-router.use('/registration-form', registrationFormRoutes);
+router.use('/elections', electionRouter);
+router.use('/internal/elections', internalElectionRouter);
+router.use('/', eventRoutes);
+router.use('/', eventGroupRoutes);
+router.use('/', eventPackageRoutes);
+router.use('/', registrationFormRoutes);
+router.use('/', eventRegistrationRoutes);
+router.use('/', eventPaymentRoutes);
+router.use('/', eventTicketRoutes);
 router.use('/', permissionRoutes);
 router.use('/', userRoutes);
 router.use('/', roleRoutes);

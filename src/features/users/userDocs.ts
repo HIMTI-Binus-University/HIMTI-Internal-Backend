@@ -412,9 +412,9 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
       method: 'patch',
       path: '/api/user/me',
       tags: [tag],
-      summary: 'Update self-service contact profile',
+      summary: 'Update self-service personal information',
       description:
-         'Updates only name, phone number, and LINE ID after onboarding. Academic and membership path fields are immutable here.',
+         'Repairs event-registration personal information even when membership onboarding is incomplete. BINUS requires active controlled university, study program, and region options, NIM, and the existing verified Outlook email. NON_BINUS requires free-text university and study program names. Opposite-path fields are cleared; member type, membership records, verification flags, and registration completion are not client-settable.',
       security: [protectedEndpoint],
       request: {
          body: {
@@ -438,7 +438,6 @@ export const registerUserDocs = (registry: OpenAPIRegistry) => {
             },
          },
          401: { description: 'Authentication required.' },
-         403: { description: 'Onboarding is not complete.' },
          404: { description: 'User not found.' },
       },
    });

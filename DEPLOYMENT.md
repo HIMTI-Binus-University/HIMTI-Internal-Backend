@@ -205,9 +205,11 @@ For production:
 After deployment, verify:
 
 ```bash
-curl -i <api-base-url>/api/openapi.json
-curl -i <api-base-url>/api/url/urltest
+curl --fail --show-error <api-base-url>/api/health
 ```
+
+The OpenAPI document is not a public health check. It is only available when
+`ENABLE_API_DOCS=true` and requires an authenticated session.
 
 For Prisma status on the target environment:
 
@@ -220,9 +222,7 @@ through the compose service so it uses the same environment variables as the app
 
 ## Notes
 
-- `npm test` is currently a placeholder and should not be used as proof of test
-  success.
-- Current project validation is:
+- `npm test` runs the backend unit and schema tests. Current project validation is:
 
    ```bash
    npm run build

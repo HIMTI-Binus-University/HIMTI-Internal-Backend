@@ -1,11 +1,13 @@
 import { randomBytes } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { userRepository } from './userRepository.js';
+import { BinusNimSchema } from './userSchema.js';
 import {
    GetUserSchema,
    UpdateUserRequest,
    CompleteProfileRequest,
    UpdateProfileRequest,
+   buildProfileUpdateData,
 } from './userTypes.js';
 import { auth } from '@/utils/auth.js';
 import { getAuthorizedStatusFilter } from '@/utils/statusAccess.js';
@@ -54,6 +56,22 @@ class UserService {
       user: typeof auth.$Infer.Session.user,
    ) {
       const isBinus = payload.institutionType === 'BINUS';
+      if (
+         payload.nim !== undefined ||
+         payload.institutionType !== undefined ||
+         payload.memberType !== undefined
+      ) {
+         const existing = await userRepository.findCurrentById(id);
+         if (!existing) throw new AppError('User not found', 404);
+         if (
+            (payload.institutionType ?? existing.institutionType) === 'BINUS' &&
+            (payload.memberType ?? existing.memberType) === 'STUDENT'
+         ) {
+            BinusNimSchema.parse(
+               payload.nim !== undefined ? payload.nim : existing.nim,
+            );
+         }
+      }
       const isNonBinus = payload.institutionType === 'NON_BINUS';
       const isStudent = payload.memberType === 'STUDENT';
       const isLecturer = payload.memberType === 'LECTURER';
@@ -284,19 +302,45 @@ class UserService {
    async updateProfile(payload: UpdateProfileRequest, id: string) {
       const currentUser = await userRepository.findCurrentById(id);
       if (!currentUser) throw new AppError('User not found', 404);
-      if (!currentUser.registrationCompletedAt) {
-         throw new AppError(
-            'Complete registration before editing your profile',
-            403,
-         );
+
+      if (payload.institutionType === 'BINUS') {
+         const [university, studyProgram, region] = await Promise.all([
+            userRepository.findActiveUniversity(payload.universityId),
+            userRepository.findActiveStudyProgram(payload.studyProgramId),
+            userRepository.findActiveRegion(payload.regionId),
+         ]);
+         if (
+            !university ||
+            (university.shortName?.toUpperCase() !== 'BINUS' &&
+               university.name.toUpperCase() !== 'BINUS UNIVERSITY')
+         ) {
+            throw new AppError('Active BINUS university is required', 400);
+         }
+         if (!studyProgram) {
+            throw new AppError('Active study program is required', 400);
+         }
+         if (!region) {
+            throw new AppError('Active BINUS region is required', 400);
+         }
+         if (!currentUser.outlookEmail || !currentUser.outlookEmailVerified) {
+            throw new AppError(
+               'The Outlook email must be verified for the current user',
+               400,
+            );
+         }
       }
 
-      await userRepository.update(id, {
-         name: payload.name,
-         phoneNumber: payload.phoneNumber,
-         lineId: payload.lineId || null,
-         updatedBy: id,
-      });
+      const result = await userRepository.updateProfile(
+         id,
+         buildProfileUpdateData(payload, id),
+         payload.institutionType === 'BINUS',
+      );
+      if (!result.count) {
+         throw new AppError(
+            'The Outlook email must be verified for the current user',
+            400,
+         );
+      }
       return await this.getCurrentUser(id);
    }
 

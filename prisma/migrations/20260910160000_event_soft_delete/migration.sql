@@ -1,0 +1,8 @@
+ALTER TABLE "events"
+ADD COLUMN "deletedAt" TIMESTAMP(0),
+ADD COLUMN "deletedBy" VARCHAR(100);
+
+ALTER TABLE "events"
+ADD CONSTRAINT "events_deletedBy_fkey"
+FOREIGN KEY ("deletedBy") REFERENCES "users"("id")
+ON DELETE SET NULL ON UPDATE CASCADE;
