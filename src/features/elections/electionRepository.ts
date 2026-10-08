@@ -1,7 +1,13 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/config/prisma.js';
 import { AppError } from '@/utils/appError.js';
-import { getElectionEligibilityReason, socsStudyProgramNames, socsStudentRole, socsLecturerRole } from './electionTypes.js';
+import {
+   getElectionEligibilityReason,
+   socsStudyProgramNames,
+   socsDepartmentNames,
+   departmentPrefix,
+   departmentSuffix,
+} from './electionTypes.js';
 import type {
    CreateCandidateRequest,
    CreateElectionRequest,
@@ -53,7 +59,8 @@ const eligibilityUserSelect = {
    outlookEmailVerified: true,
    studyProgram: { select: { name: true } },
    memberType: true,
-   userHasRoles: { select: { role: { select: { roleName: true, status: true } } } },
+   institutionType: true,
+   department: true,
 } satisfies Prisma.UserSelect;
 
 export const assertCandidateEditable = (status: string) => {
@@ -202,7 +209,11 @@ class ElectionRepository {
             if (!candidate) throw new AppError('Candidate not found', 404);
             assertCandidateEditable(candidate.election.status);
             if ('ballotNumber' in payload)
-               throw new AppError('Ballot number cannot be changed', 409, 'BALLOT_NUMBER_IMMUTABLE');
+               throw new AppError(
+                  'Ballot number cannot be changed',
+                  409,
+                  'BALLOT_NUMBER_IMMUTABLE',
+               );
             return tx.electionCandidate.update({
                where: { id },
                data: payload,
@@ -398,13 +409,11 @@ class ElectionRepository {
                FROM "users" AS u
                LEFT JOIN "study_programs" AS sp ON sp.id = u."studyProgramId"
                WHERE u.status = 'ACTIVE'
-                 AND EXISTS (
-                    SELECT 1 FROM "user_has_roles" AS ur
-                    JOIN "roles" AS r ON r.id = ur."roleId"
-                    WHERE ur."userId" = u.id AND r.status = 'ACTIVE'
-                      AND ((u."memberType" = 'STUDENT' AND sp.name IN (${Prisma.join(socsStudyProgramNames)}) AND r."roleName" = ${socsStudentRole})
-                        OR (u."memberType" = 'LECTURER' AND r."roleName" = ${socsLecturerRole}))
-                 )
+                  AND u."institutionType" = 'BINUS'
+                  AND ((u."memberType" = 'STUDENT' AND sp.name IN (${Prisma.join(socsStudyProgramNames)}))
+                    OR (u."memberType" = 'LECTURER' AND trim(regexp_replace(regexp_replace(
+                      trim(regexp_replace(lower(u.department), '[[:space:]]+', ' ', 'g')),
+                      ${departmentPrefix}, ''), ${departmentSuffix}, '')) IN (${Prisma.join(socsDepartmentNames)})))
                  AND u."registrationCompletedAt" IS NOT NULL
                  AND u."outlookEmailVerified" = true
                  AND u."outlookEmail" IS NOT NULL

@@ -34,12 +34,10 @@ export const electionEligibilityReasons = [
 
 export type ElectionEligibilityReason =
    (typeof electionEligibilityReasons)[number];
-export const socsStudentRole = 'SoCS Student';
-export const socsLecturerRole = 'SoCS Lecturer';
-
 
 // Canonical SoCS programs from the registration reference seed, not profile free text.
 export const socsStudyProgramNames = [
+   'Computer Science',
    'Artificial Intelligence',
    'Computer Science - Global Class',
    'Computer Science - Regular Class',
@@ -51,6 +49,30 @@ export const socsStudyProgramNames = [
    'Game Application and Technology',
 ];
 
+export const socsDepartmentNames = [
+   ...socsStudyProgramNames.map((name) => name.toLowerCase()),
+   'socs',
+   'school of computer science',
+   'computer science',
+   'cybersecurity',
+   'ai',
+   'game application & technology',
+   'game application technology',
+   'gat',
+   'software engineering',
+];
+export const departmentPrefix =
+   '^(department of |study program of |program of |department |study program |program )';
+export const departmentSuffix = '( department| study program| program)$';
+export const normalizeDepartment = (value: string) =>
+   value
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, ' ')
+      .replace(new RegExp(departmentPrefix), '')
+      .replace(new RegExp(departmentSuffix), '')
+      .trim();
+
 type EligibilityUser = {
    status: UserStatus;
    registrationCompletedAt: Date | null;
@@ -58,7 +80,8 @@ type EligibilityUser = {
    outlookEmailVerified: boolean;
    studyProgram: { name: string } | null;
    memberType: 'STUDENT' | 'LECTURER' | 'OTHER' | null;
-   userHasRoles: Array<{ role: { roleName: string; status: string } }>;
+   institutionType: 'BINUS' | 'NON_BINUS' | null;
+   department: string | null;
 };
 
 export const getElectionEligibilityReason = (
@@ -76,12 +99,17 @@ export const getElectionEligibilityReason = (
       parts.length !== 2 ||
       !parts[0] ||
       !['binus.ac.id', 'binus.edu'].includes(parts[1])
-   ) return 'OUTLOOK_DOMAIN_NOT_ALLOWED';
-   const roles = user.userHasRoles.filter(({ role }) => role.status === 'ACTIVE');
-   if (user.memberType === 'LECTURER' && roles.some(({ role }) => role.roleName === socsLecturerRole)) return null;
+   )
+      return 'OUTLOOK_DOMAIN_NOT_ALLOWED';
+   if (user.institutionType !== 'BINUS') return 'NOT_SOCS';
+   if (user.memberType === 'LECTURER')
+      return user.department &&
+         socsDepartmentNames.includes(normalizeDepartment(user.department))
+         ? null
+         : 'NOT_SOCS';
    return user.memberType === 'STUDENT' &&
-      user.studyProgram && socsStudyProgramNames.includes(user.studyProgram.name) &&
-      roles.some(({ role }) => role.roleName === socsStudentRole)
+      user.studyProgram &&
+      socsStudyProgramNames.includes(user.studyProgram.name)
       ? null
       : 'NOT_SOCS';
 };

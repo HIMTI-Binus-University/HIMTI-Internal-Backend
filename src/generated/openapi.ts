@@ -149,7 +149,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Check active verified BINUS voter eligibility; requires admin-attested SoCS Student (canonical program) or SoCS Lecturer membership */
+        /** Check active verified BINUS voter eligibility using SoCS study programs or lecturer department aliases */
         get: {
             parameters: {
                 query?: never;
