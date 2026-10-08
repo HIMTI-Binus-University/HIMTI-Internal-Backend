@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { getElectionEligibilityReason, socsStudyProgramNames } from './electionTypes.js';
+import {
+   getElectionEligibilityReason,
+   socsStudyProgramNames,
+} from './electionTypes.js';
 
 const binusUser = {
    status: 'ACTIVE' as const,
@@ -9,7 +12,8 @@ const binusUser = {
    outlookEmailVerified: true,
    studyProgram: { name: 'Computer Science - Regular Class' },
    memberType: 'STUDENT' as const,
-   userHasRoles: [{ role: { roleName: 'SoCS Student', status: 'ACTIVE' } }],
+   institutionType: 'BINUS' as const,
+   department: null as string | null,
 };
 
 describe('election eligibility', () => {
@@ -26,20 +30,74 @@ describe('election eligibility', () => {
    });
 
    it('requires a canonical related SoCS program, not editable profile text', () => {
-      for (const studyProgram of [null, { name: 'Business Management' }, { name: 'School of Computer Science' }]) {
-         assert.equal(getElectionEligibilityReason({ ...binusUser, studyProgram, ...{ department: 'SoCS', studyProgramName: 'Computer Science - Regular Class' } }), 'NOT_SOCS');
+      for (const studyProgram of [
+         null,
+         { name: 'Business Management' },
+         { name: 'School of Computer Science' },
+      ]) {
+         assert.equal(
+            getElectionEligibilityReason({
+               ...binusUser,
+               studyProgram,
+               ...{
+                  department: 'SoCS',
+                  studyProgramName: 'Computer Science - Regular Class',
+               },
+            }),
+            'NOT_SOCS',
+         );
       }
       for (const name of socsStudyProgramNames) {
-         assert.equal(getElectionEligibilityReason({ ...binusUser, studyProgram: { name } }), null);
+         assert.equal(
+            getElectionEligibilityReason({
+               ...binusUser,
+               studyProgram: { name },
+            }),
+            null,
+         );
       }
    });
 
-   it('requires active admin-attested membership for students and lecturers', () => {
-      assert.equal(getElectionEligibilityReason({ ...binusUser, userHasRoles: [] }), 'NOT_SOCS');
-      assert.equal(getElectionEligibilityReason({ ...binusUser, userHasRoles: [{ role: { roleName: 'SoCS Student', status: 'INACTIVE' } }] }), 'NOT_SOCS');
-      const lecturer = { ...binusUser, memberType: 'LECTURER' as const, studyProgram: null };
+   it('accepts lecturer department aliases without special roles', () => {
+      const lecturer = {
+         ...binusUser,
+         memberType: 'LECTURER' as const,
+         studyProgram: null,
+      };
       assert.equal(getElectionEligibilityReason(lecturer), 'NOT_SOCS');
-      assert.equal(getElectionEligibilityReason({ ...lecturer, userHasRoles: [{ role: { roleName: 'SoCS Lecturer', status: 'ACTIVE' } }] }), null);
+      for (const department of [
+         'SOCS',
+         'School of Computer Science',
+         'Computer Science',
+         'Cybersecurity department',
+         'Department of Cyber Security',
+         '  Data   Science  ',
+         'Game Application and Technology',
+         'Study Program of Artificial Intelligence',
+      ]) {
+         assert.equal(
+            getElectionEligibilityReason({ ...lecturer, department }),
+            null,
+            department,
+         );
+      }
+      for (const department of [
+         'Business',
+         'Not Computer Science',
+         'Computer Science and Business',
+      ]) {
+         assert.equal(
+            getElectionEligibilityReason({ ...lecturer, department }),
+            'NOT_SOCS',
+         );
+      }
+      assert.equal(
+         getElectionEligibilityReason({
+            ...binusUser,
+            institutionType: 'NON_BINUS',
+         }),
+         'NOT_SOCS',
+      );
    });
 
    it('rejects non-BINUS and lookalike email domains', () => {
