@@ -756,6 +756,8 @@ export interface paths {
                                 originalEndsAt: string;
                                 /** Format: date-time */
                                 publishedAt: string | null;
+                                /** Format: date-time */
+                                secondDebateAt: string | null;
                                 slug: string;
                                 /** Format: date-time */
                                 startsAt: string;
@@ -981,6 +983,8 @@ export interface paths {
                                 originalEndsAt: string;
                                 /** Format: date-time */
                                 publishedAt: string | null;
+                                /** Format: date-time */
+                                secondDebateAt: string | null;
                                 slug: string;
                                 /** Format: date-time */
                                 startsAt: string;
@@ -1114,6 +1118,8 @@ export interface paths {
                         description?: string | null;
                         /** Format: date-time */
                         endsAt: string;
+                        /** Format: date-time */
+                        secondDebateAt?: string | null;
                         slug: string;
                         /** Format: date-time */
                         startsAt: string;
@@ -1387,6 +1393,8 @@ export interface paths {
                         description?: string | null;
                         /** Format: date-time */
                         endsAt?: string;
+                        /** Format: date-time */
+                        secondDebateAt?: string | null;
                         slug?: string;
                         /** Format: date-time */
                         startsAt?: string;
@@ -1853,6 +1861,8 @@ export interface paths {
                     "application/json": {
                         /** Format: date-time */
                         debateAt: string | null;
+                        /** Format: date-time */
+                        secondDebateAt?: string | null;
                     };
                 };
             };
@@ -9120,6 +9130,8 @@ export interface components {
                 originalEndsAt: string;
                 /** Format: date-time */
                 publishedAt: string | null;
+                /** Format: date-time */
+                secondDebateAt: string | null;
                 slug: string;
                 /** Format: date-time */
                 startsAt: string;

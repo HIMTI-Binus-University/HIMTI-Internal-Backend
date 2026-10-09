@@ -41,6 +41,7 @@ const electionSelect = {
    endsAt: true,
    originalEndsAt: true,
    debateAt: true,
+   secondDebateAt: true,
    openedAt: true,
    closedAt: true,
    publishedAt: true,
@@ -115,6 +116,7 @@ class ElectionRepository {
             endsAt: new Date(payload.endsAt),
             originalEndsAt: new Date(payload.endsAt),
             debateAt: payload.debateAt ? new Date(payload.debateAt) : null,
+            secondDebateAt: payload.secondDebateAt ? new Date(payload.secondDebateAt) : null,
             createdBy: userId,
          },
          select: electionSelect,
@@ -168,6 +170,9 @@ class ElectionRepository {
             ...(payload.endsAt && { endsAt: new Date(payload.endsAt) }),
             ...(payload.debateAt !== undefined && {
                debateAt: payload.debateAt ? new Date(payload.debateAt) : null,
+            }),
+            ...(payload.secondDebateAt !== undefined && {
+               secondDebateAt: payload.secondDebateAt ? new Date(payload.secondDebateAt) : null,
             }),
             updatedBy: userId,
          },

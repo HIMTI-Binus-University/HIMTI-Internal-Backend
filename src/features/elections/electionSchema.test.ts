@@ -59,7 +59,7 @@ describe('election request schemas', () => {
       );
    });
 
-   it('strictly requires a nullable offset debate datetime', () => {
+   it('strictly requires nullable offset debate datetimes', () => {
       assert.equal(
          UpdateDebateScheduleSchema.safeParse({ debateAt: null }).success,
          true,
@@ -67,12 +67,21 @@ describe('election request schemas', () => {
       assert.equal(
          UpdateDebateScheduleSchema.safeParse({
             debateAt: '2027-01-10T08:00:00+07:00',
+            secondDebateAt: '2027-01-11T08:00:00Z',
+         }).success,
+         true,
+      );
+      assert.equal(
+         UpdateDebateScheduleSchema.safeParse({
+            debateAt: null,
+            secondDebateAt: null,
          }).success,
          true,
       );
       for (const body of [
          {},
          { debateAt: '2027-01-10T08:00:00' },
+         { debateAt: null, secondDebateAt: '2027-01-11T08:00:00' },
          { debateAt: null, updatedBy: 'forged-user' },
       ]) {
          assert.equal(

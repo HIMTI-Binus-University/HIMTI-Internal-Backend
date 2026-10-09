@@ -19,6 +19,7 @@ export const CreateElectionSchema = z
       startsAt: dateTimeSchema,
       endsAt: dateTimeSchema,
       debateAt: dateTimeSchema.nullable().optional(),
+      secondDebateAt: dateTimeSchema.nullable().optional(),
    })
    .strict()
    .refine((value) => new Date(value.startsAt) < new Date(value.endsAt), {
@@ -40,6 +41,7 @@ export const UpdateElectionSchema = z
       startsAt: dateTimeSchema.optional(),
       endsAt: dateTimeSchema.optional(),
       debateAt: dateTimeSchema.nullable().optional(),
+      secondDebateAt: dateTimeSchema.nullable().optional(),
    })
    .strict()
    .refine((value) => Object.keys(value).length > 0, {
@@ -47,7 +49,10 @@ export const UpdateElectionSchema = z
    });
 
 export const UpdateDebateScheduleSchema = z
-   .object({ debateAt: dateTimeSchema.nullable() })
+   .object({
+      debateAt: dateTimeSchema.nullable(),
+      secondDebateAt: dateTimeSchema.nullable().optional(),
+   })
    .strict();
 
 export const UpdateVotingEndSchema = z.object({ endsAt: dateTimeSchema }).strict();

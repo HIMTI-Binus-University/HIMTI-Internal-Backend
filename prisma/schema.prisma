@@ -1093,6 +1093,7 @@ model Election {
   endsAt      DateTime       @db.Timestamp(0)
   originalEndsAt DateTime       @db.Timestamp(0)
   debateAt    DateTime?      @db.Timestamp(0)
+  secondDebateAt DateTime?   @db.Timestamp(0)
   openedAt    DateTime?      @db.Timestamp(0)
   closedAt    DateTime?      @db.Timestamp(0)
   publishedAt DateTime?      @db.Timestamp(0)
