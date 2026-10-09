@@ -770,6 +770,11 @@
                         "nullable": true,
                         "type": "string"
                      },
+                     "secondDebateAt": {
+                        "format": "date-time",
+                        "nullable": true,
+                        "type": "string"
+                     },
                      "slug": {
                         "type": "string"
                      },
@@ -805,6 +810,7 @@
                      "endsAt",
                      "originalEndsAt",
                      "debateAt",
+                     "secondDebateAt",
                      "openedAt",
                      "closedAt",
                      "publishedAt",
@@ -7780,6 +7786,11 @@
                                        "nullable": true,
                                        "type": "string"
                                     },
+                                    "secondDebateAt": {
+                                       "format": "date-time",
+                                       "nullable": true,
+                                       "type": "string"
+                                    },
                                     "slug": {
                                        "type": "string"
                                     },
@@ -7815,6 +7826,7 @@
                                     "endsAt",
                                     "originalEndsAt",
                                     "debateAt",
+                                    "secondDebateAt",
                                     "openedAt",
                                     "closedAt",
                                     "publishedAt",
@@ -9211,6 +9223,11 @@
                                           "nullable": true,
                                           "type": "string"
                                        },
+                                       "secondDebateAt": {
+                                          "format": "date-time",
+                                          "nullable": true,
+                                          "type": "string"
+                                       },
                                        "slug": {
                                           "type": "string"
                                        },
@@ -9246,6 +9263,7 @@
                                        "endsAt",
                                        "originalEndsAt",
                                        "debateAt",
+                                       "secondDebateAt",
                                        "openedAt",
                                        "closedAt",
                                        "publishedAt",
@@ -9566,6 +9584,11 @@
                            },
                            "endsAt": {
                               "format": "date-time",
+                              "type": "string"
+                           },
+                           "secondDebateAt": {
+                              "format": "date-time",
+                              "nullable": true,
                               "type": "string"
                            },
                            "slug": {
@@ -10206,6 +10229,11 @@
                            },
                            "endsAt": {
                               "format": "date-time",
+                              "type": "string"
+                           },
+                           "secondDebateAt": {
+                              "format": "date-time",
+                              "nullable": true,
                               "type": "string"
                            },
                            "slug": {
@@ -11288,6 +11316,11 @@
                         "additionalProperties": false,
                         "properties": {
                            "debateAt": {
+                              "format": "date-time",
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "secondDebateAt": {
                               "format": "date-time",
                               "nullable": true,
                               "type": "string"
