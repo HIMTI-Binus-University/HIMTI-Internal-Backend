@@ -48,6 +48,7 @@ const electionSchema = z.object({
    endsAt: z.string().datetime(),
    originalEndsAt: z.string().datetime(),
    debateAt: z.string().datetime().nullable(),
+   secondDebateAt: z.string().datetime().nullable(),
    openedAt: z.string().datetime().nullable(),
    closedAt: z.string().datetime().nullable(),
    publishedAt: z.string().datetime().nullable(),

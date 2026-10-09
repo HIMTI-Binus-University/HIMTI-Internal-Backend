@@ -1,0 +1,1 @@
+ALTER TABLE "elections" ADD COLUMN "secondDebateAt" TIMESTAMP(0);
