@@ -15,6 +15,7 @@ import {
    UpdateElectionSchema,
    UpdateElectionPublicDetailsSchema,
    UpdateVotingEndSchema,
+   UpdateLiveRevealSchema,
 } from './electionSchema.js';
 
 const tag = 'Elections';
@@ -49,6 +50,7 @@ const electionSchema = z.object({
    originalEndsAt: z.string().datetime(),
    debateAt: z.string().datetime().nullable(),
    secondDebateAt: z.string().datetime().nullable(),
+   removeCountdownForLiveReveal: z.boolean(),
    openedAt: z.string().datetime().nullable(),
    closedAt: z.string().datetime().nullable(),
    publishedAt: z.string().datetime().nullable(),
@@ -238,6 +240,13 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
    });
 
    const internalPaths = [
+      {
+         method: 'patch' as const,
+         path: '/api/internal/elections/{electionId}/live-reveal',
+         summary: 'Replace the election countdown with a live reveal invitation',
+         body: UpdateLiveRevealSchema,
+         responseSchema: ElectionResponse,
+      },
       {
          method: 'get' as const,
          path: '/api/internal/elections',

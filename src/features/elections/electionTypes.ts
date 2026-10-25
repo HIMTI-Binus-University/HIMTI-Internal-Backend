@@ -9,6 +9,7 @@ import {
    UpdateElectionSchema,
    UpdateElectionPublicDetailsSchema,
    UpdateVotingEndSchema,
+   UpdateLiveRevealSchema,
 } from './electionSchema.js';
 
 export type CreateElectionRequest = z.infer<typeof CreateElectionSchema>;
@@ -20,6 +21,7 @@ export type UpdateDebateScheduleRequest = z.infer<
    typeof UpdateDebateScheduleSchema
 >;
 export type UpdateVotingEndRequest = z.infer<typeof UpdateVotingEndSchema>;
+export type UpdateLiveRevealRequest = z.infer<typeof UpdateLiveRevealSchema>;
 export type CreateCandidateRequest = z.infer<typeof CreateCandidateSchema>;
 export type UpdateCandidateRequest = z.infer<typeof UpdateCandidateSchema>;
 export type CastVoteRequest = z.infer<typeof CastVoteSchema>;
