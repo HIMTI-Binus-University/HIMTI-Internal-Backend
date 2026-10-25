@@ -12,6 +12,7 @@ import type {
    UpdateElectionRequest,
    UpdateElectionPublicDetailsRequest,
    UpdateVotingEndRequest,
+   UpdateLiveRevealRequest,
 } from './electionTypes.js';
 
 const publicElection = <T extends { candidates: { isActive: boolean }[] }>(
@@ -160,6 +161,11 @@ class ElectionService {
 
    async updateVotingEnd(electionId: string, payload: UpdateVotingEndRequest, userId: string) {
       return electionRepository.updateVotingEnd(electionId, new Date(payload.endsAt), userId);
+   }
+
+   async updateLiveReveal(electionId: string, payload: UpdateLiveRevealRequest, userId: string) {
+      await this.get(electionId);
+      return electionRepository.updateLiveReveal(electionId, payload, userId);
    }
 
    async updateDebateSchedule(

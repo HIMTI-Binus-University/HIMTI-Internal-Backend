@@ -13,6 +13,7 @@ import type {
    CreateElectionRequest,
    UpdateCandidateRequest,
    UpdateElectionRequest,
+   UpdateLiveRevealRequest,
 } from './electionTypes.js';
 
 const candidateSelect = {
@@ -42,6 +43,7 @@ const electionSelect = {
    originalEndsAt: true,
    debateAt: true,
    secondDebateAt: true,
+   removeCountdownForLiveReveal: true,
    openedAt: true,
    closedAt: true,
    publishedAt: true,
@@ -152,6 +154,14 @@ class ElectionRepository {
       }
       return prisma.election.findUniqueOrThrow({
          where: { id },
+         select: electionSelect,
+      });
+   }
+
+   async updateLiveReveal(id: string, payload: UpdateLiveRevealRequest, userId: string) {
+      return prisma.election.update({
+         where: { id },
+         data: { ...payload, updatedBy: userId },
          select: electionSelect,
       });
    }
