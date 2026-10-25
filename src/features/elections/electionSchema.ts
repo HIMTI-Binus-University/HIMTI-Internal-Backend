@@ -57,6 +57,10 @@ export const UpdateDebateScheduleSchema = z
 
 export const UpdateVotingEndSchema = z.object({ endsAt: dateTimeSchema }).strict();
 
+export const UpdateLiveRevealSchema = z
+   .object({ removeCountdownForLiveReveal: z.boolean() })
+   .strict();
+
 export const UpdateElectionPublicDetailsSchema = z
    .object({
       title: z.string().trim().min(3).max(255),

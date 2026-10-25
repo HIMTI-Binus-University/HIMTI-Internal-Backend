@@ -12,6 +12,7 @@ import {
    UpdateElectionSchema,
    UpdateElectionPublicDetailsSchema,
    UpdateVotingEndSchema,
+   UpdateLiveRevealSchema,
 } from './electionSchema.js';
 
 const success = (res: Response, data: unknown, status = 200) =>
@@ -89,6 +90,12 @@ export const updateVotingEnd = async (req: Request, res: Response) => {
    const { electionId } = ElectionIdSchema.parse(req.params);
    const body = UpdateVotingEndSchema.parse(req.body);
    return success(res, await electionService.updateVotingEnd(electionId, body, res.locals.user.id));
+};
+
+export const updateElectionLiveReveal = async (req: Request, res: Response) => {
+   const { electionId } = ElectionIdSchema.parse(req.params);
+   const body = UpdateLiveRevealSchema.parse(req.body);
+   return success(res, await electionService.updateLiveReveal(electionId, body, res.locals.user.id));
 };
 
 export const updateDebateSchedule = async (req: Request, res: Response) => {
