@@ -6756,7 +6756,7 @@
                   "sessionCookie": []
                }
             ],
-            "summary": "Check active verified BINUS voter eligibility using SoCS study programs or lecturer department aliases",
+            "summary": "Check active verified BINUS voter eligibility for SoCS students and lecturers or OTHER members with binus.edu email",
             "tags": [
                "Elections"
             ]

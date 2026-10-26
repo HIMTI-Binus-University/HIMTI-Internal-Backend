@@ -179,7 +179,7 @@ export const registerElectionDocs = (registry: OpenAPIRegistry) => {
       path: '/api/elections/{electionId}/eligibility',
       tags: [tag],
       summary:
-         'Check active verified BINUS voter eligibility using SoCS study programs or lecturer department aliases',
+         'Check active verified BINUS voter eligibility for SoCS students and lecturers or OTHER members with binus.edu email',
       security: [protectedEndpoint],
       request: { params },
       responses: {

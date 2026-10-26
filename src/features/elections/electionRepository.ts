@@ -428,7 +428,8 @@ class ElectionRepository {
                   AND ((u."memberType" = 'STUDENT' AND sp.name IN (${Prisma.join(socsStudyProgramNames)}))
                     OR (u."memberType" = 'LECTURER' AND trim(regexp_replace(regexp_replace(
                       trim(regexp_replace(lower(u.department), '[[:space:]]+', ' ', 'g')),
-                      ${departmentPrefix}, ''), ${departmentSuffix}, '')) IN (${Prisma.join(socsDepartmentNames)})))
+                      ${departmentPrefix}, ''), ${departmentSuffix}, '')) IN (${Prisma.join(socsDepartmentNames)}))
+                    OR (u."memberType" = 'OTHER' AND split_part(lower(trim(u."outlookEmail")), '@', 2) = 'binus.edu'))
                  AND u."registrationCompletedAt" IS NOT NULL
                  AND u."outlookEmailVerified" = true
                  AND u."outlookEmail" IS NOT NULL

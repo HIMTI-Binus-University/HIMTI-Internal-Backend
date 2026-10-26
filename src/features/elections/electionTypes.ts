@@ -100,10 +100,12 @@ export const getElectionEligibilityReason = (
    if (
       parts.length !== 2 ||
       !parts[0] ||
-      !['binus.ac.id', 'binus.edu'].includes(parts[1])
+      !['binus.ac.id', 'binus.edu'].includes(parts[1]) ||
+      (user.memberType === 'OTHER' && parts[1] !== 'binus.edu')
    )
       return 'OUTLOOK_DOMAIN_NOT_ALLOWED';
    if (user.institutionType !== 'BINUS') return 'NOT_SOCS';
+   if (user.memberType === 'OTHER') return null;
    if (user.memberType === 'LECTURER')
       return user.department &&
          socsDepartmentNames.includes(normalizeDepartment(user.department))
