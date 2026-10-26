@@ -17,6 +17,62 @@ const binusUser = {
 };
 
 describe('election eligibility', () => {
+   const otherUser = {
+      ...binusUser,
+      memberType: 'OTHER' as const,
+      outlookEmail: 'staff@binus.edu',
+      studyProgram: null,
+      department: null,
+   };
+
+   it('allows BINUS OTHER members with verified binus.edu email without SoCS affiliation', () => {
+      for (const outlookEmail of ['staff@binus.edu', ' STAFF@BINUS.EDU ']) {
+         assert.equal(
+            getElectionEligibilityReason({ ...otherUser, outlookEmail }),
+            null,
+         );
+      }
+   });
+
+   it('restricts OTHER members to binus.edu even with a SoCS study program', () => {
+      for (const outlookEmail of [
+         'staff@binus.ac.id',
+         'staff@gmail.com',
+         'staff@binus.edu.attacker.com',
+         'staff@notbinus.edu',
+         'staff@binus.edu@attacker.com',
+         '@binus.edu',
+      ]) {
+         assert.equal(
+            getElectionEligibilityReason({
+               ...otherUser,
+               outlookEmail,
+               studyProgram: binusUser.studyProgram,
+            }),
+            'OUTLOOK_DOMAIN_NOT_ALLOWED',
+         );
+      }
+   });
+
+   it('keeps account, verification, and BINUS requirements for OTHER members', () => {
+      const cases = [
+         [{ institutionType: 'NON_BINUS' }, 'NOT_SOCS'],
+         [{ institutionType: null }, 'NOT_SOCS'],
+         [{ memberType: null }, 'NOT_SOCS'],
+         [{ status: 'INACTIVE' }, 'ACCOUNT_INACTIVE'],
+         [{ status: 'SUSPENDED' }, 'ACCOUNT_INACTIVE'],
+         [{ registrationCompletedAt: null }, 'PROFILE_INCOMPLETE'],
+         [{ outlookEmailVerified: false }, 'OUTLOOK_NOT_VERIFIED'],
+         [{ outlookEmail: null }, 'OUTLOOK_NOT_VERIFIED'],
+      ] as const;
+      for (const [overrides, reason] of cases) {
+         assert.equal(
+            getElectionEligibilityReason({ ...otherUser, ...overrides }),
+            reason,
+         );
+      }
+   });
+
    it('allows verified SoCS members with student or lecturer domains', () => {
       for (const outlookEmail of [
          'student@binus.ac.id',

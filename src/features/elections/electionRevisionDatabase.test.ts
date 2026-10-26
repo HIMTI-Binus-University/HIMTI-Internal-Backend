@@ -60,6 +60,38 @@ test(
             });
             userIds.push(user.id);
          }
+         const otherCases = [
+            [{}, null],
+            [{ outlookEmail: ` ${key}@BINUS.EDU ` }, null],
+            [
+               { outlookEmail: `${key}@binus.ac.id` },
+               'OUTLOOK_DOMAIN_NOT_ALLOWED',
+            ],
+            [
+               { outlookEmail: `${key}@binus.edu.attacker.com` },
+               'OUTLOOK_DOMAIN_NOT_ALLOWED',
+            ],
+            [{ outlookEmailVerified: false }, 'OUTLOOK_NOT_VERIFIED'],
+            [{ outlookEmail: null }, 'OUTLOOK_NOT_VERIFIED'],
+            [{ institutionType: 'NON_BINUS' }, 'NOT_SOCS'],
+            [{ status: 'INACTIVE' }, 'ACCOUNT_INACTIVE'],
+            [{ registrationCompletedAt: null }, 'PROFILE_INCOMPLETE'],
+         ] as const;
+         for (const [index, [overrides]] of otherCases.entries()) {
+            const user = await prisma.user.create({
+               data: {
+                  name: `Other fixture ${index}`,
+                  email: `${key}-other-${index}@example.test`,
+                  outlookEmail: `${key}-other-${index}@binus.edu`,
+                  outlookEmailVerified: true,
+                  registrationCompletedAt: new Date(),
+                  memberType: 'OTHER',
+                  institutionType: 'BINUS',
+                  ...overrides,
+               },
+            });
+            userIds.push(user.id);
+         }
          const start = new Date(Date.now() - 60000);
          const end = new Date(Date.now() + 3600000);
          const priorElection = await prisma.election.create({
@@ -152,9 +184,47 @@ test(
                code('NOT_SOCS'),
             );
          }
+         for (const [index, [, reason]] of otherCases.entries()) {
+            const userId = userIds[index + 4];
+            assert.equal(
+               (await electionService.getEligibility(election.id, userId))
+                  .reason,
+               reason,
+            );
+            if (reason) {
+               await assert.rejects(
+                  electionRepository.castVote(
+                     election.id,
+                     candidate.id,
+                     userId,
+                     randomUUID(),
+                  ),
+                  code(reason),
+               );
+            }
+         }
          assert.equal(
             (await electionRepository.turnout(election.id)).eligibleVoterCount,
-            2,
+            4,
+         );
+         await electionRepository.castVote(
+            election.id,
+            candidate.id,
+            userIds[4],
+            randomUUID(),
+         );
+         assert.equal(
+            (await electionService.getEligibility(election.id, userIds[4]))
+               .reason,
+            'ALREADY_VOTED',
+         );
+         await assert.rejects(
+            electionService.castVote(
+               election.id,
+               { candidateId: candidate.id },
+               userIds[4],
+            ),
+            code('ALREADY_VOTED'),
          );
          await electionRepository.castVote(
             election.id,
@@ -163,8 +233,8 @@ test(
             randomUUID(),
          );
          const turnout = await electionRepository.turnout(election.id);
-         assert.equal(turnout.participationCount, 1);
-         assert.equal(turnout.ballotCount, 1);
+         assert.equal(turnout.participationCount, 2);
+         assert.equal(turnout.ballotCount, 2);
          assert.equal(
             (
                await electionRepository.updateCandidate(candidate.id, {
