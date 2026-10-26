@@ -228,8 +228,59 @@ environments should use the registration and verification flows.
 | `npm start`                 | Run the compiled server                 |
 | `npm test`                  | Run backend tests                       |
 | `npm run seed`              | Seed application and reference data     |
+| `npm run seed:election`     | Manually seed a mid-election demo       |
 | `npx prisma validate`       | Validate the Prisma schema              |
 | `npx prisma migrate status` | Inspect migration state                 |
+
+## Election Demo Seed (Manual Only)
+
+After applying migrations and running `npm run seed`, run from this repository:
+
+```bash
+npm run seed:election
+```
+
+This creates `[DEMO] HIMTI Election` (`demo-election`) in `OPEN` state, with three
+candidate profiles, 40 synthetic eligible voters, and 30 anonymous ballots split
+15/10/5. Ten synthetic voters have not voted. Voting started yesterday and ends
+seven days from seeding; both debates are in the past. Close and publish the
+election through admin to test results and the winner reveal.
+
+Set candidate photo and video URLs in admin; the seed does not bundle or override
+them. Synthetic voters have no login accounts or sessions. To cast another vote,
+sign in normally with your own eligible account. Admin access still requires
+the existing Admin role; this command does not grant roles or change real users.
+
+Running the command again leaves existing demo data unchanged. To replay the
+whole process, explicitly clear all votes on this demo (including votes cast
+manually) and reopen it with fresh dates:
+
+```bash
+npm run seed:election -- --reset
+```
+
+Reset preserves candidate profiles/photo URLs and other elections/users. Do not
+rename the demo slug; it is used with its fixed ID to identify the fixture safely.
+The command refuses to run while another election is open and rolls back on errors.
+For just the animation, use **Replay reveal** in the election frontend instead.
+
+For the existing local Docker Compose stack (`NODE_ENV=development` in `.env`):
+
+```bash
+docker compose up --build -d
+docker compose exec app npm run seed:election
+docker compose exec app npm run seed:election -- --reset
+```
+
+**The election demo seed never runs automatically on initial Docker startup,
+restarts, migrations, or `npm run seed`.** Compose still runs the separate reference
+seed as before. No image rebuild is needed to run the seed natively; an older
+Docker image must be rebuilt once to include the new script.
+
+This is local test data only: `NODE_ENV` must be `development` or `test`, and
+`DATABASE_URL` must point to `localhost`, `127.0.0.1`, `::1`, or Compose's `db`.
+Check that `DATABASE_URL` uses the host-published database port when running
+natively (for example, `5433` if that is your `DB_PORT`).
 
 ## Project Structure
 
