@@ -9,6 +9,7 @@ import {
    UpdateElectionSchema,
    UpdateElectionPublicDetailsSchema,
    UpdateVotingEndSchema,
+   UpdateLiveRevealSchema,
 } from './electionSchema.js';
 
 export type CreateElectionRequest = z.infer<typeof CreateElectionSchema>;
@@ -20,6 +21,7 @@ export type UpdateDebateScheduleRequest = z.infer<
    typeof UpdateDebateScheduleSchema
 >;
 export type UpdateVotingEndRequest = z.infer<typeof UpdateVotingEndSchema>;
+export type UpdateLiveRevealRequest = z.infer<typeof UpdateLiveRevealSchema>;
 export type CreateCandidateRequest = z.infer<typeof CreateCandidateSchema>;
 export type UpdateCandidateRequest = z.infer<typeof UpdateCandidateSchema>;
 export type CastVoteRequest = z.infer<typeof CastVoteSchema>;
@@ -98,10 +100,12 @@ export const getElectionEligibilityReason = (
    if (
       parts.length !== 2 ||
       !parts[0] ||
-      !['binus.ac.id', 'binus.edu'].includes(parts[1])
+      !['binus.ac.id', 'binus.edu'].includes(parts[1]) ||
+      (user.memberType === 'OTHER' && parts[1] !== 'binus.edu')
    )
       return 'OUTLOOK_DOMAIN_NOT_ALLOWED';
    if (user.institutionType !== 'BINUS') return 'NOT_SOCS';
+   if (user.memberType === 'OTHER') return null;
    if (user.memberType === 'LECTURER')
       return user.department &&
          socsDepartmentNames.includes(normalizeDepartment(user.department))

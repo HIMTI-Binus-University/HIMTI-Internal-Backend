@@ -13,6 +13,7 @@ import type {
    CreateElectionRequest,
    UpdateCandidateRequest,
    UpdateElectionRequest,
+   UpdateLiveRevealRequest,
 } from './electionTypes.js';
 
 const candidateSelect = {
@@ -42,6 +43,7 @@ const electionSelect = {
    originalEndsAt: true,
    debateAt: true,
    secondDebateAt: true,
+   removeCountdownForLiveReveal: true,
    openedAt: true,
    closedAt: true,
    publishedAt: true,
@@ -152,6 +154,14 @@ class ElectionRepository {
       }
       return prisma.election.findUniqueOrThrow({
          where: { id },
+         select: electionSelect,
+      });
+   }
+
+   async updateLiveReveal(id: string, payload: UpdateLiveRevealRequest, userId: string) {
+      return prisma.election.update({
+         where: { id },
+         data: { ...payload, updatedBy: userId },
          select: electionSelect,
       });
    }
@@ -418,7 +428,8 @@ class ElectionRepository {
                   AND ((u."memberType" = 'STUDENT' AND sp.name IN (${Prisma.join(socsStudyProgramNames)}))
                     OR (u."memberType" = 'LECTURER' AND trim(regexp_replace(regexp_replace(
                       trim(regexp_replace(lower(u.department), '[[:space:]]+', ' ', 'g')),
-                      ${departmentPrefix}, ''), ${departmentSuffix}, '')) IN (${Prisma.join(socsDepartmentNames)})))
+                      ${departmentPrefix}, ''), ${departmentSuffix}, '')) IN (${Prisma.join(socsDepartmentNames)}))
+                    OR (u."memberType" = 'OTHER' AND split_part(lower(trim(u."outlookEmail")), '@', 2) = 'binus.edu'))
                  AND u."registrationCompletedAt" IS NOT NULL
                  AND u."outlookEmailVerified" = true
                  AND u."outlookEmail" IS NOT NULL

@@ -149,7 +149,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Check active verified BINUS voter eligibility using SoCS study programs or lecturer department aliases */
+        /** Check active verified BINUS voter eligibility for SoCS students and lecturers or OTHER members with binus.edu email */
         get: {
             parameters: {
                 query?: never;
@@ -756,6 +756,7 @@ export interface paths {
                                 originalEndsAt: string;
                                 /** Format: date-time */
                                 publishedAt: string | null;
+                                removeCountdownForLiveReveal: boolean;
                                 /** Format: date-time */
                                 secondDebateAt: string | null;
                                 slug: string;
@@ -983,6 +984,7 @@ export interface paths {
                                 originalEndsAt: string;
                                 /** Format: date-time */
                                 publishedAt: string | null;
+                                removeCountdownForLiveReveal: boolean;
                                 /** Format: date-time */
                                 secondDebateAt: string | null;
                                 slug: string;
@@ -1863,6 +1865,150 @@ export interface paths {
                         debateAt: string | null;
                         /** Format: date-time */
                         secondDebateAt?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Operation completed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ElectionResponse"];
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            code: "VALIDATION_ERROR";
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                        };
+                    };
+                };
+                /** @description Authentication required. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not eligible or missing permission. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election or candidate not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+                /** @description Election state or duplicate-vote conflict. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            details?: unknown;
+                            errors?: unknown;
+                            message: string;
+                            msg: string;
+                            /** @enum {string} */
+                            status: "fail" | "error";
+                            success?: boolean;
+                        } | {
+                            errors?: unknown;
+                            message?: string;
+                            msg?: string;
+                            status?: string;
+                            success?: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/internal/elections/{electionId}/live-reveal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Replace the election countdown with a live reveal invitation */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    electionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        removeCountdownForLiveReveal: boolean;
                     };
                 };
             };
@@ -9130,6 +9276,7 @@ export interface components {
                 originalEndsAt: string;
                 /** Format: date-time */
                 publishedAt: string | null;
+                removeCountdownForLiveReveal: boolean;
                 /** Format: date-time */
                 secondDebateAt: string | null;
                 slug: string;

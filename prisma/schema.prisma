@@ -1094,6 +1094,7 @@ model Election {
   originalEndsAt DateTime       @db.Timestamp(0)
   debateAt    DateTime?      @db.Timestamp(0)
   secondDebateAt DateTime?   @db.Timestamp(0)
+  removeCountdownForLiveReveal Boolean @default(false)
   openedAt    DateTime?      @db.Timestamp(0)
   closedAt    DateTime?      @db.Timestamp(0)
   publishedAt DateTime?      @db.Timestamp(0)

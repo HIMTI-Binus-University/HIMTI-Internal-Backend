@@ -23,6 +23,7 @@ import {
    updateDebateSchedule,
    updateElectionCandidate,
    updateVotingEnd,
+   updateElectionLiveReveal,
 } from './electionController.js';
 
 export const electionRouter: Router = express.Router();
@@ -74,6 +75,12 @@ internalElectionRouter.patch(
    requireAuth,
    requirePermission('manage_elections'),
    updateElectionPublicDetails,
+);
+internalElectionRouter.patch(
+   '/:electionId/live-reveal',
+   requireAuth,
+   requirePermission('manage_elections'),
+   updateElectionLiveReveal,
 );
 internalElectionRouter.patch(
    '/:electionId/voting-end',
