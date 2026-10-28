@@ -937,11 +937,27 @@ export interface paths {
         };
         get: operations["listEducationCourseGroups"];
         put?: never;
-        post?: never;
+        post: operations["createEducationCourseGroup"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/internal/education/course-groups/{courseId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEducationCourseGroup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateEducationCourseGroup"];
         trace?: never;
     };
     "/api/internal/elections": {
@@ -9239,6 +9255,25 @@ export interface components {
                 status: "ACTIVE" | "INACTIVE";
             }[];
         };
+        EducationCourseGroupSingleResponse: {
+            data: {
+                code: string | null;
+                id: string;
+                name: string;
+                /** @enum {string} */
+                status: "ACTIVE" | "INACTIVE";
+            };
+        };
+        EducationCreateCourseGroupBody: {
+            code?: string | null;
+            name: string;
+        };
+        EducationUpdateCourseGroupBody: {
+            code?: string | null;
+            name?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
+        };
         ElectionCandidateListResponse: {
             data: {
                 ballotNumber: number;
@@ -11240,6 +11275,141 @@ export interface operations {
             };
             /** @description manage_education permission required */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createEducationCourseGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EducationCreateCourseGroupBody"];
+            };
+        };
+        responses: {
+            /** @description Course group created successfully. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationCourseGroupSingleResponse"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Course with this name or code already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getEducationCourseGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                courseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Course group retrieved successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationCourseGroupSingleResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Course group not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateEducationCourseGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                courseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EducationUpdateCourseGroupBody"];
+            };
+        };
+        responses: {
+            /** @description Course group updated successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationCourseGroupSingleResponse"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Course group not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Course with this name or code already exists */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

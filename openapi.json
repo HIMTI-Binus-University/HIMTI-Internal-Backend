@@ -562,6 +562,82 @@
             ],
             "type": "object"
          },
+         "EducationCourseGroupSingleResponse": {
+            "properties": {
+               "data": {
+                  "properties": {
+                     "code": {
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "name": {
+                        "type": "string"
+                     },
+                     "status": {
+                        "enum": [
+                           "ACTIVE",
+                           "INACTIVE"
+                        ],
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "name",
+                     "code",
+                     "status"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
+         "EducationCreateCourseGroupBody": {
+            "properties": {
+               "code": {
+                  "maxLength": 50,
+                  "nullable": true,
+                  "type": "string"
+               },
+               "name": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "name"
+            ],
+            "type": "object"
+         },
+         "EducationUpdateCourseGroupBody": {
+            "properties": {
+               "code": {
+                  "maxLength": 50,
+                  "nullable": true,
+                  "type": "string"
+               },
+               "name": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "enum": [
+                     "ACTIVE",
+                     "INACTIVE"
+                  ],
+                  "type": "string"
+               }
+            },
+            "type": "object"
+         },
          "ElectionCandidateListResponse": {
             "properties": {
                "data": {
@@ -9164,6 +9240,142 @@
                },
                "403": {
                   "description": "manage_education permission required"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "post": {
+            "operationId": "createEducationCourseGroup",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationCreateCourseGroupBody"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationCourseGroupSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Course group created successfully."
+               },
+               "400": {
+                  "description": "Validation error"
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "409": {
+                  "description": "Course with this name or code already exists"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/course-groups/{courseId}": {
+         "get": {
+            "operationId": "getEducationCourseGroup",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "courseId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationCourseGroupSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Course group retrieved successfully."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Course group not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "patch": {
+            "operationId": "updateEducationCourseGroup",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "courseId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationUpdateCourseGroupBody"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationCourseGroupSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Course group updated successfully."
+               },
+               "400": {
+                  "description": "Validation error"
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Course group not found"
+               },
+               "409": {
+                  "description": "Course with this name or code already exists"
                }
             },
             "security": [
