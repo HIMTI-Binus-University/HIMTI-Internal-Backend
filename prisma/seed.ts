@@ -221,21 +221,95 @@ async function main() {
    });
 
    // ==========================================
-   // SEED COURSES (EDUCATION)
+   // SEED COURSES (EDUCATION - BINUS CS SYLLABUS)
    // ==========================================
-   console.log('Seeding Courses...');
+   console.log('Seeding Courses from Binus CS Syllabus...');
    const courses = [
-      { name: 'Algorithm & Programming', code: 'CS-101' },
-      { name: 'Calculus', code: 'MA-101' },
-      { name: 'Database Systems', code: 'CS-204' },
-      { name: 'Computer Architecture', code: 'CS-203' },
-      { name: 'Operating Systems', code: 'CS-301' },
-      { name: 'Computer Networks', code: 'CS-302' },
+      {
+         name: 'Algorithm & Programming',
+         code: 'COMP6047001',
+         description: 'Fundamental concepts of algorithm design, flowcharting, pseudocode, and procedural programming in C/C++, covering variables, control structures, functions, pointers, arrays, and file handling.',
+      },
+      {
+         name: 'Program Design Methods',
+         code: 'COMP6048001',
+         description: 'Structured programming methodologies, modular program design, algorithm efficiency, defensive coding, testing, and problem decomposition techniques.',
+      },
+      {
+         name: 'Calculus',
+         code: 'MATH6021001',
+         description: 'Differential and integral calculus, limits, continuity, derivatives, optimization problems, and integration techniques with applications in computational science.',
+      },
+      {
+         name: 'Discrete Mathematics',
+         code: 'MATH6025001',
+         description: 'Set theory, mathematical logic, relations and functions, combinatorics, graph theory, Boolean algebra, and tree structures essential for computing.',
+      },
+      {
+         name: 'Linear Algebra',
+         code: 'MATH6030001',
+         description: 'Systems of linear equations, matrices, determinants, vector spaces, eigenvalues, eigenvectors, and linear transformations applied to computer graphics and data analysis.',
+      },
+      {
+         name: 'Data Structures',
+         code: 'COMP6056001',
+         description: 'Abstract data types, dynamic memory allocation, linked lists, stacks, queues, trees, binary search trees, heaps, hash tables, and graph representations with complexity analysis.',
+      },
+      {
+         name: 'Object Oriented Programming',
+         code: 'COMP6049001',
+         description: 'Object-oriented paradigm using Java, encapsulation, inheritance, polymorphism, abstract classes, interfaces, exception handling, design patterns, and GUI programming.',
+      },
+      {
+         name: 'Computer Architecture',
+         code: 'COMP6051001',
+         description: 'Von Neumann architecture, instruction set architecture (ISA), processor datapath and control unit, memory hierarchy and cache, pipelining, and I/O subsystems.',
+      },
+      {
+         name: 'Database Systems',
+         code: 'COMP6079001',
+         description: 'Relational database concepts, entity-relationship modeling, relational algebra, SQL querying and DDL/DML, normalization up to BCNF, indexing, and transaction management.',
+      },
+      {
+         name: 'Operating Systems',
+         code: 'COMP6065001',
+         description: 'Operating system concepts, process and thread management, CPU scheduling, synchronization primitives (mutex, semaphores), deadlock handling, virtual memory, and file systems.',
+      },
+      {
+         name: 'Computer Networks',
+         code: 'COMP6082001',
+         description: 'OSI and TCP/IP network architectures, physical and data link protocols, IP addressing and subnetting, routing protocols, transport protocols (TCP/UDP), and socket programming.',
+      },
+      {
+         name: 'Design and Analysis of Algorithms',
+         code: 'COMP6106001',
+         description: 'Advanced algorithm design paradigms including divide-and-conquer, greedy algorithms, dynamic programming, network flow, and computational complexity (P vs NP).',
+      },
+      {
+         name: 'Software Engineering',
+         code: 'COMP6098001',
+         description: 'Software lifecycle models, Agile/Scrum methodologies, requirements engineering, UML modeling, architectural patterns, software testing, and quality assurance.',
+      },
+      {
+         name: 'Web Programming',
+         code: 'COMP6100001',
+         description: 'Modern web application development covering full-stack architecture, frontend frameworks, RESTful API design, server-side development, authentication, and web security.',
+      },
+      {
+         name: 'Artificial Intelligence',
+         code: 'COMP6099001',
+         description: 'Search algorithms, heuristic search, knowledge representation, expert systems, probabilistic reasoning, introduction to machine learning, and neural networks.',
+      },
+      {
+         name: 'Human and Computer Interaction',
+         code: 'COMP6101001',
+         description: 'User-centered design principles, usability heuristics, user research, wireframing, interactive prototyping, and usability evaluation of digital interfaces.',
+      },
    ];
    for (const course of courses) {
       await prisma.course.upsert({
          where: { name: course.name },
-         update: { code: course.code },
+         update: { code: course.code, description: course.description },
          create: course,
       });
    }

@@ -325,6 +325,7 @@ model Course {
   id        String    @id @default(nanoid())
   name      String    @unique @db.VarChar(255)
   code      String?   @unique @db.VarChar(50)
+  description String?   @db.Text
   status    Status    @default(ACTIVE)
   createdAt DateTime  @default(now()) @db.Timestamp(0)
   updatedAt DateTime? @updatedAt

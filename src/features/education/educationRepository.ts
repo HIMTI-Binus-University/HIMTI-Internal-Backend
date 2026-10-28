@@ -26,6 +26,7 @@ class EducationRepository {
             id: true,
             name: true,
             code: true,
+            description: true,
             status: true,
          },
       });
@@ -38,6 +39,7 @@ class EducationRepository {
             id: true,
             name: true,
             code: true,
+            description: true,
             status: true,
          },
       });
@@ -50,6 +52,7 @@ class EducationRepository {
             id: true,
             name: true,
             code: true,
+            description: true,
             status: true,
          },
       });
@@ -60,11 +63,13 @@ class EducationRepository {
          data: {
             name: data.name,
             code: data.code ? data.code : null,
+            description: data.description ? data.description : null,
          },
          select: {
             id: true,
             name: true,
             code: true,
+            description: true,
             status: true,
          },
       });
@@ -78,12 +83,16 @@ class EducationRepository {
             ...(data.code !== undefined && {
                code: data.code ? data.code : null,
             }),
+            ...(data.description !== undefined && {
+               description: data.description ? data.description : null,
+            }),
             ...(data.status !== undefined && { status: data.status }),
          },
          select: {
             id: true,
             name: true,
             code: true,
+            description: true,
             status: true,
          },
       });

@@ -532,6 +532,10 @@
                            "nullable": true,
                            "type": "string"
                         },
+                        "description": {
+                           "nullable": true,
+                           "type": "string"
+                        },
                         "id": {
                            "type": "string"
                         },
@@ -570,6 +574,10 @@
                         "nullable": true,
                         "type": "string"
                      },
+                     "description": {
+                        "nullable": true,
+                        "type": "string"
+                     },
                      "id": {
                         "type": "string"
                      },
@@ -602,6 +610,11 @@
             "properties": {
                "code": {
                   "maxLength": 50,
+                  "nullable": true,
+                  "type": "string"
+               },
+               "description": {
+                  "maxLength": 2000,
                   "nullable": true,
                   "type": "string"
                },
@@ -882,6 +895,11 @@
             "properties": {
                "code": {
                   "maxLength": 50,
+                  "nullable": true,
+                  "type": "string"
+               },
+               "description": {
+                  "maxLength": 2000,
                   "nullable": true,
                   "type": "string"
                },

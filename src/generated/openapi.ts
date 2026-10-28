@@ -9297,6 +9297,7 @@ export interface components {
         EducationCourseGroupListResponse: {
             data: {
                 code: string | null;
+                description?: string | null;
                 id: string;
                 name: string;
                 /** @enum {string} */
@@ -9306,6 +9307,7 @@ export interface components {
         EducationCourseGroupSingleResponse: {
             data: {
                 code: string | null;
+                description?: string | null;
                 id: string;
                 name: string;
                 /** @enum {string} */
@@ -9314,6 +9316,7 @@ export interface components {
         };
         EducationCreateCourseGroupBody: {
             code?: string | null;
+            description?: string | null;
             name: string;
         };
         EducationCreateResponsiBody: {
@@ -9383,6 +9386,7 @@ export interface components {
         };
         EducationUpdateCourseGroupBody: {
             code?: string | null;
+            description?: string | null;
             name?: string;
             /** @enum {string} */
             status?: "ACTIVE" | "INACTIVE";
