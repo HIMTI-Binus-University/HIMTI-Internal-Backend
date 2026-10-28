@@ -960,6 +960,54 @@ export interface paths {
         patch: operations["updateEducationCourseGroup"];
         trace?: never;
     };
+    "/api/internal/education/responsi": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEducationResponsies"];
+        put?: never;
+        post: operations["createEducationResponsi"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/education/responsi/{responsiId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEducationResponsi"];
+        put?: never;
+        post?: never;
+        delete: operations["deleteEducationResponsi"];
+        options?: never;
+        head?: never;
+        patch: operations["updateEducationResponsi"];
+        trace?: never;
+    };
+    "/api/internal/education/responsi/{responsiId}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEducationResponsiVersions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internal/elections": {
         parameters: {
             query?: never;
@@ -9268,11 +9316,87 @@ export interface components {
             code?: string | null;
             name: string;
         };
+        EducationCreateResponsiBody: {
+            academicPeriod: string;
+            /** @default  */
+            content: string;
+            course: string;
+            /** @enum {string} */
+            examType: "Mid Exam" | "Final Exam";
+            pic: string;
+            /**
+             * @default DRAFT
+             * @enum {string}
+             */
+            status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+            title: string;
+        };
+        EducationResponsiDetailResponse: {
+            data: {
+                academicPeriod: string;
+                content: string;
+                course: string;
+                courseId: string;
+                createdAt: string;
+                examType: string;
+                id: string;
+                lastUpdated: string;
+                pic: string;
+                semester?: number | null;
+                /** @enum {string} */
+                status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                title: string;
+            };
+        };
+        EducationResponsiListResponse: {
+            data: {
+                academicPeriod: string;
+                course: string;
+                courseId: string;
+                createdAt: string;
+                examType: string;
+                id: string;
+                lastUpdated: string;
+                pic: string;
+                /** @enum {string} */
+                status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                title: string;
+            }[];
+            pagination: {
+                limit: number;
+                page: number;
+                total: number;
+                totalPages: number;
+            };
+        };
+        EducationResponsiVersionListResponse: {
+            data: {
+                content: string;
+                createdAt: string;
+                createdBy: string | null;
+                id: string;
+                responsiId: string;
+                /** @enum {string} */
+                status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                version: string;
+            }[];
+        };
         EducationUpdateCourseGroupBody: {
             code?: string | null;
             name?: string;
             /** @enum {string} */
             status?: "ACTIVE" | "INACTIVE";
+        };
+        EducationUpdateResponsiBody: {
+            academicPeriod?: string;
+            content?: string;
+            course?: string;
+            /** @enum {string} */
+            examType?: "Mid Exam" | "Final Exam";
+            pic?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+            title?: string;
         };
         ElectionCandidateListResponse: {
             data: {
@@ -11410,6 +11534,228 @@ export interface operations {
             };
             /** @description Course with this name or code already exists */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listEducationResponsies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of Responsi summaries. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiListResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createEducationResponsi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EducationCreateResponsiBody"];
+            };
+        };
+        responses: {
+            /** @description Responsi created successfully. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiDetailResponse"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getEducationResponsi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Responsi details with Markdown content. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiDetailResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Responsi not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteEducationResponsi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Responsi deleted successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Responsi not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateEducationResponsi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EducationUpdateResponsiBody"];
+            };
+        };
+        responses: {
+            /** @description Responsi updated successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiDetailResponse"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Responsi not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listEducationResponsiVersions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Version history snapshots for Responsi. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiVersionListResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Responsi not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

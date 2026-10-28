@@ -616,6 +616,268 @@
             ],
             "type": "object"
          },
+         "EducationCreateResponsiBody": {
+            "properties": {
+               "academicPeriod": {
+                  "maxLength": 50,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "content": {
+                  "default": "",
+                  "type": "string"
+               },
+               "course": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "examType": {
+                  "enum": [
+                     "Mid Exam",
+                     "Final Exam"
+                  ],
+                  "type": "string"
+               },
+               "pic": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "default": "DRAFT",
+                  "enum": [
+                     "DRAFT",
+                     "UNDER_REVIEW",
+                     "PUBLISHED",
+                     "ARCHIVED"
+                  ],
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "title",
+               "course",
+               "academicPeriod",
+               "examType",
+               "pic"
+            ],
+            "type": "object"
+         },
+         "EducationResponsiDetailResponse": {
+            "properties": {
+               "data": {
+                  "properties": {
+                     "academicPeriod": {
+                        "type": "string"
+                     },
+                     "content": {
+                        "type": "string"
+                     },
+                     "course": {
+                        "type": "string"
+                     },
+                     "courseId": {
+                        "type": "string"
+                     },
+                     "createdAt": {
+                        "type": "string"
+                     },
+                     "examType": {
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "lastUpdated": {
+                        "type": "string"
+                     },
+                     "pic": {
+                        "type": "string"
+                     },
+                     "semester": {
+                        "nullable": true,
+                        "type": "number"
+                     },
+                     "status": {
+                        "enum": [
+                           "DRAFT",
+                           "UNDER_REVIEW",
+                           "PUBLISHED",
+                           "ARCHIVED"
+                        ],
+                        "type": "string"
+                     },
+                     "title": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "title",
+                     "course",
+                     "courseId",
+                     "academicPeriod",
+                     "examType",
+                     "pic",
+                     "status",
+                     "lastUpdated",
+                     "createdAt",
+                     "content"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
+         "EducationResponsiListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "academicPeriod": {
+                           "type": "string"
+                        },
+                        "course": {
+                           "type": "string"
+                        },
+                        "courseId": {
+                           "type": "string"
+                        },
+                        "createdAt": {
+                           "type": "string"
+                        },
+                        "examType": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "lastUpdated": {
+                           "type": "string"
+                        },
+                        "pic": {
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "DRAFT",
+                              "UNDER_REVIEW",
+                              "PUBLISHED",
+                              "ARCHIVED"
+                           ],
+                           "type": "string"
+                        },
+                        "title": {
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "title",
+                        "course",
+                        "courseId",
+                        "academicPeriod",
+                        "examType",
+                        "pic",
+                        "status",
+                        "lastUpdated",
+                        "createdAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "pagination": {
+                  "properties": {
+                     "limit": {
+                        "type": "number"
+                     },
+                     "page": {
+                        "type": "number"
+                     },
+                     "total": {
+                        "type": "number"
+                     },
+                     "totalPages": {
+                        "type": "number"
+                     }
+                  },
+                  "required": [
+                     "page",
+                     "limit",
+                     "total",
+                     "totalPages"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data",
+               "pagination"
+            ],
+            "type": "object"
+         },
+         "EducationResponsiVersionListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "content": {
+                           "type": "string"
+                        },
+                        "createdAt": {
+                           "type": "string"
+                        },
+                        "createdBy": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "responsiId": {
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "DRAFT",
+                              "UNDER_REVIEW",
+                              "PUBLISHED",
+                              "ARCHIVED"
+                           ],
+                           "type": "string"
+                        },
+                        "version": {
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "responsiId",
+                        "version",
+                        "content",
+                        "status",
+                        "createdBy",
+                        "createdAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
          "EducationUpdateCourseGroupBody": {
             "properties": {
                "code": {
@@ -633,6 +895,49 @@
                      "ACTIVE",
                      "INACTIVE"
                   ],
+                  "type": "string"
+               }
+            },
+            "type": "object"
+         },
+         "EducationUpdateResponsiBody": {
+            "properties": {
+               "academicPeriod": {
+                  "maxLength": 50,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "content": {
+                  "type": "string"
+               },
+               "course": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "examType": {
+                  "enum": [
+                     "Mid Exam",
+                     "Final Exam"
+                  ],
+                  "type": "string"
+               },
+               "pic": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "enum": [
+                     "DRAFT",
+                     "UNDER_REVIEW",
+                     "PUBLISHED",
+                     "ARCHIVED"
+                  ],
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
                   "type": "string"
                }
             },
@@ -9376,6 +9681,252 @@
                },
                "409": {
                   "description": "Course with this name or code already exists"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi": {
+         "get": {
+            "operationId": "listEducationResponsies",
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiListResponse"
+                        }
+                     }
+                  },
+                  "description": "List of Responsi summaries."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "post": {
+            "operationId": "createEducationResponsi",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationCreateResponsiBody"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiDetailResponse"
+                        }
+                     }
+                  },
+                  "description": "Responsi created successfully."
+               },
+               "400": {
+                  "description": "Validation error"
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi/{responsiId}": {
+         "delete": {
+            "operationId": "deleteEducationResponsi",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "message": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "message"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Responsi deleted successfully."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "get": {
+            "operationId": "getEducationResponsi",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiDetailResponse"
+                        }
+                     }
+                  },
+                  "description": "Responsi details with Markdown content."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "patch": {
+            "operationId": "updateEducationResponsi",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationUpdateResponsiBody"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiDetailResponse"
+                        }
+                     }
+                  },
+                  "description": "Responsi updated successfully."
+               },
+               "400": {
+                  "description": "Validation error"
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi/{responsiId}/versions": {
+         "get": {
+            "operationId": "listEducationResponsiVersions",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiVersionListResponse"
+                        }
+                     }
+                  },
+                  "description": "Version history snapshots for Responsi."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Responsi not found"
                }
             },
             "security": [
