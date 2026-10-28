@@ -240,6 +240,129 @@ async function main() {
       });
    }
 
+   
+   // ==========================================
+   // SEED RESPONSI (EDUCATION)
+   // ==========================================
+   console.log('Seeding Responsi summaries...');
+   const responsiList = [
+      {
+         id: 'dynamic-programming',
+         title: 'Dynamic Programming',
+         courseName: 'Algorithm & Programming',
+         academicPeriod: '2026/2027',
+         examType: 'Mid Exam',
+         pic: 'Joshua Alexander Larido',
+         status: 'PUBLISHED' as const,
+         content: '# Dynamic Programming\n\n## Ringkasan\nResponsi ini merangkum materi Dynamic Programming untuk Mid Exam 2026/2027.\n\n## Poin Utama\n1. Optimal substructure dan overlapping subproblems.\n2. Memoization (top-down) vs Tabulation (bottom-up).\n3. Contoh kasus: Knapsack, LCS, LIS.',
+      },
+      {
+         id: 'limits-and-continuity',
+         title: 'Limits and Continuity',
+         courseName: 'Calculus',
+         academicPeriod: '2026/2027',
+         examType: 'Mid Exam',
+         pic: 'Abyan Ikram Muhammad',
+         status: 'PUBLISHED' as const,
+         content: '# Limits and Continuity\n\n## Ringkasan\nMateri Kalkulus kalkulasi limit fungsi dan kekontinuan untuk Mid Exam 2026/2027.',
+      },
+      {
+         id: 'database-normalization',
+         title: 'Database Normalization',
+         courseName: 'Database Systems',
+         academicPeriod: '2026/2027',
+         examType: 'Mid Exam',
+         pic: 'Abyan Ikram Muhammad',
+         status: 'PUBLISHED' as const,
+         content: '# Database Normalization\n\n## Ringkasan\nKonsep bentuk normal 1NF, 2NF, 3NF, dan BCNF pada perancangan basis data relasional.',
+      },
+      {
+         id: 'computer-architecture-basics',
+         title: 'Computer Architecture Basics',
+         courseName: 'Computer Architecture',
+         academicPeriod: '2026/2027',
+         examType: 'Mid Exam',
+         pic: 'Joshua Alexander Larido',
+         status: 'UNDER_REVIEW' as const,
+         content: '# Computer Architecture Basics\n\n## Ringkasan\nArsitektur von Neumann, instruksi ISA, pipelining, dan hierarki memori.',
+      },
+      {
+         id: 'graph-algorithms',
+         title: 'Graph Algorithms',
+         courseName: 'Algorithm & Programming',
+         academicPeriod: '2026/2027',
+         examType: 'Final Exam',
+         pic: 'Rachel Vanesssa',
+         status: 'DRAFT' as const,
+         content: '# Graph Algorithms\n\n## Ringkasan\nTraversal BFS/DFS, shortest path Dijkstra/Bellman-Ford, dan Minimum Spanning Tree Prim/Kruskal.',
+      },
+      {
+         id: 'operating-systems',
+         title: 'Operating Systems',
+         courseName: 'Operating Systems',
+         academicPeriod: '2026/2027',
+         examType: 'Mid Exam',
+         pic: 'Abyan Ikram Muhammad',
+         status: 'DRAFT' as const,
+         content: '# Operating Systems\n\n## Ringkasan\nManajemen proses, threads, CPU scheduling algorithms, dan konkurensi (semaphores, mutex).',
+      },
+      {
+         id: 'network-fundamentals',
+         title: 'Network Fundamentals',
+         courseName: 'Computer Networks',
+         academicPeriod: '2026/2027',
+         examType: 'Final Exam',
+         pic: 'Christopher Sebastian',
+         status: 'ARCHIVED' as const,
+         content: '# Network Fundamentals\n\n## Ringkasan\nModel OSI 7-layer, TCP/IP stack, IP addressing & subnetting, routing protocols.',
+      },
+   ];
+
+   for (const item of responsiList) {
+      const course = await prisma.course.findUnique({
+         where: { name: item.courseName },
+      });
+      if (!course) continue;
+
+      const responsi = await prisma.responsi.upsert({
+         where: { id: item.id },
+         update: {
+            title: item.title,
+            courseId: course.id,
+            academicPeriod: item.academicPeriod,
+            examType: item.examType,
+            pic: item.pic,
+            status: item.status,
+            content: item.content,
+         },
+         create: {
+            id: item.id,
+            title: item.title,
+            courseId: course.id,
+            academicPeriod: item.academicPeriod,
+            examType: item.examType,
+            pic: item.pic,
+            status: item.status,
+            content: item.content,
+         },
+      });
+
+      if (item.status === 'PUBLISHED') {
+         await prisma.responsiVersion.upsert({
+            where: { id: `${item.id}-v1` },
+            update: {},
+            create: {
+               id: `${item.id}-v1`,
+               responsiId: responsi.id,
+               version: 'v1',
+               content: item.content,
+               status: 'PUBLISHED',
+               createdBy: item.pic,
+            },
+         });
+      }
+   }
+
    console.log('✅ Seeding berhasil diselesaikan!');
 }
 

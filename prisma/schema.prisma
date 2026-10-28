@@ -54,6 +54,13 @@ enum RoleStatus {
   INACTIVE
 }
 
+enum ResponsiStatus {
+  DRAFT
+  UNDER_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
 enum EventGroupStatus {
   DRAFT
   PUBLISHED
@@ -322,7 +329,42 @@ model Course {
   createdAt DateTime  @default(now()) @db.Timestamp(0)
   updatedAt DateTime? @updatedAt
 
+  responsies Responsi[]
+
   @@map("courses")
+}
+
+model Responsi {
+  id             String         @id @default(nanoid())
+  title          String         @db.VarChar(255)
+  courseId       String
+  academicPeriod String         @db.VarChar(50)
+  semester       Int?
+  examType       String         @db.VarChar(50)
+  status         ResponsiStatus @default(DRAFT)
+  pic            String         @db.VarChar(255)
+  content        String         @default("") @db.Text
+  createdAt      DateTime       @default(now()) @db.Timestamp(0)
+  updatedAt      DateTime?      @updatedAt
+
+  course   Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  versions ResponsiVersion[]
+
+  @@map("responsies")
+}
+
+model ResponsiVersion {
+  id         String         @id @default(nanoid())
+  responsiId String
+  version    String         @db.VarChar(20)
+  content    String         @db.Text
+  status     ResponsiStatus
+  createdBy  String?        @db.VarChar(255)
+  createdAt  DateTime       @default(now()) @db.Timestamp(0)
+
+  responsi Responsi @relation(fields: [responsiId], references: [id], onDelete: Cascade)
+
+  @@map("responsi_versions")
 }
 
 model MembershipPeriod {
