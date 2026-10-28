@@ -523,6 +523,45 @@
             ],
             "type": "object"
          },
+         "EducationCourseGroupListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "code": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "name": {
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "ACTIVE",
+                              "INACTIVE"
+                           ],
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "name",
+                        "code",
+                        "status"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
          "ElectionCandidateListResponse": {
             "properties": {
                "data": {
@@ -9106,6 +9145,34 @@
             "summary": "Check API health",
             "tags": [
                "Health"
+            ]
+         }
+      },
+      "/api/internal/education/course-groups": {
+         "get": {
+            "operationId": "listEducationCourseGroups",
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationCourseGroupListResponse"
+                        }
+                     }
+                  },
+                  "description": "Course groups available to Education."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
             ]
          }
       },

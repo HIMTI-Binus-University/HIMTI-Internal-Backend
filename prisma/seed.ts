@@ -113,6 +113,7 @@ async function main() {
       'correct_event_attendance',
       'manage_elections',
       'manage_certificates',
+      'manage_education',
    ];
 
    const permissions: Record<string, { id: string }> = {};
@@ -218,6 +219,26 @@ async function main() {
          },
       });
    });
+
+   // ==========================================
+   // SEED COURSES (EDUCATION)
+   // ==========================================
+   console.log('Seeding Courses...');
+   const courses = [
+      { name: 'Algorithm & Programming', code: 'CS-101' },
+      { name: 'Calculus', code: 'MA-101' },
+      { name: 'Database Systems', code: 'CS-204' },
+      { name: 'Computer Architecture', code: 'CS-203' },
+      { name: 'Operating Systems', code: 'CS-301' },
+      { name: 'Computer Networks', code: 'CS-302' },
+   ];
+   for (const course of courses) {
+      await prisma.course.upsert({
+         where: { name: course.name },
+         update: { code: course.code },
+         create: course,
+      });
+   }
 
    console.log('✅ Seeding berhasil diselesaikan!');
 }

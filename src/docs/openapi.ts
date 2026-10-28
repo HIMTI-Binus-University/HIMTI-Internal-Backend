@@ -21,6 +21,7 @@ import {
    canonicalValidationErrorResponseSchema,
 } from '@/docs/commonSchemas.js';
 import { registerElectionDocs } from '@/features/elections/electionDocs.js';
+import { registerEducationDocs } from '@/features/education/educationDocs.js';
 
 const registry = new OpenAPIRegistry();
 
@@ -50,6 +51,7 @@ registerEventPaymentDocs(registry);
 registerEventTicketDocs(registry);
 registerMembershipDocs(registry);
 registerElectionDocs(registry);
+registerEducationDocs(registry);
 
 export const generateOpenApiDocument = () => {
    const generator = new OpenApiGeneratorV3(registry.definitions);

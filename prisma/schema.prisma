@@ -314,6 +314,17 @@ model User {
   @@map("users")
 }
 
+model Course {
+  id        String    @id @default(nanoid())
+  name      String    @unique @db.VarChar(255)
+  code      String?   @unique @db.VarChar(50)
+  status    Status    @default(ACTIVE)
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+
+  @@map("courses")
+}
+
 model MembershipPeriod {
   id               String  @id @db.VarChar(100)
   label            String  @db.VarChar(100)
