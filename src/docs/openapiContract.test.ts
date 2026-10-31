@@ -12,10 +12,9 @@ const artifactPath = fileURLToPath(
 );
 
 describe('OpenAPI contract', () => {
-   it('documents protected Education video operations and session selection', () => {
+   it('documents protected Education video operations', () => {
       const paths = generateOpenApiDocument().paths;
       const operations = [
-         paths['/api/internal/education/sessions']?.get,
          paths['/api/internal/education/videos']?.get,
          paths['/api/internal/education/videos']?.post,
          paths['/api/internal/education/videos/{videoId}']?.get,

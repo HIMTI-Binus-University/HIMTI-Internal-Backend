@@ -891,65 +891,6 @@
             ],
             "type": "object"
          },
-         "EducationSessionListResponse": {
-            "properties": {
-               "data": {
-                  "items": {
-                     "properties": {
-                        "course": {
-                           "properties": {
-                              "id": {
-                                 "type": "string"
-                              },
-                              "name": {
-                                 "type": "string"
-                              }
-                           },
-                           "required": [
-                              "id",
-                              "name"
-                           ],
-                           "type": "object"
-                        },
-                        "courseId": {
-                           "type": "string"
-                        },
-                        "id": {
-                           "type": "string"
-                        },
-                        "startsAt": {
-                           "nullable": true,
-                           "type": "string"
-                        },
-                        "title": {
-                           "type": "string"
-                        },
-                        "type": {
-                           "enum": [
-                              "STUDY_CLUB",
-                              "RESPONSI"
-                           ],
-                           "type": "string"
-                        }
-                     },
-                     "required": [
-                        "id",
-                        "title",
-                        "type",
-                        "courseId",
-                        "course",
-                        "startsAt"
-                     ],
-                     "type": "object"
-                  },
-                  "type": "array"
-               }
-            },
-            "required": [
-               "data"
-            ],
-            "type": "object"
-         },
          "EducationUpdateCourseGroupBody": {
             "properties": {
                "code": {
@@ -10300,34 +10241,6 @@
             ]
          }
       },
-      "/api/internal/education/sessions": {
-         "get": {
-            "operationId": "listEducationSessions",
-            "responses": {
-               "200": {
-                  "content": {
-                     "application/json": {
-                        "schema": {
-                           "$ref": "#/components/schemas/EducationSessionListResponse"
-                        }
-                     }
-                  },
-                  "description": "Education recording sessions"
-               },
-               "403": {
-                  "description": "Authentication and manage_education permission required"
-               }
-            },
-            "security": [
-               {
-                  "sessionCookie": []
-               }
-            ],
-            "tags": [
-               "Internal Education"
-            ]
-         }
-      },
       "/api/internal/education/videos": {
          "get": {
             "operationId": "listEducationVideos",
@@ -10397,6 +10310,9 @@
                },
                "403": {
                   "description": "Authentication and manage_education permission required"
+               },
+               "503": {
+                  "description": "Session integration is not available"
                }
             },
             "security": [
@@ -10439,6 +10355,9 @@
                },
                "404": {
                   "description": "Session not found"
+               },
+               "503": {
+                  "description": "Session integration is not available"
                }
             },
             "security": [
@@ -10480,6 +10399,9 @@
                },
                "409": {
                   "description": "Session no longer available"
+               },
+               "503": {
+                  "description": "Session integration is not available"
                }
             },
             "security": [
@@ -10526,6 +10448,9 @@
                },
                "409": {
                   "description": "Session no longer available"
+               },
+               "503": {
+                  "description": "Session integration is not available"
                }
             },
             "security": [
@@ -10582,6 +10507,9 @@
                },
                "409": {
                   "description": "Session no longer available"
+               },
+               "503": {
+                  "description": "Session integration is not available"
                }
             },
             "security": [

@@ -66,11 +66,6 @@ enum EducationVideoStatus {
   PUBLISHED
 }
 
-enum EducationSessionType {
-  STUDY_CLUB
-  RESPONSI
-}
-
 enum EventGroupStatus {
   DRAFT
   PUBLISHED
@@ -341,7 +336,6 @@ model Course {
   updatedAt DateTime? @updatedAt
 
   responsies Responsi[]
-  educationSessions EducationSession[]
 
   @@map("courses")
 }
@@ -365,20 +359,6 @@ model Responsi {
   @@map("responsies")
 }
 
-// Temporary shared session model until the Education sessions feature is integrated.
-model EducationSession {
-  id        String               @id @default(nanoid())
-  title     String               @db.VarChar(255)
-  type      EducationSessionType
-  courseId  String
-  startsAt  DateTime?            @db.Timestamp(3)
-  course    Course               @relation(fields: [courseId], references: [id], onDelete: Restrict)
-  videos    EducationVideo[]
-
-  @@index([courseId])
-  @@map("education_sessions")
-}
-
 model EducationVideo {
   id             String               @id @default(nanoid())
   title          String               @db.VarChar(255)
@@ -388,8 +368,6 @@ model EducationVideo {
   status         EducationVideoStatus @default(DRAFT)
   createdAt      DateTime             @default(now()) @db.Timestamp(3)
   updatedAt      DateTime             @default(now()) @updatedAt @db.Timestamp(3)
-
-  session EducationSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
 
   @@index([sessionId])
   @@index([status, updatedAt])

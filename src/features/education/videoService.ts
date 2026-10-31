@@ -30,11 +30,11 @@ export function createVideoService(repo: typeof videoRepository = videoRepositor
       }
    };
    return {
-      listSessions: () => repo.listSessions(),
       async list(query: VideoListQuery) {
+         const sessionIds = query.courseId ? await repo.findSessionIdsByCourse(query.courseId) : undefined;
          const where: Prisma.EducationVideoWhereInput = {
             ...(query.search ? { title: { contains: query.search, mode: 'insensitive' } } : {}),
-            ...(query.courseId ? { session: { is: { courseId: query.courseId } } } : {}),
+            ...(sessionIds ? { sessionId: { in: sessionIds } } : {}),
             ...(query.status ? { status: query.status } : {}),
          };
          const [data, total] = await Promise.all([

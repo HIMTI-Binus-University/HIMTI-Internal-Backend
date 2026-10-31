@@ -2,10 +2,6 @@ import type { Request, Response } from 'express';
 import { CreateVideoSchema, UpdateVideoSchema, VideoIdParamsSchema, VideoListQuerySchema } from './videoSchema.js';
 import { videoService } from './videoService.js';
 
-export const listEducationSessions = async (_req: Request, res: Response) => {
-   res.json({ data: await videoService.listSessions() });
-};
-
 export const listVideos = async (req: Request, res: Response) => {
    const query = VideoListQuerySchema.parse(req.query);
    res.json(await videoService.list(query));

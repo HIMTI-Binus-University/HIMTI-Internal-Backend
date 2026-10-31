@@ -62,7 +62,6 @@ export const EducationSessionSchema = z.object({
    course: z.object({ id: z.string(), name: z.string() }),
    startsAt: z.string().nullable(),
 });
-export const SessionListResponseSchema = z.object({ data: z.array(EducationSessionSchema) });
 export const VideoResponseSchema = z.object({
    id: z.string(),
    title: z.string(),
