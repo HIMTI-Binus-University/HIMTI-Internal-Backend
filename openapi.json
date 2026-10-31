@@ -891,6 +891,65 @@
             ],
             "type": "object"
          },
+         "EducationSessionListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "course": {
+                           "properties": {
+                              "id": {
+                                 "type": "string"
+                              },
+                              "name": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "name"
+                           ],
+                           "type": "object"
+                        },
+                        "courseId": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "startsAt": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "title": {
+                           "type": "string"
+                        },
+                        "type": {
+                           "enum": [
+                              "STUDY_CLUB",
+                              "RESPONSI"
+                           ],
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "title",
+                        "type",
+                        "courseId",
+                        "course",
+                        "startsAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
          "EducationUpdateCourseGroupBody": {
             "properties": {
                "code": {
@@ -956,6 +1015,290 @@
                "title": {
                   "maxLength": 255,
                   "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "type": "object"
+         },
+         "EducationVideoCreate": {
+            "additionalProperties": false,
+            "properties": {
+               "sessionId": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "default": "DRAFT",
+                  "enum": [
+                     "DRAFT"
+                  ],
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "youtubeUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "title",
+               "sessionId",
+               "youtubeUrl"
+            ],
+            "type": "object"
+         },
+         "EducationVideoListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "createdAt": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "session": {
+                           "properties": {
+                              "course": {
+                                 "properties": {
+                                    "id": {
+                                       "type": "string"
+                                    },
+                                    "name": {
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "id",
+                                    "name"
+                                 ],
+                                 "type": "object"
+                              },
+                              "courseId": {
+                                 "type": "string"
+                              },
+                              "id": {
+                                 "type": "string"
+                              },
+                              "startsAt": {
+                                 "nullable": true,
+                                 "type": "string"
+                              },
+                              "title": {
+                                 "type": "string"
+                              },
+                              "type": {
+                                 "enum": [
+                                    "STUDY_CLUB",
+                                    "RESPONSI"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "title",
+                              "type",
+                              "courseId",
+                              "course",
+                              "startsAt"
+                           ],
+                           "type": "object"
+                        },
+                        "sessionId": {
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "DRAFT",
+                              "PUBLISHED"
+                           ],
+                           "type": "string"
+                        },
+                        "title": {
+                           "type": "string"
+                        },
+                        "updatedAt": {
+                           "type": "string"
+                        },
+                        "youtubeUrl": {
+                           "type": "string"
+                        },
+                        "youtubeVideoId": {
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "title",
+                        "sessionId",
+                        "session",
+                        "youtubeUrl",
+                        "youtubeVideoId",
+                        "status",
+                        "createdAt",
+                        "updatedAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "pagination": {
+                  "properties": {
+                     "limit": {
+                        "type": "number"
+                     },
+                     "page": {
+                        "type": "number"
+                     },
+                     "total": {
+                        "type": "number"
+                     },
+                     "totalPages": {
+                        "type": "number"
+                     }
+                  },
+                  "required": [
+                     "page",
+                     "limit",
+                     "total",
+                     "totalPages"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data",
+               "pagination"
+            ],
+            "type": "object"
+         },
+         "EducationVideoSingleResponse": {
+            "properties": {
+               "data": {
+                  "properties": {
+                     "createdAt": {
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "session": {
+                        "properties": {
+                           "course": {
+                              "properties": {
+                                 "id": {
+                                    "type": "string"
+                                 },
+                                 "name": {
+                                    "type": "string"
+                                 }
+                              },
+                              "required": [
+                                 "id",
+                                 "name"
+                              ],
+                              "type": "object"
+                           },
+                           "courseId": {
+                              "type": "string"
+                           },
+                           "id": {
+                              "type": "string"
+                           },
+                           "startsAt": {
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "title": {
+                              "type": "string"
+                           },
+                           "type": {
+                              "enum": [
+                                 "STUDY_CLUB",
+                                 "RESPONSI"
+                              ],
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "id",
+                           "title",
+                           "type",
+                           "courseId",
+                           "course",
+                           "startsAt"
+                        ],
+                        "type": "object"
+                     },
+                     "sessionId": {
+                        "type": "string"
+                     },
+                     "status": {
+                        "enum": [
+                           "DRAFT",
+                           "PUBLISHED"
+                        ],
+                        "type": "string"
+                     },
+                     "title": {
+                        "type": "string"
+                     },
+                     "updatedAt": {
+                        "type": "string"
+                     },
+                     "youtubeUrl": {
+                        "type": "string"
+                     },
+                     "youtubeVideoId": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "title",
+                     "sessionId",
+                     "session",
+                     "youtubeUrl",
+                     "youtubeVideoId",
+                     "status",
+                     "createdAt",
+                     "updatedAt"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
+         "EducationVideoUpdate": {
+            "additionalProperties": false,
+            "properties": {
+               "sessionId": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "enum": [
+                     "DRAFT",
+                     "PUBLISHED"
+                  ],
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "youtubeUrl": {
+                  "maxLength": 2048,
                   "type": "string"
                }
             },
@@ -9945,6 +10288,300 @@
                },
                "404": {
                   "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/sessions": {
+         "get": {
+            "operationId": "listEducationSessions",
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationSessionListResponse"
+                        }
+                     }
+                  },
+                  "description": "Education recording sessions"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/videos": {
+         "get": {
+            "operationId": "listEducationVideos",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 255,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "courseId",
+                  "required": false,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "status",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "DRAFT",
+                        "PUBLISHED"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 50,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationVideoListResponse"
+                        }
+                     }
+                  },
+                  "description": "Paginated videos"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "post": {
+            "operationId": "createEducationVideo",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationVideoCreate"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationVideoSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Created draft video"
+               },
+               "400": {
+                  "description": "Invalid video"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               },
+               "404": {
+                  "description": "Session not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/videos/{videoId}": {
+         "delete": {
+            "operationId": "deleteEducationVideo",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "videoId",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "204": {
+                  "description": "Video deleted"
+               },
+               "400": {
+                  "description": "Invalid video"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               },
+               "404": {
+                  "description": "Video or session not found"
+               },
+               "409": {
+                  "description": "Session no longer available"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "get": {
+            "operationId": "getEducationVideo",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "videoId",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationVideoSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Video"
+               },
+               "400": {
+                  "description": "Invalid video"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               },
+               "404": {
+                  "description": "Video or session not found"
+               },
+               "409": {
+                  "description": "Session no longer available"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "patch": {
+            "operationId": "updateEducationVideo",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "videoId",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationVideoUpdate"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationVideoSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Video"
+               },
+               "400": {
+                  "description": "Invalid video"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               },
+               "404": {
+                  "description": "Video or session not found"
+               },
+               "409": {
+                  "description": "Session no longer available"
                }
             },
             "security": [

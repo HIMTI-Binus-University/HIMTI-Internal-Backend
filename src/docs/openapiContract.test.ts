@@ -12,6 +12,22 @@ const artifactPath = fileURLToPath(
 );
 
 describe('OpenAPI contract', () => {
+   it('documents protected Education video operations and session selection', () => {
+      const paths = generateOpenApiDocument().paths;
+      const operations = [
+         paths['/api/internal/education/sessions']?.get,
+         paths['/api/internal/education/videos']?.get,
+         paths['/api/internal/education/videos']?.post,
+         paths['/api/internal/education/videos/{videoId}']?.get,
+         paths['/api/internal/education/videos/{videoId}']?.patch,
+         paths['/api/internal/education/videos/{videoId}']?.delete,
+      ];
+      for (const operation of operations) {
+         assert.ok(operation);
+         assert.deepEqual(operation.security, [{ sessionCookie: [] }]);
+      }
+   });
+
    it('serializes deterministically and matches the committed artifact', () => {
       assert.equal(serializeOpenApiDocument(), serializeOpenApiDocument());
       assert.equal(
