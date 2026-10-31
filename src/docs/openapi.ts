@@ -22,6 +22,7 @@ import {
 } from '@/docs/commonSchemas.js';
 import { registerElectionDocs } from '@/features/elections/electionDocs.js';
 import { registerEducationDocs } from '@/features/education/educationDocs.js';
+import { registerEducationVideoDocs } from '@/features/education/videoDocs.js';
 
 const registry = new OpenAPIRegistry();
 
@@ -52,6 +53,7 @@ registerEventTicketDocs(registry);
 registerMembershipDocs(registry);
 registerElectionDocs(registry);
 registerEducationDocs(registry);
+registerEducationVideoDocs(registry);
 
 export const generateOpenApiDocument = () => {
    const generator = new OpenApiGeneratorV3(registry.definitions);
