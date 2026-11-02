@@ -1008,6 +1008,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internal/education/study-clubs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Study Club and Responsi sessions */
+        get: operations["listStudyClubs"];
+        put?: never;
+        post: operations["createStudyClub"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/education/study-clubs/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStudyClub"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateStudyClub"];
+        trace?: never;
+    };
     "/api/internal/elections": {
         parameters: {
             query?: never;
@@ -9221,6 +9254,21 @@ export interface components {
         CreateRoleRequest: {
             roleName: string;
         };
+        CreateStudyClubBody: {
+            capacity: number | null;
+            courseId: string;
+            description: string;
+            /** Format: date-time */
+            endsAt: string;
+            location: string;
+            meetingUrl: string;
+            registrationUrl: string;
+            /** Format: date-time */
+            startsAt: string;
+            title: string;
+            /** @enum {string} */
+            type: "Study Club" | "Responsi";
+        };
         CreateUrlRequest: {
             /** Format: date-time */
             expiresAt?: string | null;
@@ -9332,6 +9380,11 @@ export interface components {
              * @enum {string}
              */
             status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+            /**
+             * @default Responsi
+             * @enum {string}
+             */
+            summaryType: "Responsi" | "Study Club";
             title: string;
         };
         EducationResponsiDetailResponse: {
@@ -9348,6 +9401,8 @@ export interface components {
                 semester?: number | null;
                 /** @enum {string} */
                 status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                /** @enum {string} */
+                summaryType: "Responsi" | "Study Club";
                 title: string;
             };
         };
@@ -9363,6 +9418,8 @@ export interface components {
                 pic: string;
                 /** @enum {string} */
                 status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                /** @enum {string} */
+                summaryType: "Responsi" | "Study Club";
                 title: string;
             }[];
             pagination: {
@@ -9400,6 +9457,8 @@ export interface components {
             pic?: string;
             /** @enum {string} */
             status?: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+            /** @enum {string} */
+            summaryType?: "Responsi" | "Study Club";
             title?: string;
         };
         ElectionCandidateListResponse: {
@@ -10440,6 +10499,56 @@ export interface components {
             roleId: string;
             userId: string;
         };
+        StudyClubListResponse: {
+            data: {
+                capacity: number | null;
+                course: string;
+                courseId: string;
+                createdAt: string;
+                description: string;
+                /** Format: date-time */
+                endsAt: string;
+                id: string;
+                isDemo: boolean;
+                location: string;
+                meetingUrl: string;
+                registrationUrl: string;
+                /** Format: date-time */
+                startsAt: string;
+                title: string;
+                /** @enum {string} */
+                type: "Study Club" | "Responsi";
+                updatedAt: string;
+            }[];
+            pagination: {
+                limit: number;
+                page: number;
+                total: number;
+                totalPages: number;
+            };
+        };
+        StudyClubResponse: {
+            data: {
+                capacity: number | null;
+                course: string;
+                courseId: string;
+                createdAt: string;
+                description: string;
+                /** Format: date-time */
+                endsAt: string;
+                id: string;
+                isDemo: boolean;
+                location: string;
+                meetingUrl: string;
+                registrationUrl: string;
+                /** Format: date-time */
+                startsAt: string;
+                title: string;
+                /** @enum {string} */
+                type: "Study Club" | "Responsi";
+                updatedAt: string;
+            };
+        };
         UpdateMembershipPeriodRequest: {
             label: string;
         };
@@ -10478,6 +10587,21 @@ export interface components {
             roleName?: string;
             /** @enum {string} */
             status?: "ACTIVE" | "INACTIVE";
+        };
+        UpdateStudyClubBody: {
+            capacity?: number | null;
+            courseId?: string;
+            description?: string;
+            /** Format: date-time */
+            endsAt?: string;
+            location?: string;
+            meetingUrl?: string;
+            registrationUrl?: string;
+            /** Format: date-time */
+            startsAt?: string;
+            title?: string;
+            /** @enum {string} */
+            type?: "Study Club" | "Responsi";
         };
         UpdateUrlRequest: {
             /** Format: date-time */
@@ -11547,14 +11671,23 @@ export interface operations {
     };
     listEducationResponsies: {
         parameters: {
-            query?: never;
+            query?: {
+                summaryType?: "Responsi" | "Study Club";
+                search?: string;
+                course?: string;
+                academicPeriod?: string;
+                examType?: string;
+                status?: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                page?: number;
+                limit?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description List of Responsi summaries. */
+            /** @description List of Responsi and Study Club summaries, filtered before pagination. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -11759,6 +11892,217 @@ export interface operations {
                 content?: never;
             };
             /** @description Responsi not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listStudyClubs: {
+        parameters: {
+            query?: {
+                search?: string;
+                course?: string;
+                type?: "Study Club" | "Responsi";
+                schedule?: "upcoming" | "past" | "all";
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Filtered, paginated sessions. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyClubListResponse"];
+                };
+            };
+            /** @description Invalid input, schedule, course or links. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session or course group not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createStudyClub: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStudyClubBody"];
+            };
+        };
+        responses: {
+            /** @description Session created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyClubResponse"];
+                };
+            };
+            /** @description Invalid input, schedule, course or links. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session or course group not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getStudyClub: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session details. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyClubResponse"];
+                };
+            };
+            /** @description Invalid input, schedule, course or links. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session or course group not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateStudyClub: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStudyClubBody"];
+            };
+        };
+        responses: {
+            /** @description Session updated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyClubResponse"];
+                };
+            };
+            /** @description Invalid input, schedule, course or links. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session or course group not found. */
             404: {
                 headers: {
                     [name: string]: unknown;

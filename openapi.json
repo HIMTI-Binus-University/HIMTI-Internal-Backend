@@ -213,6 +213,71 @@
             ],
             "type": "object"
          },
+         "CreateStudyClubBody": {
+            "additionalProperties": false,
+            "properties": {
+               "capacity": {
+                  "maximum": 2147483647,
+                  "minimum": 1,
+                  "nullable": true,
+                  "type": "integer"
+               },
+               "courseId": {
+                  "maxLength": 100,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "description": {
+                  "maxLength": 5000,
+                  "type": "string"
+               },
+               "endsAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "location": {
+                  "maxLength": 255,
+                  "type": "string"
+               },
+               "meetingUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               },
+               "registrationUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               },
+               "startsAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "type": {
+                  "enum": [
+                     "Study Club",
+                     "Responsi"
+                  ],
+                  "type": "string"
+               }
+            },
+            "required": [
+               "title",
+               "type",
+               "courseId",
+               "description",
+               "startsAt",
+               "endsAt",
+               "location",
+               "meetingUrl",
+               "registrationUrl",
+               "capacity"
+            ],
+            "type": "object"
+         },
          "CreateUrlRequest": {
             "properties": {
                "expiresAt": {
@@ -666,6 +731,14 @@
                   ],
                   "type": "string"
                },
+               "summaryType": {
+                  "default": "Responsi",
+                  "enum": [
+                     "Responsi",
+                     "Study Club"
+                  ],
+                  "type": "string"
+               },
                "title": {
                   "maxLength": 255,
                   "minLength": 1,
@@ -725,11 +798,19 @@
                         ],
                         "type": "string"
                      },
+                     "summaryType": {
+                        "enum": [
+                           "Responsi",
+                           "Study Club"
+                        ],
+                        "type": "string"
+                     },
                      "title": {
                         "type": "string"
                      }
                   },
                   "required": [
+                     "summaryType",
                      "id",
                      "title",
                      "course",
@@ -788,11 +869,19 @@
                            ],
                            "type": "string"
                         },
+                        "summaryType": {
+                           "enum": [
+                              "Responsi",
+                              "Study Club"
+                           ],
+                           "type": "string"
+                        },
                         "title": {
                            "type": "string"
                         }
                      },
                      "required": [
+                        "summaryType",
                         "id",
                         "title",
                         "course",
@@ -950,6 +1039,13 @@
                      "UNDER_REVIEW",
                      "PUBLISHED",
                      "ARCHIVED"
+                  ],
+                  "type": "string"
+               },
+               "summaryType": {
+                  "enum": [
+                     "Responsi",
+                     "Study Club"
                   ],
                   "type": "string"
                },
@@ -5153,6 +5249,219 @@
             ],
             "type": "object"
          },
+         "StudyClubListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "additionalProperties": false,
+                     "properties": {
+                        "capacity": {
+                           "maximum": 2147483647,
+                           "minimum": 1,
+                           "nullable": true,
+                           "type": "integer"
+                        },
+                        "course": {
+                           "type": "string"
+                        },
+                        "courseId": {
+                           "maxLength": 100,
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "createdAt": {
+                           "type": "string"
+                        },
+                        "description": {
+                           "maxLength": 5000,
+                           "type": "string"
+                        },
+                        "endsAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "isDemo": {
+                           "type": "boolean"
+                        },
+                        "location": {
+                           "maxLength": 255,
+                           "type": "string"
+                        },
+                        "meetingUrl": {
+                           "maxLength": 2048,
+                           "type": "string"
+                        },
+                        "registrationUrl": {
+                           "maxLength": 2048,
+                           "type": "string"
+                        },
+                        "startsAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "title": {
+                           "maxLength": 255,
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "type": {
+                           "enum": [
+                              "Study Club",
+                              "Responsi"
+                           ],
+                           "type": "string"
+                        },
+                        "updatedAt": {
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "title",
+                        "type",
+                        "courseId",
+                        "description",
+                        "startsAt",
+                        "endsAt",
+                        "location",
+                        "meetingUrl",
+                        "registrationUrl",
+                        "capacity",
+                        "id",
+                        "course",
+                        "isDemo",
+                        "createdAt",
+                        "updatedAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "pagination": {
+                  "properties": {
+                     "limit": {
+                        "type": "number"
+                     },
+                     "page": {
+                        "type": "number"
+                     },
+                     "total": {
+                        "type": "number"
+                     },
+                     "totalPages": {
+                        "type": "number"
+                     }
+                  },
+                  "required": [
+                     "page",
+                     "limit",
+                     "total",
+                     "totalPages"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data",
+               "pagination"
+            ],
+            "type": "object"
+         },
+         "StudyClubResponse": {
+            "properties": {
+               "data": {
+                  "additionalProperties": false,
+                  "properties": {
+                     "capacity": {
+                        "maximum": 2147483647,
+                        "minimum": 1,
+                        "nullable": true,
+                        "type": "integer"
+                     },
+                     "course": {
+                        "type": "string"
+                     },
+                     "courseId": {
+                        "maxLength": 100,
+                        "minLength": 1,
+                        "type": "string"
+                     },
+                     "createdAt": {
+                        "type": "string"
+                     },
+                     "description": {
+                        "maxLength": 5000,
+                        "type": "string"
+                     },
+                     "endsAt": {
+                        "format": "date-time",
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "isDemo": {
+                        "type": "boolean"
+                     },
+                     "location": {
+                        "maxLength": 255,
+                        "type": "string"
+                     },
+                     "meetingUrl": {
+                        "maxLength": 2048,
+                        "type": "string"
+                     },
+                     "registrationUrl": {
+                        "maxLength": 2048,
+                        "type": "string"
+                     },
+                     "startsAt": {
+                        "format": "date-time",
+                        "type": "string"
+                     },
+                     "title": {
+                        "maxLength": 255,
+                        "minLength": 1,
+                        "type": "string"
+                     },
+                     "type": {
+                        "enum": [
+                           "Study Club",
+                           "Responsi"
+                        ],
+                        "type": "string"
+                     },
+                     "updatedAt": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "title",
+                     "type",
+                     "courseId",
+                     "description",
+                     "startsAt",
+                     "endsAt",
+                     "location",
+                     "meetingUrl",
+                     "registrationUrl",
+                     "capacity",
+                     "id",
+                     "course",
+                     "isDemo",
+                     "createdAt",
+                     "updatedAt"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
          "UpdateMembershipPeriodRequest": {
             "additionalProperties": false,
             "properties": {
@@ -5324,6 +5633,59 @@
                   "enum": [
                      "ACTIVE",
                      "INACTIVE"
+                  ],
+                  "type": "string"
+               }
+            },
+            "type": "object"
+         },
+         "UpdateStudyClubBody": {
+            "additionalProperties": false,
+            "properties": {
+               "capacity": {
+                  "maximum": 2147483647,
+                  "minimum": 1,
+                  "nullable": true,
+                  "type": "integer"
+               },
+               "courseId": {
+                  "maxLength": 100,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "description": {
+                  "maxLength": 5000,
+                  "type": "string"
+               },
+               "endsAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "location": {
+                  "maxLength": 255,
+                  "type": "string"
+               },
+               "meetingUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               },
+               "registrationUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               },
+               "startsAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "type": {
+                  "enum": [
+                     "Study Club",
+                     "Responsi"
                   ],
                   "type": "string"
                }
@@ -9714,6 +10076,87 @@
       "/api/internal/education/responsi": {
          "get": {
             "operationId": "listEducationResponsies",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "summaryType",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "Responsi",
+                        "Study Club"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "course",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "academicPeriod",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "examType",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "status",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "DRAFT",
+                        "UNDER_REVIEW",
+                        "PUBLISHED",
+                        "ARCHIVED"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 50,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               }
+            ],
             "responses": {
                "200": {
                   "content": {
@@ -9723,7 +10166,7 @@
                         }
                      }
                   },
-                  "description": "List of Responsi summaries."
+                  "description": "List of Responsi and Study Club summaries, filtered before pagination."
                },
                "403": {
                   "description": "manage_education permission required"
@@ -9945,6 +10388,263 @@
                },
                "404": {
                   "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/study-clubs": {
+         "get": {
+            "operationId": "listStudyClubs",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 255,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "course",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 255,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "type",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "Study Club",
+                        "Responsi"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "schedule",
+                  "required": false,
+                  "schema": {
+                     "default": "upcoming",
+                     "enum": [
+                        "upcoming",
+                        "past",
+                        "all"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "maximum": 1000000,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 6,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/StudyClubListResponse"
+                        }
+                     }
+                  },
+                  "description": "Filtered, paginated sessions."
+               },
+               "400": {
+                  "description": "Invalid input, schedule, course or links."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_education permission required."
+               },
+               "404": {
+                  "description": "Session or course group not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "List Study Club and Responsi sessions",
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "post": {
+            "operationId": "createStudyClub",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/CreateStudyClubBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/StudyClubResponse"
+                        }
+                     }
+                  },
+                  "description": "Session created."
+               },
+               "400": {
+                  "description": "Invalid input, schedule, course or links."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_education permission required."
+               },
+               "404": {
+                  "description": "Session or course group not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/study-clubs/{sessionId}": {
+         "get": {
+            "operationId": "getStudyClub",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "sessionId",
+                  "required": true,
+                  "schema": {
+                     "maxLength": 100,
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/StudyClubResponse"
+                        }
+                     }
+                  },
+                  "description": "Session details."
+               },
+               "400": {
+                  "description": "Invalid input, schedule, course or links."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_education permission required."
+               },
+               "404": {
+                  "description": "Session or course group not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "patch": {
+            "operationId": "updateStudyClub",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "sessionId",
+                  "required": true,
+                  "schema": {
+                     "maxLength": 100,
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/UpdateStudyClubBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/StudyClubResponse"
+                        }
+                     }
+                  },
+                  "description": "Session updated."
+               },
+               "400": {
+                  "description": "Invalid input, schedule, course or links."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_education permission required."
+               },
+               "404": {
+                  "description": "Session or course group not found."
                }
             },
             "security": [

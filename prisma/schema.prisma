@@ -331,6 +331,7 @@ model Course {
   updatedAt DateTime? @updatedAt
 
   responsies Responsi[]
+  studyClubSessions StudyClubSession[]
 
   @@map("courses")
 }
@@ -338,6 +339,7 @@ model Course {
 model Responsi {
   id             String         @id @default(nanoid())
   title          String         @db.VarChar(255)
+  summaryType    String         @default("Responsi") @db.VarChar(20)
   courseId       String
   academicPeriod String         @db.VarChar(50)
   semester       Int?
@@ -366,6 +368,31 @@ model ResponsiVersion {
   responsi Responsi @relation(fields: [responsiId], references: [id], onDelete: Cascade)
 
   @@map("responsi_versions")
+}
+
+model StudyClubSession {
+  id              String   @id @default(nanoid())
+  title           String   @db.VarChar(255)
+  type            String   @db.VarChar(20)
+  courseId        String
+  description     String   @default("") @db.Text
+  startsAt        DateTime @db.Timestamptz(3)
+  endsAt          DateTime @db.Timestamptz(3)
+  location        String   @default("") @db.VarChar(255)
+  meetingUrl      String   @default("") @db.VarChar(2048)
+  registrationUrl String   @default("") @db.VarChar(2048)
+  capacity        Int?
+  isDemo          Boolean  @default(false)
+  createdBy       String   @db.VarChar(100)
+  updatedBy       String   @db.VarChar(100)
+  createdAt       DateTime @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
+
+  @@index([courseId, startsAt])
+  @@index([endsAt, startsAt])
+  @@map("study_club_sessions")
 }
 
 model MembershipPeriod {
