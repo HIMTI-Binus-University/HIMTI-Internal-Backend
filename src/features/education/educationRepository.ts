@@ -138,6 +138,7 @@ class EducationRepository {
 
    async createResponsi(data: {
       title: string;
+      summaryType: string;
       courseId: string;
       academicPeriod: string;
       examType: string;
@@ -163,6 +164,7 @@ class EducationRepository {
       id: string,
       data: {
          title?: string;
+         summaryType?: string;
          courseId?: string;
          academicPeriod?: string;
          examType?: string;

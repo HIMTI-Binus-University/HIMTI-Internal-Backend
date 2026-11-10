@@ -25,9 +25,16 @@ router.use(
    requirePermission('manage_education'),
 );
 
-// Education videos
-router.route('/internal/education/videos').get(listVideos).post(createVideo);
-router.route('/internal/education/videos/:videoId').get(getVideo).patch(updateVideo).delete(deleteVideo);
+router
+   .route('/internal/education/videos')
+   .get(listVideos)
+   .post(createVideo);
+
+router
+   .route('/internal/education/videos/:videoId')
+   .get(getVideo)
+   .patch(updateVideo)
+   .delete(deleteVideo);
 
 // Course Groups
 router

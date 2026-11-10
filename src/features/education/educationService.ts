@@ -49,6 +49,7 @@ class EducationService {
    private formatResponsi(row: {
       id: string;
       title: string;
+      summaryType: string;
       academicPeriod: string;
       semester: number | null;
       examType: string;
@@ -62,6 +63,7 @@ class EducationService {
       return {
          id: row.id,
          title: row.title,
+         summaryType: row.summaryType,
          course: row.course.name,
          courseId: row.course.id,
          academicPeriod: row.academicPeriod,
@@ -82,6 +84,7 @@ class EducationService {
       const skip = (page - 1) * limit;
 
       const where: Prisma.ResponsiWhereInput = {};
+      if (query.summaryType) where.summaryType = query.summaryType;
 
       if (query.status) {
          where.status = query.status as ResponsiStatus;
@@ -146,6 +149,7 @@ class EducationService {
 
       const created = await repo.createResponsi({
          title: data.title,
+         summaryType: data.summaryType,
          courseId,
          academicPeriod: data.academicPeriod,
          examType: data.examType,
@@ -187,6 +191,9 @@ class EducationService {
          (existing.status !== 'PUBLISHED' || data.content !== undefined);
 
       const updated = await repo.updateResponsi(id, {
+         ...(data.summaryType !== undefined && {
+            summaryType: data.summaryType,
+         }),
          ...(data.title !== undefined && { title: data.title }),
          ...(data.academicPeriod !== undefined && {
             academicPeriod: data.academicPeriod,

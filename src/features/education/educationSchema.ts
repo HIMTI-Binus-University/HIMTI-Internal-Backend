@@ -11,7 +11,12 @@ export const CreateCourseGroupSchema = z.object({
 });
 
 export const UpdateCourseGroupSchema = z.object({
-   name: z.string().trim().min(1, 'Course name is required').max(255).optional(),
+   name: z
+      .string()
+      .trim()
+      .min(1, 'Course name is required')
+      .max(255)
+      .optional(),
    code: z.string().trim().max(50).optional().nullable(),
    description: z.string().trim().max(2000).optional().nullable(),
    status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
@@ -49,8 +54,10 @@ export const ResponsiStatusEnum = z.enum([
 ]);
 
 export const ResponsiExamTypeEnum = z.enum(['Mid Exam', 'Final Exam']);
+export const SummaryTypeEnum = z.enum(['Responsi', 'Study Club']);
 
 export const ResponsiListQuerySchema = z.object({
+   summaryType: SummaryTypeEnum.optional(),
    search: z.string().trim().optional(),
    course: z.string().trim().optional(),
    academicPeriod: z.string().trim().optional(),
@@ -65,9 +72,14 @@ export const ResponsiIdParamSchema = z.object({
 });
 
 export const CreateResponsiSchema = z.object({
+   summaryType: SummaryTypeEnum.default('Responsi'),
    title: z.string().trim().min(1, 'Title is required').max(255),
    course: z.string().trim().min(1, 'Course is required'),
-   academicPeriod: z.string().trim().min(1, 'Academic period is required').max(50),
+   academicPeriod: z
+      .string()
+      .trim()
+      .min(1, 'Academic period is required')
+      .max(50),
    examType: ResponsiExamTypeEnum,
    pic: z.string().trim().min(1, 'PIC is required').max(255),
    content: z.string().optional().default(''),
@@ -75,6 +87,7 @@ export const CreateResponsiSchema = z.object({
 });
 
 export const UpdateResponsiSchema = z.object({
+   summaryType: SummaryTypeEnum.optional(),
    title: z.string().trim().min(1).max(255).optional(),
    course: z.string().trim().min(1).optional(),
    academicPeriod: z.string().trim().min(1).max(50).optional(),
@@ -85,6 +98,7 @@ export const UpdateResponsiSchema = z.object({
 });
 
 export const ResponsiSummarySchema = z.object({
+   summaryType: SummaryTypeEnum,
    id: z.string(),
    title: z.string(),
    course: z.string(),

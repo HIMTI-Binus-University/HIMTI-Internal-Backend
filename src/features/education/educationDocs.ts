@@ -8,6 +8,7 @@ import {
    CreateResponsiSchema,
    ResponsiDetailResponseSchema,
    ResponsiListResponseSchema,
+   ResponsiListQuerySchema,
    ResponsiVersionListResponseSchema,
    UpdateCourseGroupSchema,
    UpdateResponsiSchema,
@@ -158,9 +159,11 @@ export const registerEducationDocs = (registry: OpenAPIRegistry) => {
       operationId: 'listEducationResponsies',
       tags: ['Internal Education'],
       security: [{ sessionCookie: [] }],
+      request: { query: ResponsiListQuerySchema },
       responses: {
          200: {
-            description: 'List of Responsi summaries.',
+            description:
+               'List of Responsi and Study Club summaries, filtered before pagination.',
             content: {
                'application/json': { schema: ResponsiListResponse },
             },
