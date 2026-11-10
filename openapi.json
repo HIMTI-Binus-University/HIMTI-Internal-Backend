@@ -213,6 +213,71 @@
             ],
             "type": "object"
          },
+         "CreateStudyClubBody": {
+            "additionalProperties": false,
+            "properties": {
+               "capacity": {
+                  "maximum": 2147483647,
+                  "minimum": 1,
+                  "nullable": true,
+                  "type": "integer"
+               },
+               "courseId": {
+                  "maxLength": 100,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "description": {
+                  "maxLength": 5000,
+                  "type": "string"
+               },
+               "endsAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "location": {
+                  "maxLength": 255,
+                  "type": "string"
+               },
+               "meetingUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               },
+               "registrationUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               },
+               "startsAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "type": {
+                  "enum": [
+                     "Study Club",
+                     "Responsi"
+                  ],
+                  "type": "string"
+               }
+            },
+            "required": [
+               "title",
+               "type",
+               "courseId",
+               "description",
+               "startsAt",
+               "endsAt",
+               "location",
+               "meetingUrl",
+               "registrationUrl",
+               "capacity"
+            ],
+            "type": "object"
+         },
          "CreateUrlRequest": {
             "properties": {
                "expiresAt": {
@@ -521,6 +586,759 @@
                "reregistrationPeriod",
                "msg"
             ],
+            "type": "object"
+         },
+         "EducationCourseGroupListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "code": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "description": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "name": {
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "ACTIVE",
+                              "INACTIVE"
+                           ],
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "name",
+                        "code",
+                        "status"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
+         "EducationCourseGroupSingleResponse": {
+            "properties": {
+               "data": {
+                  "properties": {
+                     "code": {
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "description": {
+                        "nullable": true,
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "name": {
+                        "type": "string"
+                     },
+                     "status": {
+                        "enum": [
+                           "ACTIVE",
+                           "INACTIVE"
+                        ],
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "name",
+                     "code",
+                     "status"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
+         "EducationCreateCourseGroupBody": {
+            "properties": {
+               "code": {
+                  "maxLength": 50,
+                  "nullable": true,
+                  "type": "string"
+               },
+               "description": {
+                  "maxLength": 2000,
+                  "nullable": true,
+                  "type": "string"
+               },
+               "name": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "name"
+            ],
+            "type": "object"
+         },
+         "EducationCreateResponsiBody": {
+            "properties": {
+               "academicPeriod": {
+                  "maxLength": 50,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "content": {
+                  "default": "",
+                  "type": "string"
+               },
+               "course": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "examType": {
+                  "enum": [
+                     "Mid Exam",
+                     "Final Exam"
+                  ],
+                  "type": "string"
+               },
+               "pic": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "default": "DRAFT",
+                  "enum": [
+                     "DRAFT",
+                     "UNDER_REVIEW",
+                     "PUBLISHED",
+                     "ARCHIVED"
+                  ],
+                  "type": "string"
+               },
+               "summaryType": {
+                  "default": "Responsi",
+                  "enum": [
+                     "Responsi",
+                     "Study Club"
+                  ],
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "title",
+               "course",
+               "academicPeriod",
+               "examType",
+               "pic"
+            ],
+            "type": "object"
+         },
+         "EducationResponsiDetailResponse": {
+            "properties": {
+               "data": {
+                  "properties": {
+                     "academicPeriod": {
+                        "type": "string"
+                     },
+                     "content": {
+                        "type": "string"
+                     },
+                     "course": {
+                        "type": "string"
+                     },
+                     "courseId": {
+                        "type": "string"
+                     },
+                     "createdAt": {
+                        "type": "string"
+                     },
+                     "examType": {
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "lastUpdated": {
+                        "type": "string"
+                     },
+                     "pic": {
+                        "type": "string"
+                     },
+                     "semester": {
+                        "nullable": true,
+                        "type": "number"
+                     },
+                     "status": {
+                        "enum": [
+                           "DRAFT",
+                           "UNDER_REVIEW",
+                           "PUBLISHED",
+                           "ARCHIVED"
+                        ],
+                        "type": "string"
+                     },
+                     "summaryType": {
+                        "enum": [
+                           "Responsi",
+                           "Study Club"
+                        ],
+                        "type": "string"
+                     },
+                     "title": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "summaryType",
+                     "id",
+                     "title",
+                     "course",
+                     "courseId",
+                     "academicPeriod",
+                     "examType",
+                     "pic",
+                     "status",
+                     "lastUpdated",
+                     "createdAt",
+                     "content"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
+         "EducationResponsiListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "academicPeriod": {
+                           "type": "string"
+                        },
+                        "course": {
+                           "type": "string"
+                        },
+                        "courseId": {
+                           "type": "string"
+                        },
+                        "createdAt": {
+                           "type": "string"
+                        },
+                        "examType": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "lastUpdated": {
+                           "type": "string"
+                        },
+                        "pic": {
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "DRAFT",
+                              "UNDER_REVIEW",
+                              "PUBLISHED",
+                              "ARCHIVED"
+                           ],
+                           "type": "string"
+                        },
+                        "summaryType": {
+                           "enum": [
+                              "Responsi",
+                              "Study Club"
+                           ],
+                           "type": "string"
+                        },
+                        "title": {
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "summaryType",
+                        "id",
+                        "title",
+                        "course",
+                        "courseId",
+                        "academicPeriod",
+                        "examType",
+                        "pic",
+                        "status",
+                        "lastUpdated",
+                        "createdAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "pagination": {
+                  "properties": {
+                     "limit": {
+                        "type": "number"
+                     },
+                     "page": {
+                        "type": "number"
+                     },
+                     "total": {
+                        "type": "number"
+                     },
+                     "totalPages": {
+                        "type": "number"
+                     }
+                  },
+                  "required": [
+                     "page",
+                     "limit",
+                     "total",
+                     "totalPages"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data",
+               "pagination"
+            ],
+            "type": "object"
+         },
+         "EducationResponsiVersionListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "content": {
+                           "type": "string"
+                        },
+                        "createdAt": {
+                           "type": "string"
+                        },
+                        "createdBy": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "responsiId": {
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "DRAFT",
+                              "UNDER_REVIEW",
+                              "PUBLISHED",
+                              "ARCHIVED"
+                           ],
+                           "type": "string"
+                        },
+                        "version": {
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "responsiId",
+                        "version",
+                        "content",
+                        "status",
+                        "createdBy",
+                        "createdAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
+         "EducationUpdateCourseGroupBody": {
+            "properties": {
+               "code": {
+                  "maxLength": 50,
+                  "nullable": true,
+                  "type": "string"
+               },
+               "description": {
+                  "maxLength": 2000,
+                  "nullable": true,
+                  "type": "string"
+               },
+               "name": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "enum": [
+                     "ACTIVE",
+                     "INACTIVE"
+                  ],
+                  "type": "string"
+               }
+            },
+            "type": "object"
+         },
+         "EducationUpdateResponsiBody": {
+            "properties": {
+               "academicPeriod": {
+                  "maxLength": 50,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "content": {
+                  "type": "string"
+               },
+               "course": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "examType": {
+                  "enum": [
+                     "Mid Exam",
+                     "Final Exam"
+                  ],
+                  "type": "string"
+               },
+               "pic": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "enum": [
+                     "DRAFT",
+                     "UNDER_REVIEW",
+                     "PUBLISHED",
+                     "ARCHIVED"
+                  ],
+                  "type": "string"
+               },
+               "summaryType": {
+                  "enum": [
+                     "Responsi",
+                     "Study Club"
+                  ],
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "type": "object"
+         },
+         "EducationVideoCreate": {
+            "additionalProperties": false,
+            "properties": {
+               "sessionId": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "default": "DRAFT",
+                  "enum": [
+                     "DRAFT"
+                  ],
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "youtubeUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "title",
+               "sessionId",
+               "youtubeUrl"
+            ],
+            "type": "object"
+         },
+         "EducationVideoListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "properties": {
+                        "createdAt": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "session": {
+                           "properties": {
+                              "course": {
+                                 "properties": {
+                                    "id": {
+                                       "type": "string"
+                                    },
+                                    "name": {
+                                       "type": "string"
+                                    }
+                                 },
+                                 "required": [
+                                    "id",
+                                    "name"
+                                 ],
+                                 "type": "object"
+                              },
+                              "courseId": {
+                                 "type": "string"
+                              },
+                              "id": {
+                                 "type": "string"
+                              },
+                              "startsAt": {
+                                 "nullable": true,
+                                 "type": "string"
+                              },
+                              "title": {
+                                 "type": "string"
+                              },
+                              "type": {
+                                 "enum": [
+                                    "STUDY_CLUB",
+                                    "RESPONSI"
+                                 ],
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "title",
+                              "type",
+                              "courseId",
+                              "course",
+                              "startsAt"
+                           ],
+                           "type": "object"
+                        },
+                        "sessionId": {
+                           "type": "string"
+                        },
+                        "status": {
+                           "enum": [
+                              "DRAFT",
+                              "PUBLISHED"
+                           ],
+                           "type": "string"
+                        },
+                        "title": {
+                           "type": "string"
+                        },
+                        "updatedAt": {
+                           "type": "string"
+                        },
+                        "youtubeUrl": {
+                           "type": "string"
+                        },
+                        "youtubeVideoId": {
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "title",
+                        "sessionId",
+                        "session",
+                        "youtubeUrl",
+                        "youtubeVideoId",
+                        "status",
+                        "createdAt",
+                        "updatedAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "pagination": {
+                  "properties": {
+                     "limit": {
+                        "type": "number"
+                     },
+                     "page": {
+                        "type": "number"
+                     },
+                     "total": {
+                        "type": "number"
+                     },
+                     "totalPages": {
+                        "type": "number"
+                     }
+                  },
+                  "required": [
+                     "page",
+                     "limit",
+                     "total",
+                     "totalPages"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data",
+               "pagination"
+            ],
+            "type": "object"
+         },
+         "EducationVideoSingleResponse": {
+            "properties": {
+               "data": {
+                  "properties": {
+                     "createdAt": {
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "session": {
+                        "properties": {
+                           "course": {
+                              "properties": {
+                                 "id": {
+                                    "type": "string"
+                                 },
+                                 "name": {
+                                    "type": "string"
+                                 }
+                              },
+                              "required": [
+                                 "id",
+                                 "name"
+                              ],
+                              "type": "object"
+                           },
+                           "courseId": {
+                              "type": "string"
+                           },
+                           "id": {
+                              "type": "string"
+                           },
+                           "startsAt": {
+                              "nullable": true,
+                              "type": "string"
+                           },
+                           "title": {
+                              "type": "string"
+                           },
+                           "type": {
+                              "enum": [
+                                 "STUDY_CLUB",
+                                 "RESPONSI"
+                              ],
+                              "type": "string"
+                           }
+                        },
+                        "required": [
+                           "id",
+                           "title",
+                           "type",
+                           "courseId",
+                           "course",
+                           "startsAt"
+                        ],
+                        "type": "object"
+                     },
+                     "sessionId": {
+                        "type": "string"
+                     },
+                     "status": {
+                        "enum": [
+                           "DRAFT",
+                           "PUBLISHED"
+                        ],
+                        "type": "string"
+                     },
+                     "title": {
+                        "type": "string"
+                     },
+                     "updatedAt": {
+                        "type": "string"
+                     },
+                     "youtubeUrl": {
+                        "type": "string"
+                     },
+                     "youtubeVideoId": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "title",
+                     "sessionId",
+                     "session",
+                     "youtubeUrl",
+                     "youtubeVideoId",
+                     "status",
+                     "createdAt",
+                     "updatedAt"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
+         "EducationVideoUpdate": {
+            "additionalProperties": false,
+            "properties": {
+               "sessionId": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "status": {
+                  "enum": [
+                     "DRAFT",
+                     "PUBLISHED"
+                  ],
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "youtubeUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               }
+            },
             "type": "object"
          },
          "ElectionCandidateListResponse": {
@@ -4715,6 +5533,219 @@
             ],
             "type": "object"
          },
+         "StudyClubListResponse": {
+            "properties": {
+               "data": {
+                  "items": {
+                     "additionalProperties": false,
+                     "properties": {
+                        "capacity": {
+                           "maximum": 2147483647,
+                           "minimum": 1,
+                           "nullable": true,
+                           "type": "integer"
+                        },
+                        "course": {
+                           "type": "string"
+                        },
+                        "courseId": {
+                           "maxLength": 100,
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "createdAt": {
+                           "type": "string"
+                        },
+                        "description": {
+                           "maxLength": 5000,
+                           "type": "string"
+                        },
+                        "endsAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "id": {
+                           "type": "string"
+                        },
+                        "isDemo": {
+                           "type": "boolean"
+                        },
+                        "location": {
+                           "maxLength": 255,
+                           "type": "string"
+                        },
+                        "meetingUrl": {
+                           "maxLength": 2048,
+                           "type": "string"
+                        },
+                        "registrationUrl": {
+                           "maxLength": 2048,
+                           "type": "string"
+                        },
+                        "startsAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "title": {
+                           "maxLength": 255,
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "type": {
+                           "enum": [
+                              "Study Club",
+                              "Responsi"
+                           ],
+                           "type": "string"
+                        },
+                        "updatedAt": {
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "title",
+                        "type",
+                        "courseId",
+                        "description",
+                        "startsAt",
+                        "endsAt",
+                        "location",
+                        "meetingUrl",
+                        "registrationUrl",
+                        "capacity",
+                        "id",
+                        "course",
+                        "isDemo",
+                        "createdAt",
+                        "updatedAt"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "pagination": {
+                  "properties": {
+                     "limit": {
+                        "type": "number"
+                     },
+                     "page": {
+                        "type": "number"
+                     },
+                     "total": {
+                        "type": "number"
+                     },
+                     "totalPages": {
+                        "type": "number"
+                     }
+                  },
+                  "required": [
+                     "page",
+                     "limit",
+                     "total",
+                     "totalPages"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data",
+               "pagination"
+            ],
+            "type": "object"
+         },
+         "StudyClubResponse": {
+            "properties": {
+               "data": {
+                  "additionalProperties": false,
+                  "properties": {
+                     "capacity": {
+                        "maximum": 2147483647,
+                        "minimum": 1,
+                        "nullable": true,
+                        "type": "integer"
+                     },
+                     "course": {
+                        "type": "string"
+                     },
+                     "courseId": {
+                        "maxLength": 100,
+                        "minLength": 1,
+                        "type": "string"
+                     },
+                     "createdAt": {
+                        "type": "string"
+                     },
+                     "description": {
+                        "maxLength": 5000,
+                        "type": "string"
+                     },
+                     "endsAt": {
+                        "format": "date-time",
+                        "type": "string"
+                     },
+                     "id": {
+                        "type": "string"
+                     },
+                     "isDemo": {
+                        "type": "boolean"
+                     },
+                     "location": {
+                        "maxLength": 255,
+                        "type": "string"
+                     },
+                     "meetingUrl": {
+                        "maxLength": 2048,
+                        "type": "string"
+                     },
+                     "registrationUrl": {
+                        "maxLength": 2048,
+                        "type": "string"
+                     },
+                     "startsAt": {
+                        "format": "date-time",
+                        "type": "string"
+                     },
+                     "title": {
+                        "maxLength": 255,
+                        "minLength": 1,
+                        "type": "string"
+                     },
+                     "type": {
+                        "enum": [
+                           "Study Club",
+                           "Responsi"
+                        ],
+                        "type": "string"
+                     },
+                     "updatedAt": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "title",
+                     "type",
+                     "courseId",
+                     "description",
+                     "startsAt",
+                     "endsAt",
+                     "location",
+                     "meetingUrl",
+                     "registrationUrl",
+                     "capacity",
+                     "id",
+                     "course",
+                     "isDemo",
+                     "createdAt",
+                     "updatedAt"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "data"
+            ],
+            "type": "object"
+         },
          "UpdateMembershipPeriodRequest": {
             "additionalProperties": false,
             "properties": {
@@ -4886,6 +5917,59 @@
                   "enum": [
                      "ACTIVE",
                      "INACTIVE"
+                  ],
+                  "type": "string"
+               }
+            },
+            "type": "object"
+         },
+         "UpdateStudyClubBody": {
+            "additionalProperties": false,
+            "properties": {
+               "capacity": {
+                  "maximum": 2147483647,
+                  "minimum": 1,
+                  "nullable": true,
+                  "type": "integer"
+               },
+               "courseId": {
+                  "maxLength": 100,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "description": {
+                  "maxLength": 5000,
+                  "type": "string"
+               },
+               "endsAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "location": {
+                  "maxLength": 255,
+                  "type": "string"
+               },
+               "meetingUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               },
+               "registrationUrl": {
+                  "maxLength": 2048,
+                  "type": "string"
+               },
+               "startsAt": {
+                  "format": "date-time",
+                  "type": "string"
+               },
+               "title": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "type": {
+                  "enum": [
+                     "Study Club",
+                     "Responsi"
                   ],
                   "type": "string"
                }
@@ -9106,6 +10190,1035 @@
             "summary": "Check API health",
             "tags": [
                "Health"
+            ]
+         }
+      },
+      "/api/internal/education/course-groups": {
+         "get": {
+            "operationId": "listEducationCourseGroups",
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationCourseGroupListResponse"
+                        }
+                     }
+                  },
+                  "description": "Course groups available to Education."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "post": {
+            "operationId": "createEducationCourseGroup",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationCreateCourseGroupBody"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationCourseGroupSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Course group created successfully."
+               },
+               "400": {
+                  "description": "Validation error"
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "409": {
+                  "description": "Course with this name or code already exists"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/course-groups/{courseId}": {
+         "get": {
+            "operationId": "getEducationCourseGroup",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "courseId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationCourseGroupSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Course group retrieved successfully."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Course group not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "patch": {
+            "operationId": "updateEducationCourseGroup",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "courseId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationUpdateCourseGroupBody"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationCourseGroupSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Course group updated successfully."
+               },
+               "400": {
+                  "description": "Validation error"
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Course group not found"
+               },
+               "409": {
+                  "description": "Course with this name or code already exists"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi": {
+         "get": {
+            "operationId": "listEducationResponsies",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "summaryType",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "Responsi",
+                        "Study Club"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "course",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "academicPeriod",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "examType",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "status",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "DRAFT",
+                        "UNDER_REVIEW",
+                        "PUBLISHED",
+                        "ARCHIVED"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 50,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiListResponse"
+                        }
+                     }
+                  },
+                  "description": "List of Responsi and Study Club summaries, filtered before pagination."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "post": {
+            "operationId": "createEducationResponsi",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationCreateResponsiBody"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiDetailResponse"
+                        }
+                     }
+                  },
+                  "description": "Responsi created successfully."
+               },
+               "400": {
+                  "description": "Validation error"
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi/{responsiId}": {
+         "delete": {
+            "operationId": "deleteEducationResponsi",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "message": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "message"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Responsi deleted successfully."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "get": {
+            "operationId": "getEducationResponsi",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiDetailResponse"
+                        }
+                     }
+                  },
+                  "description": "Responsi details with Markdown content."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "patch": {
+            "operationId": "updateEducationResponsi",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationUpdateResponsiBody"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiDetailResponse"
+                        }
+                     }
+                  },
+                  "description": "Responsi updated successfully."
+               },
+               "400": {
+                  "description": "Validation error"
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi/{responsiId}/versions": {
+         "get": {
+            "operationId": "listEducationResponsiVersions",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiVersionListResponse"
+                        }
+                     }
+                  },
+                  "description": "Version history snapshots for Responsi."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/study-clubs": {
+         "get": {
+            "operationId": "listStudyClubs",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 255,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "course",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 255,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "type",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "Study Club",
+                        "Responsi"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "schedule",
+                  "required": false,
+                  "schema": {
+                     "default": "upcoming",
+                     "enum": [
+                        "upcoming",
+                        "past",
+                        "all"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "maximum": 1000000,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 6,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/StudyClubListResponse"
+                        }
+                     }
+                  },
+                  "description": "Filtered, paginated sessions."
+               },
+               "400": {
+                  "description": "Invalid input, schedule, course or links."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_education permission required."
+               },
+               "404": {
+                  "description": "Session or course group not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "List Study Club and Responsi sessions",
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "post": {
+            "operationId": "createStudyClub",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/CreateStudyClubBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/StudyClubResponse"
+                        }
+                     }
+                  },
+                  "description": "Session created."
+               },
+               "400": {
+                  "description": "Invalid input, schedule, course or links."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_education permission required."
+               },
+               "404": {
+                  "description": "Session or course group not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/study-clubs/{sessionId}": {
+         "get": {
+            "operationId": "getStudyClub",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "sessionId",
+                  "required": true,
+                  "schema": {
+                     "maxLength": 100,
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/StudyClubResponse"
+                        }
+                     }
+                  },
+                  "description": "Session details."
+               },
+               "400": {
+                  "description": "Invalid input, schedule, course or links."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_education permission required."
+               },
+               "404": {
+                  "description": "Session or course group not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "patch": {
+            "operationId": "updateStudyClub",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "sessionId",
+                  "required": true,
+                  "schema": {
+                     "maxLength": 100,
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/UpdateStudyClubBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/StudyClubResponse"
+                        }
+                     }
+                  },
+                  "description": "Session updated."
+               },
+               "400": {
+                  "description": "Invalid input, schedule, course or links."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_education permission required."
+               },
+               "404": {
+                  "description": "Session or course group not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/videos": {
+         "get": {
+            "operationId": "listEducationVideos",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 255,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "courseId",
+                  "required": false,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "status",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "DRAFT",
+                        "PUBLISHED"
+                     ],
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 50,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationVideoListResponse"
+                        }
+                     }
+                  },
+                  "description": "Paginated videos"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               },
+               "503": {
+                  "description": "Session integration is not available"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "post": {
+            "operationId": "createEducationVideo",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationVideoCreate"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationVideoSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Created draft video"
+               },
+               "400": {
+                  "description": "Invalid video"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               },
+               "404": {
+                  "description": "Session not found"
+               },
+               "503": {
+                  "description": "Session integration is not available"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/videos/{videoId}": {
+         "delete": {
+            "operationId": "deleteEducationVideo",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "videoId",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "204": {
+                  "description": "Video deleted"
+               },
+               "400": {
+                  "description": "Invalid video"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               },
+               "404": {
+                  "description": "Video or session not found"
+               },
+               "409": {
+                  "description": "Session no longer available"
+               },
+               "503": {
+                  "description": "Session integration is not available"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "get": {
+            "operationId": "getEducationVideo",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "videoId",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationVideoSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Video"
+               },
+               "400": {
+                  "description": "Invalid video"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               },
+               "404": {
+                  "description": "Video or session not found"
+               },
+               "409": {
+                  "description": "Session no longer available"
+               },
+               "503": {
+                  "description": "Session integration is not available"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         },
+         "patch": {
+            "operationId": "updateEducationVideo",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "videoId",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EducationVideoUpdate"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationVideoSingleResponse"
+                        }
+                     }
+                  },
+                  "description": "Video"
+               },
+               "400": {
+                  "description": "Invalid video"
+               },
+               "403": {
+                  "description": "Authentication and manage_education permission required"
+               },
+               "404": {
+                  "description": "Video or session not found"
+               },
+               "409": {
+                  "description": "Session no longer available"
+               },
+               "503": {
+                  "description": "Session integration is not available"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
             ]
          }
       },
