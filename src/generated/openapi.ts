@@ -12247,13 +12247,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Session integration is not available */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
         };
     };
     createEducationVideo: {
@@ -12299,8 +12292,8 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Session integration is not available */
-            503: {
+            /** @description Session no longer available */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12342,22 +12335,8 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Video or session not found */
+            /** @description Video not found */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session no longer available */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session integration is not available */
-            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12397,22 +12376,8 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Video or session not found */
+            /** @description Video not found */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session no longer available */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session integration is not available */
-            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12467,13 +12432,6 @@ export interface operations {
             };
             /** @description Session no longer available */
             409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session integration is not available */
-            503: {
                 headers: {
                     [name: string]: unknown;
                 };

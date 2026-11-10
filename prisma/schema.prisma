@@ -365,6 +365,7 @@ model EducationVideo {
   id             String               @id @default(nanoid())
   title          String               @db.VarChar(255)
   sessionId      String
+  session StudyClubSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
   youtubeUrl     String               @db.Text
   youtubeVideoId String               @db.VarChar(11)
   status         EducationVideoStatus @default(DRAFT)
@@ -409,6 +410,7 @@ model StudyClubSession {
   updatedAt       DateTime @updatedAt
 
   course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  videos EducationVideo[]
 
   @@index([courseId, startsAt])
   @@index([endsAt, startsAt])

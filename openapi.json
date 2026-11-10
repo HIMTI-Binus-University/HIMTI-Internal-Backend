@@ -11010,9 +11010,6 @@
                },
                "403": {
                   "description": "Authentication and manage_education permission required"
-               },
-               "503": {
-                  "description": "Session integration is not available"
                }
             },
             "security": [
@@ -11056,8 +11053,8 @@
                "404": {
                   "description": "Session not found"
                },
-               "503": {
-                  "description": "Session integration is not available"
+               "409": {
+                  "description": "Session no longer available"
                }
             },
             "security": [
@@ -11095,13 +11092,7 @@
                   "description": "Authentication and manage_education permission required"
                },
                "404": {
-                  "description": "Video or session not found"
-               },
-               "409": {
-                  "description": "Session no longer available"
-               },
-               "503": {
-                  "description": "Session integration is not available"
+                  "description": "Video not found"
                }
             },
             "security": [
@@ -11144,13 +11135,7 @@
                   "description": "Authentication and manage_education permission required"
                },
                "404": {
-                  "description": "Video or session not found"
-               },
-               "409": {
-                  "description": "Session no longer available"
-               },
-               "503": {
-                  "description": "Session integration is not available"
+                  "description": "Video not found"
                }
             },
             "security": [
@@ -11207,9 +11192,6 @@
                },
                "409": {
                   "description": "Session no longer available"
-               },
-               "503": {
-                  "description": "Session integration is not available"
                }
             },
             "security": [
