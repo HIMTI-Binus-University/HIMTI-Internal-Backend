@@ -17,6 +17,7 @@ import {
    electionRouter,
    internalElectionRouter,
 } from '@/features/elections/electionRoutes.js';
+import himtiKitRoutes, { himtiKitPublicRoutes } from '@/features/himti-kit/himtiKitRoutes.js';
 
 const router: Router = express.Router();
 
@@ -43,5 +44,7 @@ router.use('/', eventTicketRoutes);
 router.use('/', permissionRoutes);
 router.use('/', userRoutes);
 router.use('/', roleRoutes);
+router.use('/himti-kit', himtiKitPublicRoutes);
+router.use('/himti-kit', himtiKitRoutes);
 
 export default router;

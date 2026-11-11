@@ -173,6 +173,19 @@ enum LinkWorkspaceStatus {
   ARCHIVED
 }
 
+enum MajorHIMTIKit {
+  COMPUTER_SCIENCE
+  MOBILE_APPLICATION_AND_TECHNOLOGY
+  GAME_APPLICATION_AND_TECHNOLOGY
+  DATA_SCIENCE
+  CYBER_SECURITY
+  COMPUTER_SCIENCE_AND_MATHEMATICS
+  COMPUTER_SCIENCE_AND_STATISTIC
+  COMPUTER_SCIENCE_SOFTWARE_ENGINEERING
+  ARTIFICIAL_INTELLIGENCE
+  DIGITAL_PSYCHOLOGY
+}
+
 enum ElectionStatus {
   DRAFT
   OPEN
@@ -1165,4 +1178,53 @@ model ElectionBallot {
   @@index([electionId])
   @@index([candidateId])
   @@map("election_ballots")
+}
+
+// ==========================================
+// HIMTI Kit
+// ==========================================
+
+model HimtiKitResource {
+  id            String  @id @default(nanoid())
+  title         String
+  description   String?
+  downloadUrl   String
+  coverImageUrl String? @db.Text
+  majors         MajorHIMTIKit[]
+
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+}
+
+model HimtiKitSoftware {
+  id            String  @id @default(nanoid())
+  name          String
+  description   String
+  downloadUrl   String
+  coverImageUrl String? @db.Text
+
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+}
+
+model HimtiKitAttendee {
+  id        String   @id @default(nanoid())
+  name      String
+  nim       String   @unique
+
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+}
+
+model HimtiKitAppearance {
+  id                 String   @id @default(nanoid())
+  accentColor        String   @default("#0284c7")
+  backgroundImageUrl String   @db.Text
+  overlayEnabled     Boolean  @default(true)
+  overlayDarkness    Int      @default(65)
+  blurEnabled        Boolean  @default(true)
+  blurIntensity      Int      @default(4)
+
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
 }
