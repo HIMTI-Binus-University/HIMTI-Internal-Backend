@@ -1,12 +1,6 @@
 -- CreateEnum
 CREATE TYPE "ResponsiStatus" AS ENUM ('DRAFT', 'UNDER_REVIEW', 'PUBLISHED', 'ARCHIVED');
 
--- DropForeignKey
-ALTER TABLE "attendance_check_ins" DROP CONSTRAINT "attendance_check_ins_ticket_event_scope_fkey";
-
--- DropForeignKey
-ALTER TABLE "registration_tickets" DROP CONSTRAINT "registration_tickets_member_event_scope_fkey";
-
 -- CreateTable
 CREATE TABLE "responsies" (
     "id" TEXT NOT NULL,
