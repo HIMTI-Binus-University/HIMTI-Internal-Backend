@@ -1,8 +1,8 @@
 -- DropForeignKey
-ALTER TABLE "attendance_check_ins" DROP CONSTRAINT "attendance_check_ins_ticket_event_scope_fkey";
+ALTER TABLE "attendance_check_ins" DROP CONSTRAINT IF EXISTS "attendance_check_ins_ticket_event_scope_fkey";
 
 -- DropForeignKey
-ALTER TABLE "registration_tickets" DROP CONSTRAINT "registration_tickets_member_event_scope_fkey";
+ALTER TABLE "registration_tickets" DROP CONSTRAINT IF EXISTS "registration_tickets_member_event_scope_fkey";
 
 -- CreateTable
 CREATE TABLE "HimtiKitAppearance" (
