@@ -1,0 +1,30 @@
+-- CreateEnum
+CREATE TYPE "MajorHIMTIKit" AS ENUM ('COMPUTER_SCIENCE_REGULAR', 'COMPUTER_SCIENCE_AND_MATHEMATICS', 'COMPUTER_SCIENCE_AND_STATISTIC', 'COMPUTER_SCIENCE_SOFTWARE_ENGINEERING', 'ARTIFICIAL_INTELLIGENCE', 'CYBER_SECURITY', 'DATA_SCIENCE', 'GAME_APPLICATION_AND_TECHNOLOGY', 'MOBILE_APPLICATION_AND_TECHNOLOGY');
+
+-- CreateTable
+CREATE TABLE "HimtiKitResource" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "downloadUrl" TEXT NOT NULL,
+    "coverImageUrl" TEXT,
+    "semester" INTEGER NOT NULL,
+    "major" "MajorHIMTIKit" NOT NULL,
+    "createdAt" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "HimtiKitResource_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "HimtiKitSfotware" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "downloadUrl" TEXT NOT NULL,
+    "coverImageUrl" TEXT,
+    "createdAt" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "HimtiKitSfotware_pkey" PRIMARY KEY ("id")
+);
