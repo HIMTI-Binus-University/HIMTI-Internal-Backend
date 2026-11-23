@@ -928,6 +928,151 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internal/education/course-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEducationCourseGroups"];
+        put?: never;
+        post: operations["createEducationCourseGroup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/education/course-groups/{courseId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEducationCourseGroup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateEducationCourseGroup"];
+        trace?: never;
+    };
+    "/api/internal/education/responsi": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEducationResponsies"];
+        put?: never;
+        post: operations["createEducationResponsi"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/education/responsi/{responsiId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEducationResponsi"];
+        put?: never;
+        post?: never;
+        delete: operations["deleteEducationResponsi"];
+        options?: never;
+        head?: never;
+        patch: operations["updateEducationResponsi"];
+        trace?: never;
+    };
+    "/api/internal/education/responsi/{responsiId}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEducationResponsiVersions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/education/study-clubs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Study Club and Responsi sessions */
+        get: operations["listStudyClubs"];
+        put?: never;
+        post: operations["createStudyClub"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/education/study-clubs/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStudyClub"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateStudyClub"];
+        trace?: never;
+    };
+    "/api/internal/education/videos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEducationVideos"];
+        put?: never;
+        post: operations["createEducationVideo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/education/videos/{videoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEducationVideo"];
+        put?: never;
+        post?: never;
+        delete: operations["deleteEducationVideo"];
+        options?: never;
+        head?: never;
+        patch: operations["updateEducationVideo"];
+        trace?: never;
+    };
     "/api/internal/elections": {
         parameters: {
             query?: never;
@@ -9141,6 +9286,21 @@ export interface components {
         CreateRoleRequest: {
             roleName: string;
         };
+        CreateStudyClubBody: {
+            capacity: number | null;
+            courseId: string;
+            description: string;
+            /** Format: date-time */
+            endsAt: string;
+            location: string;
+            meetingUrl: string;
+            registrationUrl: string;
+            /** Format: date-time */
+            startsAt: string;
+            title: string;
+            /** @enum {string} */
+            type: "Study Club" | "Responsi";
+        };
         CreateUrlRequest: {
             /** Format: date-time */
             expiresAt?: string | null;
@@ -9213,6 +9373,198 @@ export interface components {
             /** Format: date-time */
             updatedAt: string | null;
             updatedBy: string | null;
+        };
+        EducationCourseGroupListResponse: {
+            data: {
+                code: string | null;
+                description?: string | null;
+                id: string;
+                name: string;
+                /** @enum {string} */
+                status: "ACTIVE" | "INACTIVE";
+            }[];
+        };
+        EducationCourseGroupSingleResponse: {
+            data: {
+                code: string | null;
+                description?: string | null;
+                id: string;
+                name: string;
+                /** @enum {string} */
+                status: "ACTIVE" | "INACTIVE";
+            };
+        };
+        EducationCreateCourseGroupBody: {
+            code?: string | null;
+            description?: string | null;
+            name: string;
+        };
+        EducationCreateResponsiBody: {
+            academicPeriod: string;
+            /** @default  */
+            content: string;
+            course: string;
+            /** @enum {string} */
+            examType: "Mid Exam" | "Final Exam";
+            pic: string;
+            /**
+             * @default DRAFT
+             * @enum {string}
+             */
+            status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+            /**
+             * @default Responsi
+             * @enum {string}
+             */
+            summaryType: "Responsi" | "Study Club";
+            title: string;
+        };
+        EducationResponsiDetailResponse: {
+            data: {
+                academicPeriod: string;
+                content: string;
+                course: string;
+                courseId: string;
+                createdAt: string;
+                examType: string;
+                id: string;
+                lastUpdated: string;
+                pic: string;
+                semester?: number | null;
+                /** @enum {string} */
+                status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                /** @enum {string} */
+                summaryType: "Responsi" | "Study Club";
+                title: string;
+            };
+        };
+        EducationResponsiListResponse: {
+            data: {
+                academicPeriod: string;
+                course: string;
+                courseId: string;
+                createdAt: string;
+                examType: string;
+                id: string;
+                lastUpdated: string;
+                pic: string;
+                /** @enum {string} */
+                status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                /** @enum {string} */
+                summaryType: "Responsi" | "Study Club";
+                title: string;
+            }[];
+            pagination: {
+                limit: number;
+                page: number;
+                total: number;
+                totalPages: number;
+            };
+        };
+        EducationResponsiVersionListResponse: {
+            data: {
+                content: string;
+                createdAt: string;
+                createdBy: string | null;
+                id: string;
+                responsiId: string;
+                /** @enum {string} */
+                status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                version: string;
+            }[];
+        };
+        EducationUpdateCourseGroupBody: {
+            code?: string | null;
+            description?: string | null;
+            name?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
+        };
+        EducationUpdateResponsiBody: {
+            academicPeriod?: string;
+            content?: string;
+            course?: string;
+            /** @enum {string} */
+            examType?: "Mid Exam" | "Final Exam";
+            pic?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+            /** @enum {string} */
+            summaryType?: "Responsi" | "Study Club";
+            title?: string;
+        };
+        EducationVideoCreate: {
+            sessionId: string;
+            /**
+             * @default DRAFT
+             * @enum {string}
+             */
+            status: "DRAFT";
+            title: string;
+            youtubeUrl: string;
+        };
+        EducationVideoListResponse: {
+            data: {
+                createdAt: string;
+                id: string;
+                session: {
+                    course: {
+                        id: string;
+                        name: string;
+                    };
+                    courseId: string;
+                    id: string;
+                    startsAt: string | null;
+                    title: string;
+                    /** @enum {string} */
+                    type: "STUDY_CLUB" | "RESPONSI";
+                };
+                sessionId: string;
+                /** @enum {string} */
+                status: "DRAFT" | "PUBLISHED";
+                title: string;
+                updatedAt: string;
+                youtubeUrl: string;
+                youtubeVideoId: string;
+            }[];
+            pagination: {
+                limit: number;
+                page: number;
+                total: number;
+                totalPages: number;
+            };
+        };
+        EducationVideoSingleResponse: {
+            data: {
+                createdAt: string;
+                id: string;
+                session: {
+                    course: {
+                        id: string;
+                        name: string;
+                    };
+                    courseId: string;
+                    id: string;
+                    startsAt: string | null;
+                    title: string;
+                    /** @enum {string} */
+                    type: "STUDY_CLUB" | "RESPONSI";
+                };
+                sessionId: string;
+                /** @enum {string} */
+                status: "DRAFT" | "PUBLISHED";
+                title: string;
+                updatedAt: string;
+                youtubeUrl: string;
+                youtubeVideoId: string;
+            };
+        };
+        EducationVideoUpdate: {
+            sessionId?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "PUBLISHED";
+            title?: string;
+            youtubeUrl?: string;
         };
         ElectionCandidateListResponse: {
             data: {
@@ -10252,6 +10604,56 @@ export interface components {
             roleId: string;
             userId: string;
         };
+        StudyClubListResponse: {
+            data: {
+                capacity: number | null;
+                course: string;
+                courseId: string;
+                createdAt: string;
+                description: string;
+                /** Format: date-time */
+                endsAt: string;
+                id: string;
+                isDemo: boolean;
+                location: string;
+                meetingUrl: string;
+                registrationUrl: string;
+                /** Format: date-time */
+                startsAt: string;
+                title: string;
+                /** @enum {string} */
+                type: "Study Club" | "Responsi";
+                updatedAt: string;
+            }[];
+            pagination: {
+                limit: number;
+                page: number;
+                total: number;
+                totalPages: number;
+            };
+        };
+        StudyClubResponse: {
+            data: {
+                capacity: number | null;
+                course: string;
+                courseId: string;
+                createdAt: string;
+                description: string;
+                /** Format: date-time */
+                endsAt: string;
+                id: string;
+                isDemo: boolean;
+                location: string;
+                meetingUrl: string;
+                registrationUrl: string;
+                /** Format: date-time */
+                startsAt: string;
+                title: string;
+                /** @enum {string} */
+                type: "Study Club" | "Responsi";
+                updatedAt: string;
+            };
+        };
         UpdateMembershipPeriodRequest: {
             label: string;
         };
@@ -10290,6 +10692,21 @@ export interface components {
             roleName?: string;
             /** @enum {string} */
             status?: "ACTIVE" | "INACTIVE";
+        };
+        UpdateStudyClubBody: {
+            capacity?: number | null;
+            courseId?: string;
+            description?: string;
+            /** Format: date-time */
+            endsAt?: string;
+            location?: string;
+            meetingUrl?: string;
+            registrationUrl?: string;
+            /** Format: date-time */
+            startsAt?: string;
+            title?: string;
+            /** @enum {string} */
+            type?: "Study Club" | "Responsi";
         };
         UpdateUrlRequest: {
             /** Format: date-time */
@@ -11192,6 +11609,875 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
                 };
+            };
+        };
+    };
+    listEducationCourseGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Course groups available to Education. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationCourseGroupListResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createEducationCourseGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EducationCreateCourseGroupBody"];
+            };
+        };
+        responses: {
+            /** @description Course group created successfully. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationCourseGroupSingleResponse"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Course with this name or code already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getEducationCourseGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                courseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Course group retrieved successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationCourseGroupSingleResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Course group not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateEducationCourseGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                courseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EducationUpdateCourseGroupBody"];
+            };
+        };
+        responses: {
+            /** @description Course group updated successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationCourseGroupSingleResponse"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Course group not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Course with this name or code already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listEducationResponsies: {
+        parameters: {
+            query?: {
+                summaryType?: "Responsi" | "Study Club";
+                search?: string;
+                course?: string;
+                academicPeriod?: string;
+                examType?: string;
+                status?: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of Responsi and Study Club summaries, filtered before pagination. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiListResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createEducationResponsi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EducationCreateResponsiBody"];
+            };
+        };
+        responses: {
+            /** @description Responsi created successfully. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiDetailResponse"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getEducationResponsi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Responsi details with Markdown content. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiDetailResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Responsi not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteEducationResponsi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Responsi deleted successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Responsi not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateEducationResponsi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EducationUpdateResponsiBody"];
+            };
+        };
+        responses: {
+            /** @description Responsi updated successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiDetailResponse"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Responsi not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listEducationResponsiVersions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Version history snapshots for Responsi. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiVersionListResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Responsi not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listStudyClubs: {
+        parameters: {
+            query?: {
+                search?: string;
+                course?: string;
+                type?: "Study Club" | "Responsi";
+                schedule?: "upcoming" | "past" | "all";
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Filtered, paginated sessions. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyClubListResponse"];
+                };
+            };
+            /** @description Invalid input, schedule, course or links. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session or course group not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createStudyClub: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStudyClubBody"];
+            };
+        };
+        responses: {
+            /** @description Session created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyClubResponse"];
+                };
+            };
+            /** @description Invalid input, schedule, course or links. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session or course group not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getStudyClub: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session details. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyClubResponse"];
+                };
+            };
+            /** @description Invalid input, schedule, course or links. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session or course group not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateStudyClub: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStudyClubBody"];
+            };
+        };
+        responses: {
+            /** @description Session updated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyClubResponse"];
+                };
+            };
+            /** @description Invalid input, schedule, course or links. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session or course group not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listEducationVideos: {
+        parameters: {
+            query?: {
+                search?: string;
+                courseId?: string;
+                status?: "DRAFT" | "PUBLISHED";
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated videos */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationVideoListResponse"];
+                };
+            };
+            /** @description Authentication and manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session integration is not available */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createEducationVideo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EducationVideoCreate"];
+            };
+        };
+        responses: {
+            /** @description Created draft video */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationVideoSingleResponse"];
+                };
+            };
+            /** @description Invalid video */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication and manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session integration is not available */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getEducationVideo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                videoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Video */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationVideoSingleResponse"];
+                };
+            };
+            /** @description Invalid video */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication and manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Video or session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session no longer available */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session integration is not available */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteEducationVideo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                videoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Video deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid video */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication and manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Video or session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session no longer available */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session integration is not available */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateEducationVideo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                videoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EducationVideoUpdate"];
+            };
+        };
+        responses: {
+            /** @description Video */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationVideoSingleResponse"];
+                };
+            };
+            /** @description Invalid video */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication and manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Video or session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session no longer available */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Session integration is not available */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
