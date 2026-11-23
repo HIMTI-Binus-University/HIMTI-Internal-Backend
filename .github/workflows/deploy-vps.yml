@@ -149,6 +149,13 @@ jobs:
                    "${{ needs.build-and-push.outputs.service }}" \
                    npx prisma migrate deploy
 
+                 # Make sure new permissions exist and the Admin role holds all of
+                 # them. Idempotent; only newly created permissions are granted to
+                 # other roles, so RBAC edits made in the admin UI are kept.
+                 docker compose --profile "${{ needs.build-and-push.outputs.profile }}" run --rm \
+                   "${{ needs.build-and-push.outputs.service }}" \
+                   npm run seed:permissions
+
                  docker compose --profile "${{ needs.build-and-push.outputs.profile }}" up -d "${{ needs.build-and-push.outputs.service }}"
 
                  docker compose restart caddy
