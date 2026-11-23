@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { ensureSystemUser, syncPermissionsAndRoles } from './seedPermissions.js';
 const prisma = new PrismaClient();
 
 async function main() {
@@ -69,138 +70,11 @@ async function main() {
    }
 
    // ==========================================
-   // SEED SYSTEM USER (for createdBy references)
+   // SEED SYSTEM USER, PERMISSIONS, ROLES (shared with sync-permissions.ts)
    // ==========================================
-   console.log('⏳ Seeding System User...');
-   const systemUser = await prisma.user.upsert({
-      where: { email: 'system@himti.internal' },
-      update: {
-         status: 'ACTIVE',
-         registrationCompletedAt: new Date(),
-         institutionType: 'NON_BINUS',
-      },
-      create: {
-         name: 'System',
-         email: 'system@himti.internal',
-         emailVerified: true,
-         status: 'ACTIVE',
-         registrationCompletedAt: new Date(),
-         institutionType: 'NON_BINUS',
-      },
-   });
-
-   // ==========================================
-   // SEED PERMISSIONS
-   // ==========================================
-   console.log('⏳ Seeding Permissions...');
-   const permissionNames = [
-      'manage_urls',
-      'manage_permissions',
-      'manage_users',
-      'manage_roles',
-      'manage_events',
-      'manage_event_groups',
-      'manage_event_registration',
-      'manage_event_packages',
-      'manage_event_registration_form',
-      'manage_batch',
-      'review_event_registrations',
-      'view_event_answers',
-      'review_event_payments',
-      'view_payment_proofs',
-      'scan_event_tickets',
-      'view_event_attendance',
-      'correct_event_attendance',
-      'manage_elections',
-      'manage_certificates',
-      'manage_education',
-      'manage_himti_kit',
-   ];
-
-   const permissions: Record<string, { id: string }> = {};
-   for (const name of permissionNames) {
-      const perm = await prisma.permission.upsert({
-         where: { name },
-         update: {},
-         create: {
-            name,
-            creator: { connect: { id: systemUser.id } },
-         },
-      });
-      permissions[name] = perm;
-   }
-
-   // ==========================================
-   // SEED ROLES & ASSIGN PERMISSIONS
-   // ==========================================
-   console.log('⏳ Seeding Roles and Assigning Permissions...');
-   // Administrators attest SoCS membership; these roles grant no management permissions.
-   for (const roleName of ['SoCS Student', 'SoCS Lecturer']) {
-      await prisma.role.upsert({
-         where: { roleName }, update: {},
-         create: { roleName, creator: { connect: { id: systemUser.id } } },
-      });
-   }
-   const roleNames = ['General Manager', 'Manager', 'DPI Umum', 'DPI', 'Admin'];
-
-   for (const roleName of roleNames) {
-      const role = await prisma.role.upsert({
-         where: { roleName },
-         update: {},
-         create: {
-            roleName,
-            creator: { connect: { id: systemUser.id } },
-         },
-      });
-
-      // Batch and election administration are restricted to administrators.
-      for (const perm of Object.values(permissions)) {
-         if (
-            [
-               permissions.manage_batch.id,
-               permissions.review_event_registrations.id,
-               permissions.view_event_answers.id,
-               permissions.review_event_payments.id,
-               permissions.view_payment_proofs.id,
-               permissions.scan_event_tickets.id,
-               permissions.view_event_attendance.id,
-               permissions.correct_event_attendance.id,
-               permissions.manage_elections.id,
-            ].includes(perm.id) &&
-            roleName !== 'Admin'
-         ) {
-            continue;
-         }
-         await prisma.roleHasPermission.upsert({
-            where: {
-               roleId_permissionId: {
-                  roleId: role.id,
-                  permissionId: perm.id,
-               },
-            },
-            update: {},
-            create: {
-               roleId: role.id,
-               permissionId: perm.id,
-            },
-         });
-      }
-   }
-
-   const adminRole = await prisma.role.findUniqueOrThrow({
-      where: { roleName: 'Admin' },
-   });
-   if (adminRole.status !== 'ACTIVE') {
-      await prisma.role.update({
-         where: { id: adminRole.id },
-         data: { status: 'ACTIVE' },
-      });
-   }
-   await prisma.userHasRole.upsert({
-      where: { userId_roleId: { userId: systemUser.id, roleId: adminRole.id } },
-      update: {},
-      create: { userId: systemUser.id, roleId: adminRole.id },
-   });
+   console.log('⏳ Seeding System User, Permissions and Roles...');
+   const systemUser = await ensureSystemUser(prisma);
+   await syncPermissionsAndRoles(prisma, systemUser.id);
 
    // ==========================================
    // SEED MEMBERSHIP PERIOD
