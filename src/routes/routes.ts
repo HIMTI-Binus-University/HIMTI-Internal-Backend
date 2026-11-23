@@ -13,10 +13,13 @@ import userRoutes from '@/features/users/userRoutes.js';
 import roleRoutes from '@/features/roles/roleRoutes.js';
 import membershipRoutes from '@/features/membership/membershipRoutes.js';
 import linkWorkspaceRoutes from '@/features/link-workspaces/linkWorkspaceRoutes.js';
+import educationRoutes from '@/features/education/educationRoutes.js';
+import studyClubRoutes from '@/features/study-clubs/studyClubRoutes.js';
 import {
    electionRouter,
    internalElectionRouter,
 } from '@/features/elections/electionRoutes.js';
+import himtiKitRoutes, { himtiKitPublicRoutes } from '@/features/himti-kit/himtiKitRoutes.js';
 
 const router: Router = express.Router();
 
@@ -31,6 +34,8 @@ router.get('/health', (_req: Request, res: Response) => {
 router.use('/url', urlRoutes);
 router.use('/link-workspaces', linkWorkspaceRoutes);
 router.use('/membership', membershipRoutes);
+router.use('/internal/education/study-clubs', studyClubRoutes);
+router.use('/', educationRoutes);
 router.use('/elections', electionRouter);
 router.use('/internal/elections', internalElectionRouter);
 router.use('/', eventRoutes);
@@ -43,5 +48,7 @@ router.use('/', eventTicketRoutes);
 router.use('/', permissionRoutes);
 router.use('/', userRoutes);
 router.use('/', roleRoutes);
+router.use('/himti-kit', himtiKitPublicRoutes);
+router.use('/himti-kit', himtiKitRoutes);
 
 export default router;

@@ -54,6 +54,18 @@ enum RoleStatus {
   INACTIVE
 }
 
+enum ResponsiStatus {
+  DRAFT
+  UNDER_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EducationVideoStatus {
+  DRAFT
+  PUBLISHED
+}
+
 enum EventGroupStatus {
   DRAFT
   PUBLISHED
@@ -171,6 +183,19 @@ enum LinkWorkspaceRole {
 enum LinkWorkspaceStatus {
   ACTIVE
   ARCHIVED
+}
+
+enum MajorHIMTIKit {
+  COMPUTER_SCIENCE
+  MOBILE_APPLICATION_AND_TECHNOLOGY
+  GAME_APPLICATION_AND_TECHNOLOGY
+  DATA_SCIENCE
+  CYBER_SECURITY
+  COMPUTER_SCIENCE_AND_MATHEMATICS
+  COMPUTER_SCIENCE_AND_STATISTIC
+  COMPUTER_SCIENCE_SOFTWARE_ENGINEERING
+  ARTIFICIAL_INTELLIGENCE
+  DIGITAL_PSYCHOLOGY
 }
 
 enum ElectionStatus {
@@ -312,6 +337,95 @@ model User {
   electionParticipations         ElectionParticipation[]
 
   @@map("users")
+}
+
+model Course {
+  id        String    @id @default(nanoid())
+  name      String    @unique @db.VarChar(255)
+  code      String?   @unique @db.VarChar(50)
+  description String?   @db.Text
+  status    Status    @default(ACTIVE)
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+
+  responsies Responsi[]
+  studyClubSessions StudyClubSession[]
+
+  @@map("courses")
+}
+
+model Responsi {
+  id             String         @id @default(nanoid())
+  title          String         @db.VarChar(255)
+  summaryType    String         @default("Responsi") @db.VarChar(20)
+  courseId       String
+  academicPeriod String         @db.VarChar(50)
+  semester       Int?
+  examType       String         @db.VarChar(50)
+  status         ResponsiStatus @default(DRAFT)
+  pic            String         @db.VarChar(255)
+  content        String         @default("") @db.Text
+  createdAt      DateTime       @default(now()) @db.Timestamp(0)
+  updatedAt      DateTime?      @updatedAt
+
+  course   Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  versions ResponsiVersion[]
+
+  @@map("responsies")
+}
+
+model EducationVideo {
+  id             String               @id @default(nanoid())
+  title          String               @db.VarChar(255)
+  sessionId      String
+  youtubeUrl     String               @db.Text
+  youtubeVideoId String               @db.VarChar(11)
+  status         EducationVideoStatus @default(DRAFT)
+  createdAt      DateTime             @default(now()) @db.Timestamp(3)
+  updatedAt      DateTime             @default(now()) @updatedAt @db.Timestamp(3)
+
+  @@index([sessionId])
+  @@index([status, updatedAt])
+  @@map("education_videos")
+}
+
+model ResponsiVersion {
+  id         String         @id @default(nanoid())
+  responsiId String
+  version    String         @db.VarChar(20)
+  content    String         @db.Text
+  status     ResponsiStatus
+  createdBy  String?        @db.VarChar(255)
+  createdAt  DateTime       @default(now()) @db.Timestamp(0)
+
+  responsi Responsi @relation(fields: [responsiId], references: [id], onDelete: Cascade)
+
+  @@map("responsi_versions")
+}
+
+model StudyClubSession {
+  id              String   @id @default(nanoid())
+  title           String   @db.VarChar(255)
+  type            String   @db.VarChar(20)
+  courseId        String
+  description     String   @default("") @db.Text
+  startsAt        DateTime @db.Timestamptz(3)
+  endsAt          DateTime @db.Timestamptz(3)
+  location        String   @default("") @db.VarChar(255)
+  meetingUrl      String   @default("") @db.VarChar(2048)
+  registrationUrl String   @default("") @db.VarChar(2048)
+  capacity        Int?
+  isDemo          Boolean  @default(false)
+  createdBy       String   @db.VarChar(100)
+  updatedBy       String   @db.VarChar(100)
+  createdAt       DateTime @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
+
+  @@index([courseId, startsAt])
+  @@index([endsAt, startsAt])
+  @@map("study_club_sessions")
 }
 
 model MembershipPeriod {
@@ -1165,4 +1279,53 @@ model ElectionBallot {
   @@index([electionId])
   @@index([candidateId])
   @@map("election_ballots")
+}
+
+// ==========================================
+// HIMTI Kit
+// ==========================================
+
+model HimtiKitResource {
+  id            String  @id @default(nanoid())
+  title         String
+  description   String?
+  downloadUrl   String
+  coverImageUrl String? @db.Text
+  majors         MajorHIMTIKit[]
+
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+}
+
+model HimtiKitSoftware {
+  id            String  @id @default(nanoid())
+  name          String
+  description   String
+  downloadUrl   String
+  coverImageUrl String? @db.Text
+
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+}
+
+model HimtiKitAttendee {
+  id        String   @id @default(nanoid())
+  name      String
+  nim       String   @unique
+
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
+}
+
+model HimtiKitAppearance {
+  id                 String   @id @default(nanoid())
+  accentColor        String   @default("#0284c7")
+  backgroundImageUrl String   @db.Text
+  overlayEnabled     Boolean  @default(true)
+  overlayDarkness    Int      @default(65)
+  blurEnabled        Boolean  @default(true)
+  blurIntensity      Int      @default(4)
+
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt
 }
