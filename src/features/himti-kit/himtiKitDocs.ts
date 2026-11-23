@@ -6,13 +6,14 @@ export const himtiKitDocs = {
     '/himti-kit/resources': {
       get: {
         tags: ['HIMTI Kit - Resources'],
-        summary: 'Get all learning resources (public, no login required)',
+        summary: 'Get all learning resources (requires a HIMTI Kit session from NIM validation, or an admin session)',
         parameters: [
           { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search by title' },
           { name: 'major', in: 'query', schema: { type: 'string' }, description: 'Show only resources that include this major' },
         ],
         responses: {
           200: { description: 'List of resources returned successfully' },
+          401: { description: 'No HIMTI Kit session' },
         },
       },
       post: {
@@ -45,7 +46,7 @@ export const himtiKitDocs = {
     '/himti-kit/resources/{id}': {
       get: {
         tags: ['HIMTI Kit - Resources'],
-        summary: 'Get a resource by id (public, no login required)',
+        summary: 'Get a resource by id (requires a HIMTI Kit session from NIM validation, or an admin session)',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
           200: { description: 'Resource found' },
@@ -78,7 +79,7 @@ export const himtiKitDocs = {
     '/himti-kit/software': {
       get: {
         tags: ['HIMTI Kit - Software'],
-        summary: 'Get all software entries (public, no login required)',
+        summary: 'Get all software entries (requires a HIMTI Kit session from NIM validation, or an admin session)',
         parameters: [
           { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search by software name' },
         ],
@@ -115,7 +116,7 @@ export const himtiKitDocs = {
     '/himti-kit/software/{id}': {
       get: {
         tags: ['HIMTI Kit - Software'],
-        summary: 'Get a software entry by id (public, no login required)',
+        summary: 'Get a software entry by id (requires a HIMTI Kit session from NIM validation, or an admin session)',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
           200: { description: 'Software found' },
@@ -233,7 +234,7 @@ export const himtiKitDocs = {
     '/himti-kit/attendees/validate/{nim}': {
       get: {
         tags: ['HIMTI Kit - Public'],
-        summary: 'Validate whether a Binusian NIM is an eligible TECHNO attendee (public, no admin auth)',
+        summary: 'Validate whether a Binusian NIM is an eligible TECHNO attendee (public, no admin auth). On success the response sets the httpOnly himti_kit_session cookie (7 days)',
         parameters: [{ name: 'nim', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
           200: {
@@ -260,6 +261,27 @@ export const himtiKitDocs = {
       },
     },
  
+    '/himti-kit/session': {
+      get: {
+        tags: ['HIMTI Kit - Public'],
+        summary: 'Check the current HIMTI Kit session (cookie set by NIM validation)',
+        responses: {
+          200: { description: 'Session is valid; returns nim, name and expiresAt' },
+          401: { description: 'No session, or the session is expired or invalid' },
+        },
+      },
+    },
+
+    '/himti-kit/session/logout': {
+      post: {
+        tags: ['HIMTI Kit - Public'],
+        summary: 'End the HIMTI Kit session by clearing the session cookie',
+        responses: {
+          200: { description: 'Session cookie cleared' },
+        },
+      },
+    },
+
     // ==========================================
     // DOCS UNTUK WEBSITE APPEARANCE
     // ==========================================

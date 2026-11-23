@@ -4,6 +4,11 @@ import { requireAuth } from '@/middleware/authMiddleware.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
 import { validateRequest } from './himtiKitValidateRequest.js';
 import {
+  requireKitAccess,
+  kitSessionStatus,
+  kitSessionLogout,
+} from './himtiKitSession.js';
+import {
   ResourceRepository,
   SoftwareRepository,
   EligibleAttendeeRepository,
@@ -60,28 +65,37 @@ const appearanceController = new AppearanceController(appearanceService);
 // ROUTES PUBLIK
 // ==========================================
 
+// Sukses validasi NIM menerbitkan session cookie (httpOnly, 7 hari).
 publicRouter.get('/attendees/validate/:nim', attendeeController.validateAttendee);
+publicRouter.get('/session', kitSessionStatus);
+publicRouter.post('/session/logout', kitSessionLogout);
+
+// Katalog hanya untuk peserta yang sudah validasi NIM (atau admin HIMTI Kit).
 
 publicRouter.get(
   '/resources',
+  requireKitAccess,
   validateRequest({ query: ResourceQuerySchema }),
   resourceController.getAllResources
 );
  
 publicRouter.get(
   '/resources/:id',
+  requireKitAccess,
   validateRequest({ params: ResourceParamsSchema }),
   resourceController.getResourceById
 );
  
 publicRouter.get(
   '/software',
+  requireKitAccess,
   validateRequest({ query: softwareQuerySchema }),
   softwareController.getAllSoftware
 );
  
 publicRouter.get(
   '/software/:id',
+  requireKitAccess,
   validateRequest({ params: softwareParamsSchema }),
   softwareController.getSoftwareById
 );

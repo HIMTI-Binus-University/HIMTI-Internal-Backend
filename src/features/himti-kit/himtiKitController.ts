@@ -20,6 +20,7 @@ import {
   AttendeeQuery,
   UpdateKitAppearanceInput,
 } from './himtiKitTypes.js';
+import { setKitSessionCookie } from './himtiKitSession.js';
 
 // ==========================================
 // CONTROLLER UNTUK RESOURCES
@@ -196,6 +197,10 @@ export class EligibleAttendeeController {
     try {
       const { nim } = req.params as { nim: string };
       const result = await this.attendeeService.validateAttendee(nim);
+      res.set('Cache-Control', 'no-store');
+      if (result.eligible) {
+        setKitSessionCookie(res, { nim, name: result.name ?? '' });
+      }
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);
