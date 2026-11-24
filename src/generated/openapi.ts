@@ -928,6 +928,123 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/himti-kit/attendees/bulk-import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upsert TECHNO attendees by NIM */
+        post: operations["bulkImportHimtiKitAttendees"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/himti-kit/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List learning materials (HIMTI Kit session or admin session) */
+        get: operations["listHimtiKitResources"];
+        put?: never;
+        post: operations["createHimtiKitResource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/himti-kit/resources/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteHimtiKitResource"];
+        options?: never;
+        head?: never;
+        patch: operations["updateHimtiKitResource"];
+        trace?: never;
+    };
+    "/api/himti-kit/resources/bulk-import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import learning materials in one transaction. Titles that already exist are skipped. */
+        post: operations["bulkImportHimtiKitResources"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/himti-kit/software": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List software (HIMTI Kit session or admin session) */
+        get: operations["listHimtiKitSoftware"];
+        put?: never;
+        post: operations["createHimtiKitSoftware"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/himti-kit/software/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteHimtiKitSoftware"];
+        options?: never;
+        head?: never;
+        patch: operations["updateHimtiKitSoftware"];
+        trace?: never;
+    };
+    "/api/himti-kit/software/bulk-import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import software in one transaction. Names that already exist are skipped. */
+        post: operations["bulkImportHimtiKitSoftware"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internal/education/course-groups": {
         parameters: {
             query?: never;
@@ -9244,6 +9361,29 @@ export interface components {
             status: "fail" | "error";
             success?: boolean;
         };
+        BulkImportHimtiKitAttendeesBody: {
+            attendees: {
+                name: string;
+                nim: string;
+            }[];
+        };
+        BulkImportHimtiKitResourcesBody: {
+            resources: {
+                coverImageUrl?: string | null;
+                description?: string;
+                downloadUrl: string;
+                majors: ("COMPUTER_SCIENCE" | "MOBILE_APPLICATION_AND_TECHNOLOGY" | "GAME_APPLICATION_AND_TECHNOLOGY" | "DATA_SCIENCE" | "CYBER_SECURITY" | "COMPUTER_SCIENCE_AND_MATHEMATICS" | "COMPUTER_SCIENCE_AND_STATISTIC" | "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING" | "ARTIFICIAL_INTELLIGENCE" | "DIGITAL_PSYCHOLOGY")[];
+                title: string;
+            }[];
+        };
+        BulkImportHimtiKitSoftwareBody: {
+            software: {
+                coverImageUrl?: string | null;
+                description: string;
+                downloadUrl: string;
+                name: string;
+            }[];
+        };
         CompleteProfileRequest: {
             affiliation?: string;
             department?: string;
@@ -9268,6 +9408,19 @@ export interface components {
             studyProgramName?: string;
             universityId?: string;
             universityName?: string;
+        };
+        CreateHimtiKitResourceBody: {
+            coverImageUrl?: string | null;
+            description?: string;
+            downloadUrl: string;
+            majors: ("COMPUTER_SCIENCE" | "MOBILE_APPLICATION_AND_TECHNOLOGY" | "GAME_APPLICATION_AND_TECHNOLOGY" | "DATA_SCIENCE" | "CYBER_SECURITY" | "COMPUTER_SCIENCE_AND_MATHEMATICS" | "COMPUTER_SCIENCE_AND_STATISTIC" | "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING" | "ARTIFICIAL_INTELLIGENCE" | "DIGITAL_PSYCHOLOGY")[];
+            title: string;
+        };
+        CreateHimtiKitSoftwareBody: {
+            coverImageUrl?: string | null;
+            description: string;
+            downloadUrl: string;
+            name: string;
         };
         CreateMembershipPeriodRequest: {
             id: string;
@@ -10167,6 +10320,41 @@ export interface components {
             timestamp: string;
             uptime: number;
         };
+        HimtiKitBulkImportResult: {
+            skipped: {
+                key: string;
+                reason: string;
+                /** @description 1-based row in the payload */
+                row: number;
+            }[];
+            totalCreated: number;
+            totalSkipped: number;
+            totalSubmitted: number;
+        };
+        HimtiKitResource: {
+            coverImageUrl: string | null;
+            createdAt: string;
+            description: string | null;
+            downloadUrl: string;
+            id: string;
+            /**
+             * @description First entry of majors. Kept for older clients; use majors.
+             * @enum {string|null}
+             */
+            major: "COMPUTER_SCIENCE" | "MOBILE_APPLICATION_AND_TECHNOLOGY" | "GAME_APPLICATION_AND_TECHNOLOGY" | "DATA_SCIENCE" | "CYBER_SECURITY" | "COMPUTER_SCIENCE_AND_MATHEMATICS" | "COMPUTER_SCIENCE_AND_STATISTIC" | "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING" | "ARTIFICIAL_INTELLIGENCE" | "DIGITAL_PSYCHOLOGY" | null;
+            majors: ("COMPUTER_SCIENCE" | "MOBILE_APPLICATION_AND_TECHNOLOGY" | "GAME_APPLICATION_AND_TECHNOLOGY" | "DATA_SCIENCE" | "CYBER_SECURITY" | "COMPUTER_SCIENCE_AND_MATHEMATICS" | "COMPUTER_SCIENCE_AND_STATISTIC" | "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING" | "ARTIFICIAL_INTELLIGENCE" | "DIGITAL_PSYCHOLOGY")[];
+            title: string;
+            updatedAt: string | null;
+        };
+        HimtiKitSoftware: {
+            coverImageUrl: string | null;
+            createdAt: string;
+            description: string;
+            downloadUrl: string;
+            id: string;
+            name: string;
+            updatedAt: string | null;
+        };
         LinkWorkspace: {
             _count: {
                 links: number;
@@ -10653,6 +10841,19 @@ export interface components {
                 type: "Study Club" | "Responsi";
                 updatedAt: string;
             };
+        };
+        UpdateHimtiKitResourceBody: {
+            coverImageUrl?: string | null;
+            description?: string;
+            downloadUrl?: string;
+            majors?: ("COMPUTER_SCIENCE" | "MOBILE_APPLICATION_AND_TECHNOLOGY" | "GAME_APPLICATION_AND_TECHNOLOGY" | "DATA_SCIENCE" | "CYBER_SECURITY" | "COMPUTER_SCIENCE_AND_MATHEMATICS" | "COMPUTER_SCIENCE_AND_STATISTIC" | "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING" | "ARTIFICIAL_INTELLIGENCE" | "DIGITAL_PSYCHOLOGY")[];
+            title?: string;
+        };
+        UpdateHimtiKitSoftwareBody: {
+            coverImageUrl?: string | null;
+            description?: string;
+            downloadUrl?: string;
+            name?: string;
         };
         UpdateMembershipPeriodRequest: {
             label: string;
@@ -11612,6 +11813,512 @@ export interface operations {
             };
         };
     };
+    bulkImportHimtiKitAttendees: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkImportHimtiKitAttendeesBody"];
+            };
+        };
+        responses: {
+            /** @description Import summary. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            totalCreated: number;
+                            totalDuplicatesInPayload: number;
+                            totalSubmitted: number;
+                            totalUpdated: number;
+                        };
+                        success: boolean;
+                    };
+                };
+            };
+            /** @description Validation error. Bulk imports list one error per row as `resources.<index>.<field>`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_himti_kit permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listHimtiKitResources: {
+        parameters: {
+            query?: {
+                search?: string;
+                major?: "COMPUTER_SCIENCE" | "MOBILE_APPLICATION_AND_TECHNOLOGY" | "GAME_APPLICATION_AND_TECHNOLOGY" | "DATA_SCIENCE" | "CYBER_SECURITY" | "COMPUTER_SCIENCE_AND_MATHEMATICS" | "COMPUTER_SCIENCE_AND_STATISTIC" | "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING" | "ARTIFICIAL_INTELLIGENCE" | "DIGITAL_PSYCHOLOGY";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Learning materials. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HimtiKitResource"][];
+                        success: boolean;
+                    };
+                };
+            };
+        };
+    };
+    createHimtiKitResource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateHimtiKitResourceBody"];
+            };
+        };
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HimtiKitResource"];
+                        success: boolean;
+                    };
+                };
+            };
+            /** @description Validation error. Bulk imports list one error per row as `resources.<index>.<field>`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_himti_kit permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteHimtiKitResource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation error. Bulk imports list one error per row as `resources.<index>.<field>`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_himti_kit permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateHimtiKitResource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateHimtiKitResourceBody"];
+            };
+        };
+        responses: {
+            /** @description Updated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HimtiKitResource"];
+                        success: boolean;
+                    };
+                };
+            };
+            /** @description Validation error. Bulk imports list one error per row as `resources.<index>.<field>`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_himti_kit permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    bulkImportHimtiKitResources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkImportHimtiKitResourcesBody"];
+            };
+        };
+        responses: {
+            /** @description Import summary. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HimtiKitBulkImportResult"];
+                        success: boolean;
+                    };
+                };
+            };
+            /** @description Validation error. Bulk imports list one error per row as `resources.<index>.<field>`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_himti_kit permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listHimtiKitSoftware: {
+        parameters: {
+            query?: {
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Software entries. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HimtiKitSoftware"][];
+                        success: boolean;
+                    };
+                };
+            };
+        };
+    };
+    createHimtiKitSoftware: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateHimtiKitSoftwareBody"];
+            };
+        };
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HimtiKitSoftware"];
+                        success: boolean;
+                    };
+                };
+            };
+            /** @description Validation error. Bulk imports list one error per row as `resources.<index>.<field>`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_himti_kit permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteHimtiKitSoftware: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation error. Bulk imports list one error per row as `resources.<index>.<field>`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_himti_kit permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Software not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateHimtiKitSoftware: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateHimtiKitSoftwareBody"];
+            };
+        };
+        responses: {
+            /** @description Updated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HimtiKitSoftware"];
+                        success: boolean;
+                    };
+                };
+            };
+            /** @description Validation error. Bulk imports list one error per row as `resources.<index>.<field>`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_himti_kit permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Software not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    bulkImportHimtiKitSoftware: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkImportHimtiKitSoftwareBody"];
+            };
+        };
+        responses: {
+            /** @description Import summary. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HimtiKitBulkImportResult"];
+                        success: boolean;
+                    };
+                };
+            };
+            /** @description Validation error. Bulk imports list one error per row as `resources.<index>.<field>`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_himti_kit permission required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     listEducationCourseGroups: {
         parameters: {
             query?: never;
@@ -12247,13 +12954,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Session integration is not available */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
         };
     };
     createEducationVideo: {
@@ -12299,8 +12999,8 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Session integration is not available */
-            503: {
+            /** @description Session no longer available */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12342,22 +13042,8 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Video or session not found */
+            /** @description Video not found */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session no longer available */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session integration is not available */
-            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12397,22 +13083,8 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Video or session not found */
+            /** @description Video not found */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session no longer available */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session integration is not available */
-            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12467,13 +13139,6 @@ export interface operations {
             };
             /** @description Session no longer available */
             409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Session integration is not available */
-            503: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -16,6 +16,8 @@ import {
   SoftwareQuery,
   CreateAttendeeInput,
   BulkImportAttendeesInput,
+  BulkImportResourcesInput,
+  BulkImportSoftwareInput,
   AttendeeParams,
   AttendeeQuery,
   UpdateKitAppearanceInput,
@@ -65,6 +67,16 @@ export class ResourceController {
       const data = req.body as UpdateKitResourcesInput;
       const resource = await this.resourceService.updateResource(id, data);
       res.status(200).json({ success: true, data: resource });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  bulkImportResources = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = req.body as BulkImportResourcesInput;
+      const result = await this.resourceService.bulkImportResources(data);
+      res.status(201).json({ success: true, data: result });
     } catch (error) {
       next(error);
     }
@@ -124,6 +136,16 @@ export class SoftwareController {
       const data = req.body as UpdateKitSoftwareInput;
       const software = await this.softwareService.updateSoftware(id, data);
       res.status(200).json({ success: true, data: software });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  bulkImportSoftware = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = req.body as BulkImportSoftwareInput;
+      const result = await this.softwareService.bulkImportSoftware(data);
+      res.status(201).json({ success: true, data: result });
     } catch (error) {
       next(error);
     }

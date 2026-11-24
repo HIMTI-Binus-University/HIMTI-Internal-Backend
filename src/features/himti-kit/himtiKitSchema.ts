@@ -48,6 +48,36 @@ export const CreateKitResourcesSchema = z.object ({
 
 export const UpdateKitResourcesSchema = CreateKitResourcesSchema.partial();
 
+export const BULK_IMPORT_MAX_ROWS = 500;
+
+// Rejects rows whose key (title/name) repeats inside the same payload.
+const rejectDuplicateKeys =
+   <T>(key: (row: T) => string, field: string) =>
+   (rows: T[], context: z.RefinementCtx) => {
+      const seen = new Map<string, number>();
+      rows.forEach((row, index) => {
+         const normalized = key(row).trim().toLowerCase();
+         const first = seen.get(normalized);
+         if (first !== undefined) {
+            context.addIssue({
+               code: 'custom',
+               path: [index, field],
+               message: `Duplicate of row ${first + 1} in this import`,
+            });
+         } else {
+            seen.set(normalized, index);
+         }
+      });
+   };
+
+export const BulkImportResourcesSchema = z.object({
+   resources: z
+      .array(CreateKitResourcesSchema)
+      .min(1, 'At least one resource is required')
+      .max(BULK_IMPORT_MAX_ROWS)
+      .superRefine(rejectDuplicateKeys((row) => row.title, 'title')),
+});
+
 export const ResourceParamsSchema = z.object({
   id: z.string().min(1),
 });
@@ -70,6 +100,14 @@ export const CreateKitSoftwareSchema = z.object ({
 });
 
 export const UpdateKitSoftwareSchema = CreateKitSoftwareSchema.partial();
+
+export const BulkImportSoftwareSchema = z.object({
+   software: z
+      .array(CreateKitSoftwareSchema)
+      .min(1, 'At least one software entry is required')
+      .max(BULK_IMPORT_MAX_ROWS)
+      .superRefine(rejectDuplicateKeys((row) => row.name, 'name')),
+});
 
 export const softwareParamsSchema = z.object({
   id: z.string().min(1),

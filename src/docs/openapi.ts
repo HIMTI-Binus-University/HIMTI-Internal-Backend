@@ -24,6 +24,7 @@ import { registerElectionDocs } from '@/features/elections/electionDocs.js';
 import { registerEducationDocs } from '@/features/education/educationDocs.js';
 import { registerStudyClubDocs } from '@/features/study-clubs/studyClubDocs.js';
 import { registerEducationVideoDocs } from '@/features/education/videoDocs.js';
+import { registerHimtiKitDocs } from '@/features/himti-kit/himtiKitDocs.js';
 
 const registry = new OpenAPIRegistry();
 
@@ -56,6 +57,7 @@ registerElectionDocs(registry);
 registerEducationDocs(registry);
 registerStudyClubDocs(registry);
 registerEducationVideoDocs(registry);
+registerHimtiKitDocs(registry);
 
 export const generateOpenApiDocument = () => {
    const generator = new OpenApiGeneratorV3(registry.definitions);
