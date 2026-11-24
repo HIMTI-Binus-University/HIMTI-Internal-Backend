@@ -45,6 +45,17 @@ export class ResourceRepository {
   async delete(id: string): Promise<HimtiKitResource> {
     return this.prisma.himtiKitResource.delete({ where: { id } });
   }
+
+  async findTitles(): Promise<string[]> {
+    const rows = await this.prisma.himtiKitResource.findMany({ select: { title: true } });
+    return rows.map((row) => row.title);
+  }
+
+  // createMany is a single INSERT, so the batch succeeds or fails as a whole.
+  async createMany(rows: Array<{ id: string } & CreateKitResourcesInput>): Promise<number> {
+    const result = await this.prisma.himtiKitResource.createMany({ data: rows });
+    return result.count;
+  }
 }
 
 // ==========================================
@@ -79,6 +90,16 @@ export class SoftwareRepository {
  
   async delete(id: string): Promise<HimtiKitSoftware> {
     return this.prisma.himtiKitSoftware.delete({ where: { id } });
+  }
+
+  async findNames(): Promise<string[]> {
+    const rows = await this.prisma.himtiKitSoftware.findMany({ select: { name: true } });
+    return rows.map((row) => row.name);
+  }
+
+  async createMany(rows: Array<{ id: string } & CreateKitSoftwareInput>): Promise<number> {
+    const result = await this.prisma.himtiKitSoftware.createMany({ data: rows });
+    return result.count;
   }
 }
 

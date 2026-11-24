@@ -29,6 +29,8 @@ import {
 import {
   CreateKitResourcesSchema,
   UpdateKitResourcesSchema,
+  BulkImportResourcesSchema,
+  BulkImportSoftwareSchema,
   ResourceParamsSchema,
   ResourceQuerySchema,
   CreateKitSoftwareSchema,
@@ -120,6 +122,12 @@ router.post(
   resourceController.createResource
 );
 
+router.post(
+  '/resources/bulk-import',
+  validateRequest({ body: BulkImportResourcesSchema }),
+  resourceController.bulkImportResources
+);
+
 router.patch(
   '/resources/:id',
   validateRequest({ params: ResourceParamsSchema, body: UpdateKitResourcesSchema }),
@@ -140,6 +148,12 @@ router.post(
   '/software',
   validateRequest({ body: CreateKitSoftwareSchema }),
   softwareController.createSoftware
+);
+
+router.post(
+  '/software/bulk-import',
+  validateRequest({ body: BulkImportSoftwareSchema }),
+  softwareController.bulkImportSoftware
 );
 
 router.patch(

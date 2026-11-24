@@ -1,334 +1,190 @@
-export const himtiKitDocs = {
-  paths: {
-    // ==========================================
-    // DOCS UNTUK RESOURCES
-    // ==========================================
-    '/himti-kit/resources': {
-      get: {
-        tags: ['HIMTI Kit - Resources'],
-        summary: 'Get all learning resources (requires a HIMTI Kit session from NIM validation, or an admin session)',
-        parameters: [
-          { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search by title' },
-          { name: 'major', in: 'query', schema: { type: 'string' }, description: 'Show only resources that include this major' },
-        ],
-        responses: {
-          200: { description: 'List of resources returned successfully' },
-          401: { description: 'No HIMTI Kit session' },
-        },
-      },
-      post: {
-        tags: ['HIMTI Kit - Resources'],
-        summary: 'Create a new learning resource',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['title', 'majors', 'downloadUrl'],
-                properties: {
-                  title: { type: 'string' },
-                  description: { type: 'string' },
-                  majors: { type: 'array', minItems: 1, items: { type: 'string' }, example: ['COMPUTER_SCIENCE', 'DATA_SCIENCE'] },
-                  downloadUrl: { type: 'string' },
-                  coverImageUrl: { type: 'string', nullable: true },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          201: { description: 'Resource created successfully' },
-          400: { description: 'Validation error' },
-        },
-      },
-    },
-    '/himti-kit/resources/{id}': {
-      get: {
-        tags: ['HIMTI Kit - Resources'],
-        summary: 'Get a resource by id (requires a HIMTI Kit session from NIM validation, or an admin session)',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: {
-          200: { description: 'Resource found' },
-          404: { description: 'Resource not found' },
-        },
-      },
-      patch: {
-        tags: ['HIMTI Kit - Resources'],
-        summary: 'Update a resource by id',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: {
-          200: { description: 'Resource updated successfully' },
-          404: { description: 'Resource not found' },
-        },
-      },
-      delete: {
-        tags: ['HIMTI Kit - Resources'],
-        summary: 'Delete a resource by id',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: {
-          200: { description: 'Resource deleted successfully' },
-          404: { description: 'Resource not found' },
-        },
-      },
-    },
- 
-    // ==========================================
-    // DOCS UNTUK SOFTWARE
-    // ==========================================
-    '/himti-kit/software': {
-      get: {
-        tags: ['HIMTI Kit - Software'],
-        summary: 'Get all software entries (requires a HIMTI Kit session from NIM validation, or an admin session)',
-        parameters: [
-          { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search by software name' },
-        ],
-        responses: {
-          200: { description: 'List of software returned successfully' },
-        },
-      },
-      post: {
-        tags: ['HIMTI Kit - Software'],
-        summary: 'Create a new software entry',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['name', 'description', 'downloadUrl'],
-                properties: {
-                  name: { type: 'string' },
-                  description: { type: 'string' },
-                  downloadUrl: { type: 'string' },
-                  coverImageUrl: { type: 'string', nullable: true },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          201: { description: 'Software created successfully' },
-          400: { description: 'Validation error' },
-        },
-      },
-    },
-    '/himti-kit/software/{id}': {
-      get: {
-        tags: ['HIMTI Kit - Software'],
-        summary: 'Get a software entry by id (requires a HIMTI Kit session from NIM validation, or an admin session)',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: {
-          200: { description: 'Software found' },
-          404: { description: 'Software not found' },
-        },
-      },
-      patch: {
-        tags: ['HIMTI Kit - Software'],
-        summary: 'Update a software entry by id',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: {
-          200: { description: 'Software updated successfully' },
-          404: { description: 'Software not found' },
-        },
-      },
-      delete: {
-        tags: ['HIMTI Kit - Software'],
-        summary: 'Delete a software entry by id',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: {
-          200: { description: 'Software deleted successfully' },
-          404: { description: 'Software not found' },
-        },
-      },
-    },
- 
-    // ==========================================
-    // DOCS UNTUK ATTENDEE
-    // ==========================================
-    '/himti-kit/attendees': {
-      get: {
-        tags: ['HIMTI Kit - Attendees'],
-        summary: 'Get all eligible attendees',
-        parameters: [
-          { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search by name or NIM' },
-        ],
-        responses: {
-          200: { description: 'List of attendees returned successfully' },
-        },
-      },
-      post: {
-        tags: ['HIMTI Kit - Attendees'],
-        summary: 'Add a single eligible attendee manually (existing NIM = update name)',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['name', 'nim'],
-                properties: {
-                  name: { type: 'string' },
-                  nim: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          201: { description: 'Attendee added successfully' },
-          200: { description: 'NIM already registered, attendee name has been updated' },
-        },
-      },
-    },
-    '/himti-kit/attendees/bulk-import': {
-      post: {
-        tags: ['HIMTI Kit - Attendees'],
-        summary: 'Bulk import eligible attendees (from CSV parsed on the frontend)',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['attendees'],
-                properties: {
-                  attendees: {
-                    type: 'array',
-                    minItems: 1,
-                    items: {
-                      type: 'object',
-                      required: ['name', 'nim'],
-                      properties: {
-                        name: { type: 'string' },
-                        nim: { type: 'string' },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          201: { description: 'Attendees imported. New NIMs are created, existing NIMs get their name updated' },
-          400: { description: 'Validation error' },
-        },
-      },
-    },
-    '/himti-kit/attendees/{id}': {
-      delete: {
-        tags: ['HIMTI Kit - Attendees'],
-        summary: 'Remove an eligible attendee by id',
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: {
-          200: { description: 'Attendee deleted successfully' },
-          404: { description: 'Attendee not found' },
-        },
-      },
-    },
- 
-    // ==========================================
-    // DOCS UNTUK PUBLIC NIM VALIDATION
-    // ==========================================
-    '/himti-kit/attendees/validate/{nim}': {
-      get: {
-        tags: ['HIMTI Kit - Public'],
-        summary: 'Validate whether a Binusian NIM is an eligible TECHNO attendee (public, no admin auth). On success the response sets the httpOnly himti_kit_session cookie (7 days)',
-        parameters: [{ name: 'nim', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: {
-          200: {
-            description: 'Validation result',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean' },
-                    data: {
-                      type: 'object',
-                      properties: {
-                        eligible: { type: 'boolean' },
-                        name: { type: 'string' },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
- 
-    '/himti-kit/session': {
-      get: {
-        tags: ['HIMTI Kit - Public'],
-        summary: 'Check the current HIMTI Kit session (cookie set by NIM validation)',
-        responses: {
-          200: { description: 'Session is valid; returns nim, name and expiresAt' },
-          401: { description: 'No session, or the session is expired or invalid' },
-        },
-      },
-    },
+import '@/docs/zodOpenApi.js';
+import { z } from 'zod';
+import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
+import {
+   BulkImportAttendeesSchema,
+   BulkImportResourcesSchema,
+   BulkImportSoftwareSchema,
+   CreateKitResourcesSchema,
+   CreateKitSoftwareSchema,
+   MajorEnum,
+   ResourceParamsSchema,
+   ResourceQuerySchema,
+   UpdateKitResourcesSchema,
+   UpdateKitSoftwareSchema,
+   softwareParamsSchema,
+   softwareQuerySchema,
+} from './himtiKitSchema.js';
 
-    '/himti-kit/session/logout': {
-      post: {
-        tags: ['HIMTI Kit - Public'],
-        summary: 'End the HIMTI Kit session by clearing the session cookie',
-        responses: {
-          200: { description: 'Session cookie cleared' },
-        },
-      },
-    },
+const HimtiKitResourceSchema = z.object({
+   id: z.string(),
+   title: z.string(),
+   description: z.string().nullable(),
+   downloadUrl: z.string(),
+   coverImageUrl: z.string().nullable(),
+   majors: z.array(MajorEnum),
+   major: MajorEnum.nullable().openapi({
+      description: 'First entry of majors. Kept for older clients; use majors.',
+   }),
+   createdAt: z.string(),
+   updatedAt: z.string().nullable(),
+});
 
-    // ==========================================
-    // DOCS UNTUK WEBSITE APPEARANCE
-    // ==========================================
-    '/himti-kit/appearance': {
-      get: {
-        tags: ['HIMTI Kit - Appearance'],
-        summary: 'Get current website appearance settings (public, used by the portal to render itself)',
-        responses: {
-          200: { description: 'Current appearance settings returned successfully' },
-        },
+const HimtiKitSoftwareSchema = z.object({
+   id: z.string(),
+   name: z.string(),
+   description: z.string(),
+   downloadUrl: z.string(),
+   coverImageUrl: z.string().nullable(),
+   createdAt: z.string(),
+   updatedAt: z.string().nullable(),
+});
+
+const HimtiKitBulkImportResultSchema = z.object({
+   totalSubmitted: z.number().int(),
+   totalCreated: z.number().int(),
+   totalSkipped: z.number().int(),
+   skipped: z.array(
+      z.object({
+         row: z.number().int().openapi({ description: '1-based row in the payload' }),
+         key: z.string(),
+         reason: z.string(),
+      }),
+   ),
+});
+
+const HimtiKitAttendeeBulkImportResultSchema = z.object({
+   totalSubmitted: z.number().int(),
+   totalCreated: z.number().int(),
+   totalUpdated: z.number().int(),
+   totalDuplicatesInPayload: z.number().int(),
+});
+
+export const registerHimtiKitDocs = (registry: OpenAPIRegistry) => {
+   const resource = registry.register('HimtiKitResource', HimtiKitResourceSchema);
+   const software = registry.register('HimtiKitSoftware', HimtiKitSoftwareSchema);
+   const bulkResult = registry.register(
+      'HimtiKitBulkImportResult',
+      HimtiKitBulkImportResultSchema,
+   );
+   const createResource = registry.register('CreateHimtiKitResourceBody', CreateKitResourcesSchema);
+   const updateResource = registry.register('UpdateHimtiKitResourceBody', UpdateKitResourcesSchema);
+   const bulkResources = registry.register('BulkImportHimtiKitResourcesBody', BulkImportResourcesSchema);
+   const createSoftware = registry.register('CreateHimtiKitSoftwareBody', CreateKitSoftwareSchema);
+   const updateSoftware = registry.register('UpdateHimtiKitSoftwareBody', UpdateKitSoftwareSchema);
+   const bulkSoftware = registry.register('BulkImportHimtiKitSoftwareBody', BulkImportSoftwareSchema);
+   const bulkAttendees = registry.register('BulkImportHimtiKitAttendeesBody', BulkImportAttendeesSchema);
+
+   const json = <T extends z.ZodTypeAny>(schema: T) => ({
+      content: { 'application/json': { schema } },
+   });
+   const body = <T extends z.ZodTypeAny>(schema: T) => ({ body: { required: true, ...json(schema) } });
+   const data = <T extends z.ZodTypeAny>(schema: T) => json(z.object({ success: z.boolean(), data: schema }));
+
+   const base = '/api/himti-kit';
+   const admin = { tags: ['HIMTI Kit'], security: [{ sessionCookie: [] }] };
+   const errors = {
+      400: { description: 'Validation error. Bulk imports list one error per row as `resources.<index>.<field>`.' },
+      401: { description: 'Authentication required.' },
+      403: { description: 'manage_himti_kit permission required.' },
+   };
+
+   registry.registerPath({
+      tags: ['HIMTI Kit'],
+      method: 'get',
+      path: `${base}/resources`,
+      operationId: 'listHimtiKitResources',
+      summary: 'List learning materials (HIMTI Kit session or admin session)',
+      request: { query: ResourceQuerySchema },
+      responses: { 200: { description: 'Learning materials.', ...data(z.array(resource)) } },
+   });
+   registry.registerPath({
+      ...admin,
+      method: 'post',
+      path: `${base}/resources`,
+      operationId: 'createHimtiKitResource',
+      request: body(createResource),
+      responses: { ...errors, 201: { description: 'Created.', ...data(resource) } },
+   });
+   registry.registerPath({
+      ...admin,
+      method: 'post',
+      path: `${base}/resources/bulk-import`,
+      operationId: 'bulkImportHimtiKitResources',
+      summary: 'Import learning materials in one transaction. Titles that already exist are skipped.',
+      request: body(bulkResources),
+      responses: { ...errors, 201: { description: 'Import summary.', ...data(bulkResult) } },
+   });
+   registry.registerPath({
+      ...admin,
+      method: 'patch',
+      path: `${base}/resources/{id}`,
+      operationId: 'updateHimtiKitResource',
+      request: { params: ResourceParamsSchema, ...body(updateResource) },
+      responses: { ...errors, 200: { description: 'Updated.', ...data(resource) }, 404: { description: 'Resource not found.' } },
+   });
+   registry.registerPath({
+      ...admin,
+      method: 'delete',
+      path: `${base}/resources/{id}`,
+      operationId: 'deleteHimtiKitResource',
+      request: { params: ResourceParamsSchema },
+      responses: { ...errors, 200: { description: 'Deleted.' }, 404: { description: 'Resource not found.' } },
+   });
+
+   registry.registerPath({
+      tags: ['HIMTI Kit'],
+      method: 'get',
+      path: `${base}/software`,
+      operationId: 'listHimtiKitSoftware',
+      summary: 'List software (HIMTI Kit session or admin session)',
+      request: { query: softwareQuerySchema },
+      responses: { 200: { description: 'Software entries.', ...data(z.array(software)) } },
+   });
+   registry.registerPath({
+      ...admin,
+      method: 'post',
+      path: `${base}/software`,
+      operationId: 'createHimtiKitSoftware',
+      request: body(createSoftware),
+      responses: { ...errors, 201: { description: 'Created.', ...data(software) } },
+   });
+   registry.registerPath({
+      ...admin,
+      method: 'post',
+      path: `${base}/software/bulk-import`,
+      operationId: 'bulkImportHimtiKitSoftware',
+      summary: 'Import software in one transaction. Names that already exist are skipped.',
+      request: body(bulkSoftware),
+      responses: { ...errors, 201: { description: 'Import summary.', ...data(bulkResult) } },
+   });
+   registry.registerPath({
+      ...admin,
+      method: 'patch',
+      path: `${base}/software/{id}`,
+      operationId: 'updateHimtiKitSoftware',
+      request: { params: softwareParamsSchema, ...body(updateSoftware) },
+      responses: { ...errors, 200: { description: 'Updated.', ...data(software) }, 404: { description: 'Software not found.' } },
+   });
+   registry.registerPath({
+      ...admin,
+      method: 'delete',
+      path: `${base}/software/{id}`,
+      operationId: 'deleteHimtiKitSoftware',
+      request: { params: softwareParamsSchema },
+      responses: { ...errors, 200: { description: 'Deleted.' }, 404: { description: 'Software not found.' } },
+   });
+
+   registry.registerPath({
+      ...admin,
+      method: 'post',
+      path: `${base}/attendees/bulk-import`,
+      operationId: 'bulkImportHimtiKitAttendees',
+      summary: 'Upsert TECHNO attendees by NIM',
+      request: body(bulkAttendees),
+      responses: {
+         ...errors,
+         201: { description: 'Import summary.', ...data(HimtiKitAttendeeBulkImportResultSchema) },
       },
-      patch: {
-        tags: ['HIMTI Kit - Appearance'],
-        summary: 'Update website appearance settings (admin only)',
-        requestBody: {
-          required: false,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  accentColor: { type: 'string', example: '#2782B0' },
-                  backgroundImageUrl: { type: 'string', nullable: true },
-                  overlayEnabled: { type: 'boolean' },
-                  overlayDarkness: { type: 'integer', minimum: 0, maximum: 100, example: 65 },
-                  blurEnabled: { type: 'boolean' },
-                  blurIntensity: { type: 'integer', minimum: 0, maximum: 24, example: 4 },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          200: { description: 'Appearance updated successfully' },
-          400: { description: 'Validation error' },
-        },
-      },
-    },
-    '/himti-kit/appearance/reset': {
-      post: {
-        tags: ['HIMTI Kit - Appearance'],
-        summary: 'Reset website appearance settings back to default (admin only)',
-        responses: {
-          200: { description: 'Appearance reset to default successfully' },
-        },
-      },
-    },
-  },
+   });
 };
- 

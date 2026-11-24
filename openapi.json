@@ -38,6 +38,131 @@
             ],
             "type": "object"
          },
+         "BulkImportHimtiKitAttendeesBody": {
+            "properties": {
+               "attendees": {
+                  "items": {
+                     "properties": {
+                        "name": {
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "nim": {
+                           "minLength": 1,
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "nim",
+                        "name"
+                     ],
+                     "type": "object"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+               }
+            },
+            "required": [
+               "attendees"
+            ],
+            "type": "object"
+         },
+         "BulkImportHimtiKitResourcesBody": {
+            "properties": {
+               "resources": {
+                  "items": {
+                     "properties": {
+                        "coverImageUrl": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "description": {
+                           "type": "string"
+                        },
+                        "downloadUrl": {
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "majors": {
+                           "items": {
+                              "enum": [
+                                 "COMPUTER_SCIENCE",
+                                 "MOBILE_APPLICATION_AND_TECHNOLOGY",
+                                 "GAME_APPLICATION_AND_TECHNOLOGY",
+                                 "DATA_SCIENCE",
+                                 "CYBER_SECURITY",
+                                 "COMPUTER_SCIENCE_AND_MATHEMATICS",
+                                 "COMPUTER_SCIENCE_AND_STATISTIC",
+                                 "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING",
+                                 "ARTIFICIAL_INTELLIGENCE",
+                                 "DIGITAL_PSYCHOLOGY"
+                              ],
+                              "type": "string"
+                           },
+                           "minItems": 1,
+                           "type": "array"
+                        },
+                        "title": {
+                           "minLength": 1,
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "title",
+                        "majors",
+                        "downloadUrl"
+                     ],
+                     "type": "object"
+                  },
+                  "maxItems": 500,
+                  "minItems": 1,
+                  "type": "array"
+               }
+            },
+            "required": [
+               "resources"
+            ],
+            "type": "object"
+         },
+         "BulkImportHimtiKitSoftwareBody": {
+            "properties": {
+               "software": {
+                  "items": {
+                     "properties": {
+                        "coverImageUrl": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "description": {
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "downloadUrl": {
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "name": {
+                           "minLength": 1,
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "name",
+                        "description",
+                        "downloadUrl"
+                     ],
+                     "type": "object"
+                  },
+                  "maxItems": 500,
+                  "minItems": 1,
+                  "type": "array"
+               }
+            },
+            "required": [
+               "software"
+            ],
+            "type": "object"
+         },
          "CompleteProfileRequest": {
             "additionalProperties": false,
             "properties": {
@@ -136,6 +261,76 @@
                "phoneNumber",
                "memberType",
                "institutionType"
+            ],
+            "type": "object"
+         },
+         "CreateHimtiKitResourceBody": {
+            "properties": {
+               "coverImageUrl": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "description": {
+                  "type": "string"
+               },
+               "downloadUrl": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "majors": {
+                  "items": {
+                     "enum": [
+                        "COMPUTER_SCIENCE",
+                        "MOBILE_APPLICATION_AND_TECHNOLOGY",
+                        "GAME_APPLICATION_AND_TECHNOLOGY",
+                        "DATA_SCIENCE",
+                        "CYBER_SECURITY",
+                        "COMPUTER_SCIENCE_AND_MATHEMATICS",
+                        "COMPUTER_SCIENCE_AND_STATISTIC",
+                        "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING",
+                        "ARTIFICIAL_INTELLIGENCE",
+                        "DIGITAL_PSYCHOLOGY"
+                     ],
+                     "type": "string"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+               },
+               "title": {
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "title",
+               "majors",
+               "downloadUrl"
+            ],
+            "type": "object"
+         },
+         "CreateHimtiKitSoftwareBody": {
+            "properties": {
+               "coverImageUrl": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "description": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "downloadUrl": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "name": {
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "name",
+               "description",
+               "downloadUrl"
             ],
             "type": "object"
          },
@@ -3809,6 +4004,162 @@
             ],
             "type": "object"
          },
+         "HimtiKitBulkImportResult": {
+            "properties": {
+               "skipped": {
+                  "items": {
+                     "properties": {
+                        "key": {
+                           "type": "string"
+                        },
+                        "reason": {
+                           "type": "string"
+                        },
+                        "row": {
+                           "description": "1-based row in the payload",
+                           "type": "integer"
+                        }
+                     },
+                     "required": [
+                        "row",
+                        "key",
+                        "reason"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "totalCreated": {
+                  "type": "integer"
+               },
+               "totalSkipped": {
+                  "type": "integer"
+               },
+               "totalSubmitted": {
+                  "type": "integer"
+               }
+            },
+            "required": [
+               "totalSubmitted",
+               "totalCreated",
+               "totalSkipped",
+               "skipped"
+            ],
+            "type": "object"
+         },
+         "HimtiKitResource": {
+            "properties": {
+               "coverImageUrl": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "createdAt": {
+                  "type": "string"
+               },
+               "description": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "downloadUrl": {
+                  "type": "string"
+               },
+               "id": {
+                  "type": "string"
+               },
+               "major": {
+                  "description": "First entry of majors. Kept for older clients; use majors.",
+                  "enum": [
+                     "COMPUTER_SCIENCE",
+                     "MOBILE_APPLICATION_AND_TECHNOLOGY",
+                     "GAME_APPLICATION_AND_TECHNOLOGY",
+                     "DATA_SCIENCE",
+                     "CYBER_SECURITY",
+                     "COMPUTER_SCIENCE_AND_MATHEMATICS",
+                     "COMPUTER_SCIENCE_AND_STATISTIC",
+                     "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING",
+                     "ARTIFICIAL_INTELLIGENCE",
+                     "DIGITAL_PSYCHOLOGY",
+                     null
+                  ],
+                  "nullable": true,
+                  "type": "string"
+               },
+               "majors": {
+                  "items": {
+                     "enum": [
+                        "COMPUTER_SCIENCE",
+                        "MOBILE_APPLICATION_AND_TECHNOLOGY",
+                        "GAME_APPLICATION_AND_TECHNOLOGY",
+                        "DATA_SCIENCE",
+                        "CYBER_SECURITY",
+                        "COMPUTER_SCIENCE_AND_MATHEMATICS",
+                        "COMPUTER_SCIENCE_AND_STATISTIC",
+                        "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING",
+                        "ARTIFICIAL_INTELLIGENCE",
+                        "DIGITAL_PSYCHOLOGY"
+                     ],
+                     "type": "string"
+                  },
+                  "type": "array"
+               },
+               "title": {
+                  "type": "string"
+               },
+               "updatedAt": {
+                  "nullable": true,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "id",
+               "title",
+               "description",
+               "downloadUrl",
+               "coverImageUrl",
+               "majors",
+               "major",
+               "createdAt",
+               "updatedAt"
+            ],
+            "type": "object"
+         },
+         "HimtiKitSoftware": {
+            "properties": {
+               "coverImageUrl": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "createdAt": {
+                  "type": "string"
+               },
+               "description": {
+                  "type": "string"
+               },
+               "downloadUrl": {
+                  "type": "string"
+               },
+               "id": {
+                  "type": "string"
+               },
+               "name": {
+                  "type": "string"
+               },
+               "updatedAt": {
+                  "nullable": true,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "id",
+               "name",
+               "description",
+               "downloadUrl",
+               "coverImageUrl",
+               "createdAt",
+               "updatedAt"
+            ],
+            "type": "object"
+         },
          "LinkWorkspace": {
             "properties": {
                "_count": {
@@ -5744,6 +6095,66 @@
             "required": [
                "data"
             ],
+            "type": "object"
+         },
+         "UpdateHimtiKitResourceBody": {
+            "properties": {
+               "coverImageUrl": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "description": {
+                  "type": "string"
+               },
+               "downloadUrl": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "majors": {
+                  "items": {
+                     "enum": [
+                        "COMPUTER_SCIENCE",
+                        "MOBILE_APPLICATION_AND_TECHNOLOGY",
+                        "GAME_APPLICATION_AND_TECHNOLOGY",
+                        "DATA_SCIENCE",
+                        "CYBER_SECURITY",
+                        "COMPUTER_SCIENCE_AND_MATHEMATICS",
+                        "COMPUTER_SCIENCE_AND_STATISTIC",
+                        "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING",
+                        "ARTIFICIAL_INTELLIGENCE",
+                        "DIGITAL_PSYCHOLOGY"
+                     ],
+                     "type": "string"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+               },
+               "title": {
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "type": "object"
+         },
+         "UpdateHimtiKitSoftwareBody": {
+            "properties": {
+               "coverImageUrl": {
+                  "nullable": true,
+                  "type": "string"
+               },
+               "description": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "downloadUrl": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "name": {
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
             "type": "object"
          },
          "UpdateMembershipPeriodRequest": {
@@ -10190,6 +10601,635 @@
             "summary": "Check API health",
             "tags": [
                "Health"
+            ]
+         }
+      },
+      "/api/himti-kit/attendees/bulk-import": {
+         "post": {
+            "operationId": "bulkImportHimtiKitAttendees",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/BulkImportHimtiKitAttendeesBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "properties": {
+                                    "totalCreated": {
+                                       "type": "integer"
+                                    },
+                                    "totalDuplicatesInPayload": {
+                                       "type": "integer"
+                                    },
+                                    "totalSubmitted": {
+                                       "type": "integer"
+                                    },
+                                    "totalUpdated": {
+                                       "type": "integer"
+                                    }
+                                 },
+                                 "required": [
+                                    "totalSubmitted",
+                                    "totalCreated",
+                                    "totalUpdated",
+                                    "totalDuplicatesInPayload"
+                                 ],
+                                 "type": "object"
+                              },
+                              "success": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "success",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Import summary."
+               },
+               "400": {
+                  "description": "Validation error. Bulk imports list one error per row as `resources.<index>.<field>`."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_himti_kit permission required."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Upsert TECHNO attendees by NIM",
+            "tags": [
+               "HIMTI Kit"
+            ]
+         }
+      },
+      "/api/himti-kit/resources": {
+         "get": {
+            "operationId": "listHimtiKitResources",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "major",
+                  "required": false,
+                  "schema": {
+                     "enum": [
+                        "COMPUTER_SCIENCE",
+                        "MOBILE_APPLICATION_AND_TECHNOLOGY",
+                        "GAME_APPLICATION_AND_TECHNOLOGY",
+                        "DATA_SCIENCE",
+                        "CYBER_SECURITY",
+                        "COMPUTER_SCIENCE_AND_MATHEMATICS",
+                        "COMPUTER_SCIENCE_AND_STATISTIC",
+                        "COMPUTER_SCIENCE_SOFTWARE_ENGINEERING",
+                        "ARTIFICIAL_INTELLIGENCE",
+                        "DIGITAL_PSYCHOLOGY"
+                     ],
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "$ref": "#/components/schemas/HimtiKitResource"
+                                 },
+                                 "type": "array"
+                              },
+                              "success": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "success",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Learning materials."
+               }
+            },
+            "summary": "List learning materials (HIMTI Kit session or admin session)",
+            "tags": [
+               "HIMTI Kit"
+            ]
+         },
+         "post": {
+            "operationId": "createHimtiKitResource",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/CreateHimtiKitResourceBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/HimtiKitResource"
+                              },
+                              "success": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "success",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Created."
+               },
+               "400": {
+                  "description": "Validation error. Bulk imports list one error per row as `resources.<index>.<field>`."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_himti_kit permission required."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "HIMTI Kit"
+            ]
+         }
+      },
+      "/api/himti-kit/resources/{id}": {
+         "delete": {
+            "operationId": "deleteHimtiKitResource",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Deleted."
+               },
+               "400": {
+                  "description": "Validation error. Bulk imports list one error per row as `resources.<index>.<field>`."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_himti_kit permission required."
+               },
+               "404": {
+                  "description": "Resource not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "HIMTI Kit"
+            ]
+         },
+         "patch": {
+            "operationId": "updateHimtiKitResource",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/UpdateHimtiKitResourceBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/HimtiKitResource"
+                              },
+                              "success": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "success",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Updated."
+               },
+               "400": {
+                  "description": "Validation error. Bulk imports list one error per row as `resources.<index>.<field>`."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_himti_kit permission required."
+               },
+               "404": {
+                  "description": "Resource not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "HIMTI Kit"
+            ]
+         }
+      },
+      "/api/himti-kit/resources/bulk-import": {
+         "post": {
+            "operationId": "bulkImportHimtiKitResources",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/BulkImportHimtiKitResourcesBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/HimtiKitBulkImportResult"
+                              },
+                              "success": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "success",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Import summary."
+               },
+               "400": {
+                  "description": "Validation error. Bulk imports list one error per row as `resources.<index>.<field>`."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_himti_kit permission required."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Import learning materials in one transaction. Titles that already exist are skipped.",
+            "tags": [
+               "HIMTI Kit"
+            ]
+         }
+      },
+      "/api/himti-kit/software": {
+         "get": {
+            "operationId": "listHimtiKitSoftware",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": false,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "$ref": "#/components/schemas/HimtiKitSoftware"
+                                 },
+                                 "type": "array"
+                              },
+                              "success": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "success",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Software entries."
+               }
+            },
+            "summary": "List software (HIMTI Kit session or admin session)",
+            "tags": [
+               "HIMTI Kit"
+            ]
+         },
+         "post": {
+            "operationId": "createHimtiKitSoftware",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/CreateHimtiKitSoftwareBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/HimtiKitSoftware"
+                              },
+                              "success": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "success",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Created."
+               },
+               "400": {
+                  "description": "Validation error. Bulk imports list one error per row as `resources.<index>.<field>`."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_himti_kit permission required."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "HIMTI Kit"
+            ]
+         }
+      },
+      "/api/himti-kit/software/{id}": {
+         "delete": {
+            "operationId": "deleteHimtiKitSoftware",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Deleted."
+               },
+               "400": {
+                  "description": "Validation error. Bulk imports list one error per row as `resources.<index>.<field>`."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_himti_kit permission required."
+               },
+               "404": {
+                  "description": "Software not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "HIMTI Kit"
+            ]
+         },
+         "patch": {
+            "operationId": "updateHimtiKitSoftware",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/UpdateHimtiKitSoftwareBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/HimtiKitSoftware"
+                              },
+                              "success": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "success",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Updated."
+               },
+               "400": {
+                  "description": "Validation error. Bulk imports list one error per row as `resources.<index>.<field>`."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_himti_kit permission required."
+               },
+               "404": {
+                  "description": "Software not found."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "HIMTI Kit"
+            ]
+         }
+      },
+      "/api/himti-kit/software/bulk-import": {
+         "post": {
+            "operationId": "bulkImportHimtiKitSoftware",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/BulkImportHimtiKitSoftwareBody"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "201": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "$ref": "#/components/schemas/HimtiKitBulkImportResult"
+                              },
+                              "success": {
+                                 "type": "boolean"
+                              }
+                           },
+                           "required": [
+                              "success",
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Import summary."
+               },
+               "400": {
+                  "description": "Validation error. Bulk imports list one error per row as `resources.<index>.<field>`."
+               },
+               "401": {
+                  "description": "Authentication required."
+               },
+               "403": {
+                  "description": "manage_himti_kit permission required."
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "summary": "Import software in one transaction. Names that already exist are skipped.",
+            "tags": [
+               "HIMTI Kit"
             ]
          }
       },

@@ -3,6 +3,8 @@ import {
     MajorEnum,
     CreateKitResourcesSchema,
     UpdateKitResourcesSchema,
+    BulkImportResourcesSchema,
+    BulkImportSoftwareSchema,
     ResourceParamsSchema,
     ResourceQuerySchema,
     CreateKitSoftwareSchema,
@@ -24,6 +26,7 @@ import {
 export type Major = z.infer<typeof MajorEnum>;
 export type CreateKitResourcesInput = z.infer<typeof CreateKitResourcesSchema>;
 export type UpdateKitResourcesInput = z.infer<typeof UpdateKitResourcesSchema>;
+export type BulkImportResourcesInput = z.infer<typeof BulkImportResourcesSchema>;
 export type ResourceParams = z.infer<typeof ResourceParamsSchema>;
 export type ResourceQuery = z.infer<typeof ResourceQuerySchema>;
 
@@ -33,6 +36,7 @@ export type ResourceQuery = z.infer<typeof ResourceQuerySchema>;
 
 export type CreateKitSoftwareInput = z.infer<typeof CreateKitSoftwareSchema>;
 export type UpdateKitSoftwareInput = z.infer<typeof UpdateKitSoftwareSchema>;
+export type BulkImportSoftwareInput = z.infer<typeof BulkImportSoftwareSchema>;
 export type SoftwareParams = z.infer<typeof softwareParamsSchema>;
 export type SoftwareQuery = z.infer<typeof softwareQuerySchema>;
 
@@ -51,3 +55,19 @@ export type AttendeeQuery = z.infer<typeof AttendeeQuerySchema>;
  
 export type UpsertKitAppearanceInput = z.infer<typeof UpsertKitAppearanceSchema>;
 export type UpdateKitAppearanceInput = z.infer<typeof UpdateKitAppearanceSchema>;
+// ==========================================
+// TYPES UNTUK BULK IMPORT
+// ==========================================
+
+export interface BulkImportSkippedRow {
+  row: number;
+  key: string;
+  reason: string;
+}
+
+export interface BulkImportResult {
+  totalSubmitted: number;
+  totalCreated: number;
+  totalSkipped: number;
+  skipped: BulkImportSkippedRow[];
+}
