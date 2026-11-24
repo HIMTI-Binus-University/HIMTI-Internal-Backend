@@ -1,5 +1,6 @@
 import type { Prisma, ResponsiStatus } from '@prisma/client';
 import { AppError } from '@/utils/appError.js';
+import { publicDocument } from '@/features/public-education/publicEducationService.js';
 import { educationRepository as repo } from './educationRepository.js';
 import type {
    CourseGroupList,
@@ -9,6 +10,17 @@ import type {
    UpdateCourseGroup,
    UpdateResponsi,
 } from './educationTypes.js';
+
+function assertPublicDocument(content: string) {
+   try {
+      publicDocument(content);
+   } catch {
+      throw new AppError(
+         'Summary Markdown cannot be published as a public document',
+         400,
+      );
+   }
+}
 
 class EducationService {
    // Course Groups
@@ -144,8 +156,9 @@ class EducationService {
    }
 
    async createResponsi(data: CreateResponsi) {
-      const courseId = await this.resolveCourseId(data.course);
       const status = (data.status ?? 'DRAFT') as ResponsiStatus;
+      if (status === 'PUBLISHED') assertPublicDocument(data.content ?? '');
+      const courseId = await this.resolveCourseId(data.course);
 
       const created = await repo.createResponsi({
          title: data.title,
@@ -177,11 +190,6 @@ class EducationService {
          throw new AppError('Responsi not found', 404);
       }
 
-      let courseId = existing.courseId;
-      if (data.course) {
-         courseId = await this.resolveCourseId(data.course);
-      }
-
       const nextStatus = data.status
          ? (data.status as ResponsiStatus)
          : existing.status;
@@ -189,6 +197,11 @@ class EducationService {
       const isPublishing =
          nextStatus === 'PUBLISHED' &&
          (existing.status !== 'PUBLISHED' || data.content !== undefined);
+
+      if (isPublishing) assertPublicDocument(data.content ?? existing.content);
+      const courseId = data.course
+         ? await this.resolveCourseId(data.course)
+         : existing.courseId;
 
       const updated = await repo.updateResponsi(id, {
          ...(data.summaryType !== undefined && {

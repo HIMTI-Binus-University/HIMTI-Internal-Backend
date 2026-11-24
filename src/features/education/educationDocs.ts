@@ -64,7 +64,8 @@ export const registerEducationDocs = (registry: OpenAPIRegistry) => {
       security: [{ sessionCookie: [] }],
       responses: {
          200: {
-            description: 'Course groups available to Education.',
+            description:
+               'Course groups with totals for all linked summaries, sessions, and videos.',
             content: {
                'application/json': { schema: CourseGroupListResponse },
             },

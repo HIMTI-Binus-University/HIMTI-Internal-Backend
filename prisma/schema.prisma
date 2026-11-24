@@ -344,6 +344,7 @@ model Course {
   name      String    @unique @db.VarChar(255)
   code      String?   @unique @db.VarChar(50)
   description String?   @db.Text
+  semester  Int?
   status    Status    @default(ACTIVE)
   createdAt DateTime  @default(now()) @db.Timestamp(0)
   updatedAt DateTime? @updatedAt
@@ -417,6 +418,7 @@ model StudyClubSession {
   registrationUrl String   @default("") @db.VarChar(2048)
   capacity        Int?
   isDemo          Boolean  @default(false)
+  isPublic        Boolean  @default(false)
   createdBy       String   @db.VarChar(100)
   updatedBy       String   @db.VarChar(100)
   createdAt       DateTime @default(now()) @db.Timestamp(0)

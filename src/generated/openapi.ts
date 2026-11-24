@@ -6956,6 +6956,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/public/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List public Education resources */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Complete public catalog without document bodies */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicEducationCatalog"];
+                    };
+                };
+                /** @description Rate limit exceeded */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicEducationError"];
+                    };
+                };
+                /** @description Could not load resources */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicEducationError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/summaries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a published summary */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Read-only Tiptap 3 document and metadata */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicEducationSummary"];
+                    };
+                };
+                /** @description Invalid summary ID */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicEducationError"];
+                    };
+                };
+                /** @description Summary does not exist or is not public */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicEducationError"];
+                    };
+                };
+                /** @description Rate limit exceeded */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicEducationError"];
+                    };
+                };
+                /** @description Could not load resources */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicEducationError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/role": {
         parameters: {
             query?: never;
@@ -9292,6 +9420,7 @@ export interface components {
             description: string;
             /** Format: date-time */
             endsAt: string;
+            isPublic?: boolean;
             location: string;
             meetingUrl: string;
             registrationUrl: string;
@@ -9377,9 +9506,15 @@ export interface components {
         EducationCourseGroupListResponse: {
             data: {
                 code: string | null;
+                counts: {
+                    schedules: number;
+                    summaries: number;
+                    videos: number;
+                };
                 description?: string | null;
                 id: string;
                 name: string;
+                semester?: number | null;
                 /** @enum {string} */
                 status: "ACTIVE" | "INACTIVE";
             }[];
@@ -9390,6 +9525,7 @@ export interface components {
                 description?: string | null;
                 id: string;
                 name: string;
+                semester?: number | null;
                 /** @enum {string} */
                 status: "ACTIVE" | "INACTIVE";
             };
@@ -9398,6 +9534,7 @@ export interface components {
             code?: string | null;
             description?: string | null;
             name: string;
+            semester?: number | null;
         };
         EducationCreateResponsiBody: {
             academicPeriod: string;
@@ -9477,6 +9614,7 @@ export interface components {
             code?: string | null;
             description?: string | null;
             name?: string;
+            semester?: number | null;
             /** @enum {string} */
             status?: "ACTIVE" | "INACTIVE";
         };
@@ -10517,6 +10655,71 @@ export interface components {
             /** @enum {string} */
             msg: "success";
         };
+        PublicEducationCatalog: {
+            courses: {
+                code: string;
+                description: string;
+                id: string;
+                name: string;
+                semester: number;
+            }[];
+            events: {
+                courseId: string;
+                description: string;
+                /** Format: date-time */
+                endsAt: string;
+                id: string;
+                location: string;
+                quota?: number;
+                recordingUrl?: string;
+                /** Format: date-time */
+                startsAt: string;
+                title: string;
+                /** @enum {string} */
+                type: "Study Club" | "Responsi";
+            }[];
+            summaries: {
+                academicPeriod: string;
+                contributors: {
+                    displayName: string;
+                    id: string;
+                }[];
+                courseId: string;
+                /** @enum {string} */
+                examType: "Mid Exam" | "Final Exam";
+                id: string;
+                semester: number;
+                title: string;
+            }[];
+        };
+        PublicEducationError: {
+            error: {
+                code: string;
+                message: string;
+            };
+        };
+        PublicEducationSummary: {
+            academicPeriod: string;
+            content: {
+                content: ({
+                    type: string;
+                } & {
+                    [key: string]: unknown;
+                })[];
+                /** @enum {string} */
+                type: "doc";
+            };
+            contributors: {
+                displayName: string;
+                id: string;
+            }[];
+            courseId: string;
+            /** @enum {string} */
+            examType: "Mid Exam" | "Final Exam";
+            id: string;
+            semester: number;
+            title: string;
+        };
         RegistrationOptionsResponse: {
             data: {
                 binusRegions: {
@@ -10615,6 +10818,7 @@ export interface components {
                 endsAt: string;
                 id: string;
                 isDemo: boolean;
+                isPublic?: boolean;
                 location: string;
                 meetingUrl: string;
                 registrationUrl: string;
@@ -10643,6 +10847,7 @@ export interface components {
                 endsAt: string;
                 id: string;
                 isDemo: boolean;
+                isPublic?: boolean;
                 location: string;
                 meetingUrl: string;
                 registrationUrl: string;
@@ -10699,6 +10904,7 @@ export interface components {
             description?: string;
             /** Format: date-time */
             endsAt?: string;
+            isPublic?: boolean;
             location?: string;
             meetingUrl?: string;
             registrationUrl?: string;
@@ -11621,7 +11827,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Course groups available to Education. */
+            /** @description Course groups with totals for all linked summaries, sessions, and videos. */
             200: {
                 headers: {
                     [name: string]: unknown;

@@ -22,6 +22,7 @@ import {
 } from '@/docs/commonSchemas.js';
 import { registerElectionDocs } from '@/features/elections/electionDocs.js';
 import { registerEducationDocs } from '@/features/education/educationDocs.js';
+import { registerPublicEducationDocs } from '@/features/public-education/publicEducationDocs.js';
 import { registerStudyClubDocs } from '@/features/study-clubs/studyClubDocs.js';
 import { registerEducationVideoDocs } from '@/features/education/videoDocs.js';
 
@@ -54,6 +55,7 @@ registerEventTicketDocs(registry);
 registerMembershipDocs(registry);
 registerElectionDocs(registry);
 registerEducationDocs(registry);
+registerPublicEducationDocs(registry);
 registerStudyClubDocs(registry);
 registerEducationVideoDocs(registry);
 

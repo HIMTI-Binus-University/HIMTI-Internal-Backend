@@ -25,6 +25,7 @@ class StudyClubService {
          registrationUrl: row.registrationUrl,
          capacity: row.capacity,
          isDemo: row.isDemo,
+         isPublic: row.isPublic,
          createdAt: row.createdAt.toISOString(),
          updatedAt: row.updatedAt.toISOString(),
       };
@@ -74,6 +75,7 @@ class StudyClubService {
          meetingUrl: current.meetingUrl,
          registrationUrl: current.registrationUrl,
          capacity: current.capacity,
+         isPublic: current.isPublic,
          ...payload,
       });
       if (data.courseId !== current.courseId)
