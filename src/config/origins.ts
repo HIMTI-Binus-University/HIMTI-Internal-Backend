@@ -16,5 +16,4 @@ export const trustedOrigins = [
    'https://dev-election.himtibinus.or.id',
    'https://election.himtibinus.or.id',
    'https://himtikit.himtibinus.or.id',
-   'https://dev-himtikit.himtibinus.or.id',
 ];
