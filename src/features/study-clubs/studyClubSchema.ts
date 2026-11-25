@@ -80,3 +80,47 @@ export const StudyClubListResponseSchema = z.object({
       totalPages: z.number(),
    }),
 });
+
+export const PublicStudyClubQuerySchema = StudyClubListQuerySchema.pick({
+   page: true,
+   limit: true,
+})
+   .extend({
+      courseId: z.string().trim().min(1).max(100).optional(),
+      from: z.iso.datetime({ offset: true }).optional(),
+      to: z.iso.datetime({ offset: true }).optional(),
+      view: z.enum(['all', 'upcoming', 'recent-recordings']).default('all'),
+   })
+   .refine(
+      ({ from, to }) => !from || !to || Date.parse(from) < Date.parse(to),
+      { path: ['to'], message: 'End of date range must be after the start' },
+   );
+
+export const PublicStudyClubSessionSchema = sessionFields
+   .pick({
+      title: true,
+      type: true,
+      courseId: true,
+      description: true,
+      startsAt: true,
+      endsAt: true,
+      location: true,
+      registrationUrl: true,
+      capacity: true,
+   })
+   .extend({
+      id: z.string(),
+      course: z.object({ id: z.string(), name: z.string() }),
+      videos: z.array(
+         z.object({
+            id: z.string(),
+            title: z.string(),
+            youtubeUrl: z.string(),
+         }),
+      ),
+   });
+
+export const PublicStudyClubListResponseSchema =
+   StudyClubListResponseSchema.extend({
+      data: z.array(PublicStudyClubSessionSchema),
+   });

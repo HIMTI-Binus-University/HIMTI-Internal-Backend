@@ -246,6 +246,9 @@ export const registerEducationDocs = (registry: OpenAPIRegistry) => {
          400: { description: 'Validation error' },
          403: { description: 'manage_education permission required' },
          404: { description: 'Responsi not found' },
+         409: {
+            description: 'Review required, unsaved edits, or concurrent update',
+         },
       },
    });
 
@@ -294,6 +297,25 @@ export const registerEducationDocs = (registry: OpenAPIRegistry) => {
          },
          403: { description: 'manage_education permission required' },
          404: { description: 'Responsi not found' },
+      },
+   });
+   registry.registerPath({
+      method: 'post',
+      path: '/api/internal/education/responsi/{responsiId}/versions/{versionId}/restore',
+      operationId: 'restoreEducationResponsiVersion',
+      tags: ['Internal Education'],
+      security: [{ sessionCookie: [] }],
+      request: {
+         params: z.object({ responsiId: z.string(), versionId: z.string() }),
+      },
+      responses: {
+         200: {
+            description: 'Published Markdown restored into review.',
+            content: { 'application/json': { schema: ResponsiDetailResponse } },
+         },
+         403: { description: 'manage_education permission required' },
+         404: { description: 'Published summary version not found' },
+         409: { description: 'Concurrent update' },
       },
    });
 };

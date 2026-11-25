@@ -3,6 +3,8 @@ import test from 'node:test';
 import { generateOpenApiDocument } from '@/docs/openapi.js';
 import {
    CreateStudyClubSchema,
+   PublicStudyClubQuerySchema,
+   PublicStudyClubSessionSchema,
    StudyClubListQuerySchema,
    UpdateStudyClubSchema,
 } from './studyClubSchema.js';
@@ -138,4 +140,39 @@ test('Study Club endpoints have separate authenticated OpenAPI contracts', () =>
       assert.ok(operation.responses['403']);
    }
    assert.ok(paths['/api/internal/education/responsi']?.get);
+});
+
+test('public sessions validate date ranges and exclude private and audit fields', () => {
+   assert.equal(PublicStudyClubQuerySchema.parse({}).view, 'all');
+   assert.equal(
+      PublicStudyClubQuerySchema.safeParse({
+         view: 'recent-recordings',
+         from: session.endsAt,
+         to: session.startsAt,
+      }).success,
+      false,
+   );
+   const publicSession = {
+      ...session,
+      id: 'session-1',
+      course: { id: 'course-1', name: 'Calculus' },
+      videos: [],
+   };
+   const { meetingUrl, ...publicFields } = publicSession;
+   assert.equal(meetingUrl, session.meetingUrl);
+   assert.equal(
+      PublicStudyClubSessionSchema.safeParse(publicFields).success,
+      true,
+   );
+   assert.equal(
+      PublicStudyClubSessionSchema.safeParse(publicSession).success,
+      false,
+   );
+   assert.equal(
+      PublicStudyClubSessionSchema.safeParse({
+         ...publicFields,
+         createdBy: 'user-1',
+      }).success,
+      false,
+   );
 });

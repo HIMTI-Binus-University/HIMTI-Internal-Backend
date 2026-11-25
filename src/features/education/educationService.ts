@@ -144,8 +144,14 @@ class EducationService {
    }
 
    async createResponsi(data: CreateResponsi) {
+      const status = data.status ?? 'DRAFT';
+      if (status !== 'DRAFT' && status !== 'UNDER_REVIEW') {
+         throw new AppError(
+            'New summaries must start as draft or in review',
+            400,
+         );
+      }
       const courseId = await this.resolveCourseId(data.course);
-      const status = (data.status ?? 'DRAFT') as ResponsiStatus;
 
       const created = await repo.createResponsi({
          title: data.title,
@@ -158,66 +164,62 @@ class EducationService {
          status,
       });
 
-      if (status === 'PUBLISHED') {
-         await repo.createResponsiVersion({
-            responsiId: created.id,
-            version: 'v1',
-            content: created.content,
-            status: 'PUBLISHED',
-            createdBy: created.pic,
-         });
-      }
-
       return this.formatResponsi(created);
    }
 
-   async updateResponsi(id: string, data: UpdateResponsi) {
+   async updateResponsi(id: string, data: UpdateResponsi, actorId: string) {
       const existing = await repo.findResponsiById(id);
       if (!existing) {
          throw new AppError('Responsi not found', 404);
       }
 
-      let courseId = existing.courseId;
-      if (data.course) {
-         courseId = await this.resolveCourseId(data.course);
-      }
-
-      const nextStatus = data.status
-         ? (data.status as ResponsiStatus)
-         : existing.status;
-
       const isPublishing =
-         nextStatus === 'PUBLISHED' &&
-         (existing.status !== 'PUBLISHED' || data.content !== undefined);
-
-      const updated = await repo.updateResponsi(id, {
-         ...(data.summaryType !== undefined && {
-            summaryType: data.summaryType,
-         }),
-         ...(data.title !== undefined && { title: data.title }),
-         ...(data.academicPeriod !== undefined && {
-            academicPeriod: data.academicPeriod,
-         }),
-         ...(data.examType !== undefined && { examType: data.examType }),
-         ...(data.pic !== undefined && { pic: data.pic }),
-         ...(data.content !== undefined && { content: data.content }),
-         ...(data.status !== undefined && {
-            status: data.status as ResponsiStatus,
-         }),
-         courseId,
-      });
-
-      if (isPublishing) {
-         const count = await repo.countResponsiVersions(id);
-         const nextVersion = `v${count + 1}`;
-         await repo.createResponsiVersion({
-            responsiId: id,
-            version: nextVersion,
-            content: updated.content,
-            status: 'PUBLISHED',
-            createdBy: updated.pic,
-         });
+         data.status === 'PUBLISHED' && existing.status !== 'PUBLISHED';
+      if (isPublishing && existing.status !== 'UNDER_REVIEW') {
+         throw new AppError('Summary must be in review before publishing', 409);
       }
+
+      const courseId = data.course
+         ? await this.resolveCourseId(data.course)
+         : existing.courseId;
+      const changed =
+         courseId !== existing.courseId ||
+         (data.title !== undefined && data.title !== existing.title) ||
+         (data.summaryType !== undefined &&
+            data.summaryType !== existing.summaryType) ||
+         (data.academicPeriod !== undefined &&
+            data.academicPeriod !== existing.academicPeriod) ||
+         (data.examType !== undefined && data.examType !== existing.examType) ||
+         (data.pic !== undefined && data.pic !== existing.pic) ||
+         (data.content !== undefined && data.content !== existing.content);
+
+      if (isPublishing && changed) {
+         throw new AppError('Save changes before publishing the summary', 409);
+      }
+
+      const nextStatus =
+         existing.status === 'PUBLISHED' &&
+         changed &&
+         data.status !== 'ARCHIVED'
+            ? 'UNDER_REVIEW'
+            : (data.status ?? existing.status);
+
+      const updated = await repo.updateResponsi(
+         { id, status: existing.status, updatedAt: existing.updatedAt },
+         {
+            ...(data.summaryType !== undefined && {
+               summaryType: data.summaryType,
+            }),
+            title: data.title,
+            academicPeriod: data.academicPeriod,
+            examType: data.examType,
+            pic: data.pic,
+            content: data.content,
+            courseId,
+            status: nextStatus,
+         },
+         isPublishing ? actorId : undefined,
+      );
 
       return this.formatResponsi(updated);
    }
@@ -226,6 +228,22 @@ class EducationService {
       await this.getResponsiById(id);
       await repo.deleteResponsi(id);
       return { message: 'Responsi deleted successfully' };
+   }
+
+   async restoreResponsiVersion(
+      id: string,
+      versionId: string,
+      actorId: string,
+   ) {
+      const version = await repo.findResponsiVersion(id, versionId);
+      if (!version) {
+         throw new AppError('Published summary version not found', 404);
+      }
+      return this.updateResponsi(
+         id,
+         { content: version.content, status: 'UNDER_REVIEW' },
+         actorId,
+      );
    }
 
    async listResponsiVersions(responsiId: string) {

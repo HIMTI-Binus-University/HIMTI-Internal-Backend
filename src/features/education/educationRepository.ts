@@ -1,4 +1,5 @@
 import type { Prisma, ResponsiStatus } from '@prisma/client';
+import { AppError } from '@/utils/appError.js';
 import { prisma } from '@/config/prisma.js';
 import type {
    CourseGroupList,
@@ -161,54 +162,51 @@ class EducationRepository {
    }
 
    async updateResponsi(
-      id: string,
-      data: {
-         title?: string;
-         summaryType?: string;
-         courseId?: string;
-         academicPeriod?: string;
-         examType?: string;
-         pic?: string;
-         content?: string;
-         status?: ResponsiStatus;
-      },
+      where: Prisma.ResponsiWhereInput & { id: string },
+      data: Prisma.ResponsiUncheckedUpdateInput,
+      publisherId?: string,
    ) {
-      return await prisma.responsi.update({
-         where: { id },
-         data,
-         include: {
-            course: {
-               select: {
-                  id: true,
-                  name: true,
-                  code: true,
-               },
+      return prisma.$transaction(async (tx) => {
+         const { count } = await tx.responsi.updateMany({ where, data });
+         if (count !== 1) {
+            throw new AppError(
+               'Summary changed. Reload it and try again.',
+               409,
+            );
+         }
+         const updated = await tx.responsi.findUniqueOrThrow({
+            where: { id: where.id },
+            include: {
+               course: { select: { id: true, name: true, code: true } },
             },
-         },
+         });
+
+         if (publisherId) {
+            const versions = await tx.responsiVersion.count({
+               where: { responsiId: updated.id },
+            });
+            await tx.responsiVersion.create({
+               data: {
+                  responsiId: updated.id,
+                  version: `v${versions + 1}`,
+                  content: updated.content,
+                  status: 'PUBLISHED',
+                  createdBy: publisherId,
+               },
+            });
+         }
+
+         return updated;
       });
    }
 
    async deleteResponsi(id: string) {
-      return await prisma.responsi.delete({
-         where: { id },
-      });
+      return prisma.responsi.delete({ where: { id } });
    }
 
-   async countResponsiVersions(responsiId: string) {
-      return await prisma.responsiVersion.count({
-         where: { responsiId },
-      });
-   }
-
-   async createResponsiVersion(data: {
-      responsiId: string;
-      version: string;
-      content: string;
-      status: ResponsiStatus;
-      createdBy?: string;
-   }) {
-      return await prisma.responsiVersion.create({
-         data,
+   findResponsiVersion(responsiId: string, versionId: string) {
+      return prisma.responsiVersion.findFirst({
+         where: { id: versionId, responsiId, status: 'PUBLISHED' },
       });
    }
 

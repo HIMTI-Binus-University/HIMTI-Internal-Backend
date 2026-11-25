@@ -14,12 +14,16 @@ import roleRoutes from '@/features/roles/roleRoutes.js';
 import membershipRoutes from '@/features/membership/membershipRoutes.js';
 import linkWorkspaceRoutes from '@/features/link-workspaces/linkWorkspaceRoutes.js';
 import educationRoutes from '@/features/education/educationRoutes.js';
-import studyClubRoutes from '@/features/study-clubs/studyClubRoutes.js';
+import studyClubRoutes, {
+   publicStudyClubRoutes,
+} from '@/features/study-clubs/studyClubRoutes.js';
 import {
    electionRouter,
    internalElectionRouter,
 } from '@/features/elections/electionRoutes.js';
-import himtiKitRoutes, { himtiKitPublicRoutes } from '@/features/himti-kit/himtiKitRoutes.js';
+import himtiKitRoutes, {
+   himtiKitPublicRoutes,
+} from '@/features/himti-kit/himtiKitRoutes.js';
 
 const router: Router = express.Router();
 
@@ -35,6 +39,7 @@ router.use('/url', urlRoutes);
 router.use('/link-workspaces', linkWorkspaceRoutes);
 router.use('/membership', membershipRoutes);
 router.use('/internal/education/study-clubs', studyClubRoutes);
+router.use(publicStudyClubRoutes);
 router.use('/', educationRoutes);
 router.use('/elections', electionRouter);
 router.use('/internal/elections', internalElectionRouter);

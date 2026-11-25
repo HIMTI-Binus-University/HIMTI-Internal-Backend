@@ -19,7 +19,7 @@ const eventSoftDeleteMigration = readFileSync(
    'prisma/migrations/20260910160000_event_soft_delete/migration.sql',
    'utf8',
 );
-const seed = readFileSync('prisma/seed.ts', 'utf8');
+const seed = readFileSync('prisma/seedPermissions.ts', 'utf8');
 
 test('final registration schema is Event-owned and excludes removed concepts', () => {
    for (const model of [

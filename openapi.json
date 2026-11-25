@@ -11671,6 +11671,9 @@
                },
                "404": {
                   "description": "Responsi not found"
+               },
+               "409": {
+                  "description": "Review required, unsaved edits, or concurrent update"
                }
             },
             "security": [
@@ -11712,6 +11715,58 @@
                },
                "404": {
                   "description": "Responsi not found"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi/{responsiId}/versions/{versionId}/restore": {
+         "post": {
+            "operationId": "restoreEducationResponsiVersion",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "path",
+                  "name": "versionId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiDetailResponse"
+                        }
+                     }
+                  },
+                  "description": "Published Markdown restored into review."
+               },
+               "403": {
+                  "description": "manage_education permission required"
+               },
+               "404": {
+                  "description": "Published summary version not found"
+               },
+               "409": {
+                  "description": "Concurrent update"
                }
             },
             "security": [
@@ -28674,6 +28729,230 @@
             "summary": "Private proof content for its uploader or scoped reviewer with view_payment_proofs",
             "tags": [
                "Event Payments"
+            ]
+         }
+      },
+      "/api/public/education/sessions": {
+         "get": {
+            "operationId": "listPublicEducationSessions",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "page",
+                  "required": false,
+                  "schema": {
+                     "default": 1,
+                     "maximum": 1000000,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "limit",
+                  "required": false,
+                  "schema": {
+                     "default": 6,
+                     "maximum": 100,
+                     "minimum": 1,
+                     "type": "integer"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "courseId",
+                  "required": false,
+                  "schema": {
+                     "maxLength": 100,
+                     "minLength": 1,
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "from",
+                  "required": false,
+                  "schema": {
+                     "format": "date-time",
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "to",
+                  "required": false,
+                  "schema": {
+                     "format": "date-time",
+                     "type": "string"
+                  }
+               },
+               {
+                  "in": "query",
+                  "name": "view",
+                  "required": false,
+                  "schema": {
+                     "default": "all",
+                     "enum": [
+                        "all",
+                        "upcoming",
+                        "recent-recordings"
+                     ],
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                       "capacity": {
+                                          "maximum": 2147483647,
+                                          "minimum": 1,
+                                          "nullable": true,
+                                          "type": "integer"
+                                       },
+                                       "course": {
+                                          "properties": {
+                                             "id": {
+                                                "type": "string"
+                                             },
+                                             "name": {
+                                                "type": "string"
+                                             }
+                                          },
+                                          "required": [
+                                             "id",
+                                             "name"
+                                          ],
+                                          "type": "object"
+                                       },
+                                       "courseId": {
+                                          "maxLength": 100,
+                                          "minLength": 1,
+                                          "type": "string"
+                                       },
+                                       "description": {
+                                          "maxLength": 5000,
+                                          "type": "string"
+                                       },
+                                       "endsAt": {
+                                          "format": "date-time",
+                                          "type": "string"
+                                       },
+                                       "id": {
+                                          "type": "string"
+                                       },
+                                       "location": {
+                                          "maxLength": 255,
+                                          "type": "string"
+                                       },
+                                       "registrationUrl": {
+                                          "maxLength": 2048,
+                                          "type": "string"
+                                       },
+                                       "startsAt": {
+                                          "format": "date-time",
+                                          "type": "string"
+                                       },
+                                       "title": {
+                                          "maxLength": 255,
+                                          "minLength": 1,
+                                          "type": "string"
+                                       },
+                                       "type": {
+                                          "enum": [
+                                             "Study Club",
+                                             "Responsi"
+                                          ],
+                                          "type": "string"
+                                       },
+                                       "videos": {
+                                          "items": {
+                                             "properties": {
+                                                "id": {
+                                                   "type": "string"
+                                                },
+                                                "title": {
+                                                   "type": "string"
+                                                },
+                                                "youtubeUrl": {
+                                                   "type": "string"
+                                                }
+                                             },
+                                             "required": [
+                                                "id",
+                                                "title",
+                                                "youtubeUrl"
+                                             ],
+                                             "type": "object"
+                                          },
+                                          "type": "array"
+                                       }
+                                    },
+                                    "required": [
+                                       "title",
+                                       "type",
+                                       "courseId",
+                                       "description",
+                                       "startsAt",
+                                       "endsAt",
+                                       "location",
+                                       "registrationUrl",
+                                       "capacity",
+                                       "id",
+                                       "course",
+                                       "videos"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              },
+                              "pagination": {
+                                 "properties": {
+                                    "limit": {
+                                       "type": "number"
+                                    },
+                                    "page": {
+                                       "type": "number"
+                                    },
+                                    "total": {
+                                       "type": "number"
+                                    },
+                                    "totalPages": {
+                                       "type": "number"
+                                    }
+                                 },
+                                 "required": [
+                                    "page",
+                                    "limit",
+                                    "total",
+                                    "totalPages"
+                                 ],
+                                 "type": "object"
+                              }
+                           },
+                           "required": [
+                              "data",
+                              "pagination"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Public session details and published recordings."
+               },
+               "400": {
+                  "description": "Invalid query"
+               }
+            },
+            "tags": [
+               "Public Education"
             ]
          }
       },

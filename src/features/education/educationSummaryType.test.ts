@@ -87,10 +87,46 @@ test('create and edit persist summary type; edits that omit it preserve existing
    assert.equal(create.mock.calls[0].arguments[0]?.summaryType, 'Study Club');
    t.mock.method(repo, 'findResponsiById', async () => row);
    const update = t.mock.method(repo, 'updateResponsi', async () => row);
-   await service.updateResponsi(row.id, { title: 'Renamed' });
+   await service.updateResponsi(row.id, { title: 'Renamed' }, 'editor-1');
    const firstUpdate = update.mock.calls[0].arguments[1];
    assert.ok(firstUpdate);
    assert.equal('summaryType' in firstUpdate, false);
-   await service.updateResponsi(row.id, { summaryType: 'Responsi' });
+   await service.updateResponsi(
+      row.id,
+      { summaryType: 'Responsi' },
+      'editor-1',
+   );
    assert.equal(update.mock.calls[1].arguments[1]?.summaryType, 'Responsi');
+});
+
+test('publishing requires review and sends subsequent content edits back to review', async (t) => {
+   const current = { ...row, status: 'DRAFT' };
+   t.mock.method(repo, 'findResponsiById', async () => current);
+   const update = t.mock.method(repo, 'updateResponsi', async () => current);
+
+   await assert.rejects(
+      service.updateResponsi(row.id, { status: 'PUBLISHED' }, 'publisher-1'),
+      /must be in review/,
+   );
+   current.status = 'UNDER_REVIEW';
+   await assert.rejects(
+      service.updateResponsi(
+         row.id,
+         { status: 'PUBLISHED', content: 'Unreviewed' },
+         'publisher-1',
+      ),
+      /Save changes/,
+   );
+   assert.equal(update.mock.callCount(), 0);
+   await service.updateResponsi(row.id, { status: 'PUBLISHED' }, 'publisher-1');
+   assert.equal(update.mock.calls[0].arguments[2], 'publisher-1');
+
+   current.status = 'PUBLISHED';
+   await service.updateResponsi(
+      row.id,
+      { status: 'PUBLISHED', content: 'Changed' },
+      'editor-1',
+   );
+   assert.equal(update.mock.calls[1].arguments[1]?.status, 'UNDER_REVIEW');
+   assert.equal(update.mock.calls[1].arguments[2], undefined);
 });

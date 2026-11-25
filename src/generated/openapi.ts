@@ -1125,6 +1125,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internal/education/responsi/{responsiId}/versions/{versionId}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["restoreEducationResponsiVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internal/education/study-clubs": {
         parameters: {
             query?: never;
@@ -7073,6 +7089,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/public/education/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listPublicEducationSessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/role": {
         parameters: {
             query?: never;
@@ -12674,6 +12706,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Review required, unsaved edits, or concurrent update */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     listEducationResponsiVersions: {
@@ -12705,6 +12744,50 @@ export interface operations {
             };
             /** @description Responsi not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    restoreEducationResponsiVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published Markdown restored into review. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiDetailResponse"];
+                };
+            };
+            /** @description manage_education permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Published summary version not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Concurrent update */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17331,6 +17414,71 @@ export interface operations {
             };
             /** @description Proof exceeds 1572864 bytes. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listPublicEducationSessions: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                courseId?: string;
+                from?: string;
+                to?: string;
+                view?: "all" | "upcoming" | "recent-recordings";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Public session details and published recordings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            capacity: number | null;
+                            course: {
+                                id: string;
+                                name: string;
+                            };
+                            courseId: string;
+                            description: string;
+                            /** Format: date-time */
+                            endsAt: string;
+                            id: string;
+                            location: string;
+                            registrationUrl: string;
+                            /** Format: date-time */
+                            startsAt: string;
+                            title: string;
+                            /** @enum {string} */
+                            type: "Study Club" | "Responsi";
+                            videos: {
+                                id: string;
+                                title: string;
+                                youtubeUrl: string;
+                            }[];
+                        }[];
+                        pagination: {
+                            limit: number;
+                            page: number;
+                            total: number;
+                            totalPages: number;
+                        };
+                    };
+                };
+            };
+            /** @description Invalid query */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { Request, Response } from 'express';
 import {
    CourseGroupIdParamSchema,
@@ -57,7 +58,11 @@ export const createResponsi = async (req: Request, res: Response) => {
 export const updateResponsi = async (req: Request, res: Response) => {
    const { responsiId } = ResponsiIdParamSchema.parse(req.params);
    const body = UpdateResponsiSchema.parse(req.body);
-   const updated = await service.updateResponsi(responsiId, body);
+   const updated = await service.updateResponsi(
+      responsiId,
+      body,
+      res.locals.user.id,
+   );
    res.json({ data: updated });
 };
 
@@ -71,4 +76,15 @@ export const listResponsiVersions = async (req: Request, res: Response) => {
    const { responsiId } = ResponsiIdParamSchema.parse(req.params);
    const versions = await service.listResponsiVersions(responsiId);
    res.json({ data: versions });
+};
+
+export const restoreResponsiVersion = async (req: Request, res: Response) => {
+   const { responsiId } = ResponsiIdParamSchema.parse(req.params);
+   const versionId = z.string().min(1).parse(req.params.versionId);
+   const data = await service.restoreResponsiVersion(
+      responsiId,
+      versionId,
+      res.locals.user.id,
+   );
+   res.json({ data });
 };

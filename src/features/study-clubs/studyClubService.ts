@@ -1,3 +1,5 @@
+import type { z } from 'zod';
+import type { PublicStudyClubQuerySchema } from './studyClubSchema.js';
 import type { StudyClubSession } from '@prisma/client';
 import { educationRepository } from '@/features/education/educationRepository.js';
 import { AppError } from '@/utils/appError.js';
@@ -79,6 +81,20 @@ class StudyClubService {
       if (data.courseId !== current.courseId)
          await this.assertActiveCourse(data.courseId);
       return this.format(await repo.update(id, data, actorId));
+   }
+
+   async listPublic(query: z.infer<typeof PublicStudyClubQuerySchema>) {
+      const [data, total] = await repo.listPublic(query, new Date());
+      const { page, limit } = query;
+      return {
+         data,
+         pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+         },
+      };
    }
 }
 

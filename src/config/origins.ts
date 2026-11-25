@@ -1,4 +1,25 @@
+const developmentOrigins =
+   process.env.NODE_ENV === 'development'
+      ? (process.env.DEV_TRUSTED_ORIGINS ?? '')
+           .split(',')
+           .map((value) => value.trim())
+           .filter((value) => value !== '')
+           .map((value) => {
+              const url = new URL(value);
+              if (
+                 !['http:', 'https:'].includes(url.protocol) ||
+                 url.origin !== value
+              ) {
+                 throw new Error(
+                    'DEV_TRUSTED_ORIGINS requires exact HTTP(S) origins',
+                 );
+              }
+              return url.origin;
+           })
+      : [];
+
 export const trustedOrigins = [
+   ...developmentOrigins,
    'http://localhost:3000',
    'http://localhost:3001',
    'http://localhost:3002',

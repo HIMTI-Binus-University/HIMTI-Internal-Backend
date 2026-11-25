@@ -2,6 +2,8 @@ import '@/docs/zodOpenApi.js';
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import {
    CreateStudyClubSchema,
+   PublicStudyClubQuerySchema,
+   PublicStudyClubListResponseSchema,
    StudyClubIdParamSchema,
    StudyClubListQuerySchema,
    StudyClubListResponseSchema,
@@ -10,6 +12,24 @@ import {
 } from './studyClubSchema.js';
 
 export const registerStudyClubDocs = (registry: OpenAPIRegistry) => {
+   registry.registerPath({
+      method: 'get',
+      path: '/api/public/education/sessions',
+      operationId: 'listPublicEducationSessions',
+      tags: ['Public Education'],
+      request: { query: PublicStudyClubQuerySchema },
+      responses: {
+         200: {
+            description: 'Public session details and published recordings.',
+            content: {
+               'application/json': {
+                  schema: PublicStudyClubListResponseSchema,
+               },
+            },
+         },
+         400: { description: 'Invalid query' },
+      },
+   });
    const list = registry.register(
       'StudyClubListResponse',
       StudyClubListResponseSchema,

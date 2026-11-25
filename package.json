@@ -8,7 +8,7 @@
       "contract:openapi": "tsx src/scripts/generateOpenApi.ts",
       "contract:types": "openapi-typescript openapi.json -o src/generated/openapi.ts",
       "contract:distribute": "tsx src/scripts/distributeOpenApiTypes.ts",
-      "contract:generate": "npm run contract:openapi && npm run contract:types && npm run contract:distribute",
+      "contract:generate": "npm run contract:openapi && npm run contract:types",
       "dev": "tsx watch src/index.ts",
       "build": "tsc && tsc-alias",
       "start": "node dist/index.js",

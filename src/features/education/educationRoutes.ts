@@ -2,7 +2,13 @@ import express from 'express';
 import type { Router } from 'express';
 import { requireAuth } from '@/middleware/authMiddleware.js';
 import { requirePermission } from '@/middleware/permissionMiddleware.js';
-import { createVideo, deleteVideo, getVideo, listVideos, updateVideo } from './videoController.js';
+import {
+   createVideo,
+   deleteVideo,
+   getVideo,
+   listVideos,
+   updateVideo,
+} from './videoController.js';
 import {
    createCourseGroup,
    createResponsi,
@@ -12,6 +18,7 @@ import {
    listCourseGroups,
    listResponsiVersions,
    listResponsies,
+   restoreResponsiVersion,
    updateCourseGroup,
    updateResponsi,
 } from './educationController.js';
@@ -25,10 +32,7 @@ router.use(
    requirePermission('manage_education'),
 );
 
-router
-   .route('/internal/education/videos')
-   .get(listVideos)
-   .post(createVideo);
+router.route('/internal/education/videos').get(listVideos).post(createVideo);
 
 router
    .route('/internal/education/videos/:videoId')
@@ -62,5 +66,10 @@ router
 router
    .route('/internal/education/responsi/:responsiId/versions')
    .get(listResponsiVersions);
+
+router.post(
+   '/internal/education/responsi/:responsiId/versions/:versionId/restore',
+   restoreResponsiVersion,
+);
 
 export default router;

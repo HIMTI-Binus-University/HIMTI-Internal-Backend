@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import {
    CreateStudyClubSchema,
+   PublicStudyClubQuerySchema,
    StudyClubIdParamSchema,
    StudyClubListQuerySchema,
    UpdateStudyClubSchema,
@@ -27,4 +28,9 @@ export const updateStudyClub = async (req: Request, res: Response) => {
    const body = UpdateStudyClubSchema.parse(req.body);
    const session = await service.update(sessionId, body, res.locals.user.id);
    res.json({ data: session });
+};
+
+export const listPublicStudyClubs = async (req: Request, res: Response) => {
+   const query = PublicStudyClubQuerySchema.parse(req.query);
+   res.json(await service.listPublic(query));
 };

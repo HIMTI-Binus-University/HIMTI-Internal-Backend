@@ -1,17 +1,27 @@
-import { copyFile, mkdir } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { copyFile, stat } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const scriptDirectory = dirname(fileURLToPath(import.meta.url));
-const projectRoot = resolve(scriptDirectory, '../..');
-const webDevRoot = resolve(projectRoot, '..');
-const source = resolve(projectRoot, 'src/generated/openapi.ts');
-const destinations = [
-   resolve(webDevRoot, 'HIMTI-Internal-Frontend/src/generated/openapi.ts'),
-   resolve(webDevRoot, 'himti-regist-frontend/src/generated/openapi.ts'),
-];
+const source = fileURLToPath(
+   new URL('../generated/openapi.ts', import.meta.url),
+);
+const targets = process.argv.slice(2);
 
-for (const destination of destinations) {
-   await mkdir(dirname(destination), { recursive: true });
-   await copyFile(source, destination);
+if (!targets.length) {
+   throw new Error(
+      'Pass existing frontend contract paths: npm run contract:distribute -- <path-to-src/generated/openapi.ts> [more paths]',
+   );
 }
+
+const destinations = targets.map((target) => resolve(target));
+for (const destination of destinations) {
+   if (destination === source || !(await stat(destination)).isFile()) {
+      throw new Error(
+         'Expected an existing frontend contract file: ' + destination,
+      );
+   }
+}
+
+await Promise.all(
+   destinations.map((destination) => copyFile(source, destination)),
+);
