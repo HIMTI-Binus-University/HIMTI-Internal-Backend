@@ -29,3 +29,17 @@ export type UpdateResponsi = z.infer<typeof UpdateResponsiSchema>;
 export type ResponsiSummary = z.infer<typeof ResponsiSummarySchema>;
 export type ResponsiDetail = z.infer<typeof ResponsiDetailSchema>;
 export type ResponsiVersion = z.infer<typeof ResponsiVersionSchema>;
+
+export const summaryPermissions = {
+   legacy: 'manage_education',
+   create: 'create_education_summary',
+   edit: 'edit_education_summary',
+   review: 'review_education_summary',
+   publish: 'publish_education_summary',
+   archive: 'archive_education_summary',
+} as const;
+
+export type SummaryActor = {
+   id: string;
+   permissions: ReadonlySet<string>;
+};

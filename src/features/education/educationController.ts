@@ -5,6 +5,7 @@ import {
    CourseGroupListSchema,
    CreateCourseGroupSchema,
    CreateResponsiSchema,
+   ResponsiEditorsSchema,
    ResponsiIdParamSchema,
    ResponsiListQuerySchema,
    UpdateCourseGroupSchema,
@@ -51,7 +52,10 @@ export const getResponsi = async (req: Request, res: Response) => {
 
 export const createResponsi = async (req: Request, res: Response) => {
    const body = CreateResponsiSchema.parse(req.body);
-   const created = await service.createResponsi(body);
+   const created = await service.createResponsi(
+      body,
+      await service.summaryActor(res.locals.user.id),
+   );
    res.status(201).json({ data: created });
 };
 
@@ -61,14 +65,17 @@ export const updateResponsi = async (req: Request, res: Response) => {
    const updated = await service.updateResponsi(
       responsiId,
       body,
-      res.locals.user.id,
+      await service.summaryActor(res.locals.user.id),
    );
    res.json({ data: updated });
 };
 
 export const deleteResponsi = async (req: Request, res: Response) => {
    const { responsiId } = ResponsiIdParamSchema.parse(req.params);
-   const result = await service.deleteResponsi(responsiId);
+   const result = await service.deleteResponsi(
+      responsiId,
+      await service.summaryActor(res.locals.user.id),
+   );
    res.json(result);
 };
 
@@ -84,7 +91,27 @@ export const restoreResponsiVersion = async (req: Request, res: Response) => {
    const data = await service.restoreResponsiVersion(
       responsiId,
       versionId,
-      res.locals.user.id,
+      await service.summaryActor(res.locals.user.id),
    );
    res.json({ data });
+};
+
+export const approveResponsi = async (req: Request, res: Response) => {
+   const { responsiId } = ResponsiIdParamSchema.parse(req.params);
+   const result = await service.approveResponsi(
+      responsiId,
+      await service.summaryActor(res.locals.user.id),
+   );
+   res.json({ data: result });
+};
+
+export const assignResponsiEditors = async (req: Request, res: Response) => {
+   const { responsiId } = ResponsiIdParamSchema.parse(req.params);
+   const { editorIds } = ResponsiEditorsSchema.parse(req.body);
+   const result = await service.assignResponsiEditors(
+      responsiId,
+      editorIds,
+      await service.summaryActor(res.locals.user.id),
+   );
+   res.json({ data: result });
 };

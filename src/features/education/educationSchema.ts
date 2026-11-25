@@ -114,6 +114,8 @@ export const ResponsiSummarySchema = z.object({
 export const ResponsiDetailSchema = ResponsiSummarySchema.extend({
    content: z.string(),
    semester: z.number().nullable().optional(),
+   approvedById: z.string().nullable().optional(),
+   editorIds: z.array(z.string()).optional(),
 });
 
 export const ResponsiListResponseSchema = z.object({
@@ -137,9 +139,18 @@ export const ResponsiVersionSchema = z.object({
    content: z.string(),
    status: ResponsiStatusEnum,
    createdBy: z.string().nullable(),
+   reviewerId: z.string().nullable(),
+   editorIds: z.array(z.string()),
    createdAt: z.string(),
 });
 
 export const ResponsiVersionListResponseSchema = z.object({
    data: z.array(ResponsiVersionSchema),
+});
+
+export const ResponsiEditorsSchema = z.object({
+   editorIds: z
+      .array(z.string().trim().min(1).max(100))
+      .max(100)
+      .transform((ids) => [...new Set(ids)]),
 });

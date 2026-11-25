@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { educationRepository as repo } from './educationRepository.js';
+import { summaryPermissions } from './educationTypes.js';
 import { educationService as service } from './educationService.js';
 import {
    CreateResponsiSchema,
@@ -8,6 +9,18 @@ import {
    UpdateResponsiSchema,
 } from './educationSchema.js';
 
+const legacyEditor = {
+   id: 'editor-1',
+   permissions: new Set([summaryPermissions.legacy]),
+};
+const publisher = {
+   id: 'publisher-1',
+   permissions: new Set([summaryPermissions.publish]),
+};
+const reviewer = {
+   id: 'reviewer-1',
+   permissions: new Set([summaryPermissions.review]),
+};
 const payload = {
    title: 'Summary type check',
    course: 'course-1',
@@ -82,51 +95,73 @@ test('create and edit persist summary type; edits that omit it preserve existing
    const create = t.mock.method(repo, 'createResponsi', async () => row);
    const created = await service.createResponsi(
       CreateResponsiSchema.parse({ ...payload, summaryType: 'Study Club' }),
+      legacyEditor,
    );
    assert.equal(created.summaryType, 'Study Club');
    assert.equal(create.mock.calls[0].arguments[0]?.summaryType, 'Study Club');
    t.mock.method(repo, 'findResponsiById', async () => row);
    const update = t.mock.method(repo, 'updateResponsi', async () => row);
-   await service.updateResponsi(row.id, { title: 'Renamed' }, 'editor-1');
+   await service.updateResponsi(row.id, { title: 'Renamed' }, legacyEditor);
    const firstUpdate = update.mock.calls[0].arguments[1];
    assert.ok(firstUpdate);
    assert.equal('summaryType' in firstUpdate, false);
    await service.updateResponsi(
       row.id,
       { summaryType: 'Responsi' },
-      'editor-1',
+      legacyEditor,
    );
    assert.equal(update.mock.calls[1].arguments[1]?.summaryType, 'Responsi');
 });
 
-test('publishing requires review and sends subsequent content edits back to review', async (t) => {
-   const current = { ...row, status: 'DRAFT' };
+test('approval and publish require distinct permissions and edits invalidate approval', async (t) => {
+   const current = {
+      ...row,
+      status: 'UNDER_REVIEW',
+      approvedById: null as string | null,
+      editors: [{ userId: 'editor-1' }],
+   };
    t.mock.method(repo, 'findResponsiById', async () => current);
    const update = t.mock.method(repo, 'updateResponsi', async () => current);
 
    await assert.rejects(
-      service.updateResponsi(row.id, { status: 'PUBLISHED' }, 'publisher-1'),
-      /must be in review/,
+      service.updateResponsi(row.id, { status: 'PUBLISHED' }, reviewer),
+      /permission required/,
    );
-   current.status = 'UNDER_REVIEW';
+   await assert.rejects(
+      service.approveResponsi(row.id, publisher),
+      /permission required/,
+   );
+   await assert.rejects(
+      service.updateResponsi(row.id, { status: 'PUBLISHED' }, publisher),
+      /reviewer must approve/,
+   );
    await assert.rejects(
       service.updateResponsi(
          row.id,
-         { status: 'PUBLISHED', content: 'Unreviewed' },
-         'publisher-1',
+         { content: 'Unauthorized' },
+         {
+            id: 'outsider',
+            permissions: new Set([summaryPermissions.edit]),
+         },
       ),
-      /Save changes/,
+      /not assigned/,
    );
    assert.equal(update.mock.callCount(), 0);
-   await service.updateResponsi(row.id, { status: 'PUBLISHED' }, 'publisher-1');
-   assert.equal(update.mock.calls[0].arguments[2], 'publisher-1');
+   await service.approveResponsi(row.id, reviewer);
+   assert.equal(update.mock.calls[0].arguments[1]?.approvedById, reviewer.id);
+   current.approvedById = reviewer.id;
+   await service.updateResponsi(row.id, { status: 'PUBLISHED' }, publisher);
+   assert.equal(update.mock.calls[1].arguments[2], publisher.id);
 
    current.status = 'PUBLISHED';
    await service.updateResponsi(
       row.id,
-      { status: 'PUBLISHED', content: 'Changed' },
-      'editor-1',
+      { content: 'Changed' },
+      {
+         id: 'editor-1',
+         permissions: new Set([summaryPermissions.edit]),
+      },
    );
-   assert.equal(update.mock.calls[1].arguments[1]?.status, 'UNDER_REVIEW');
-   assert.equal(update.mock.calls[1].arguments[2], undefined);
+   assert.equal(update.mock.calls[2].arguments[1]?.status, 'UNDER_REVIEW');
+   assert.equal(update.mock.calls[2].arguments[1]?.approvedById, null);
 });

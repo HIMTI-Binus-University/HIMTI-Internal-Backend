@@ -298,6 +298,7 @@ model User {
   sessions     Session[]
   accounts     Account[]
   userHasRoles UserHasRole[]
+  responsiEditorAssignments ResponsiEditor[]
 
   // Event relations are inverse declarations only; they do not alter users.
   createdEvents                  Event[]                     @relation("EventCreator")
@@ -370,8 +371,21 @@ model Responsi {
 
   course   Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   versions ResponsiVersion[]
+  editors ResponsiEditor[]
+  approvedById String?
 
   @@map("responsies")
+}
+
+model ResponsiEditor {
+  responsiId String
+  userId String
+  responsi Responsi @relation(fields: [responsiId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([responsiId, userId])
+  @@index([userId])
+  @@map("responsi_editors")
 }
 
 model EducationVideo {
@@ -396,6 +410,8 @@ model ResponsiVersion {
   version    String         @db.VarChar(20)
   content    String         @db.Text
   status     ResponsiStatus
+  reviewerId String?
+  editorIds String[] @default([])
   createdBy  String?        @db.VarChar(255)
   createdAt  DateTime       @default(now()) @db.Timestamp(0)
 

@@ -956,6 +956,10 @@
                      "academicPeriod": {
                         "type": "string"
                      },
+                     "approvedById": {
+                        "nullable": true,
+                        "type": "string"
+                     },
                      "content": {
                         "type": "string"
                      },
@@ -967,6 +971,12 @@
                      },
                      "createdAt": {
                         "type": "string"
+                     },
+                     "editorIds": {
+                        "items": {
+                           "type": "string"
+                        },
+                        "type": "array"
                      },
                      "examType": {
                         "type": "string"
@@ -1137,10 +1147,20 @@
                            "nullable": true,
                            "type": "string"
                         },
+                        "editorIds": {
+                           "items": {
+                              "type": "string"
+                           },
+                           "type": "array"
+                        },
                         "id": {
                            "type": "string"
                         },
                         "responsiId": {
+                           "type": "string"
+                        },
+                        "reviewerId": {
+                           "nullable": true,
                            "type": "string"
                         },
                         "status": {
@@ -1163,6 +1183,8 @@
                         "content",
                         "status",
                         "createdBy",
+                        "reviewerId",
+                        "editorIds",
                         "createdAt"
                      ],
                      "type": "object"
@@ -11674,6 +11696,122 @@
                },
                "409": {
                   "description": "Review required, unsaved edits, or concurrent update"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi/{responsiId}/approve": {
+         "post": {
+            "operationId": "approveEducationResponsi",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiDetailResponse"
+                        }
+                     }
+                  },
+                  "description": "Summary updated"
+               },
+               "400": {
+                  "description": "Invalid input"
+               },
+               "403": {
+                  "description": "review_education_summary or manage_education required"
+               },
+               "404": {
+                  "description": "Summary not found"
+               },
+               "409": {
+                  "description": "Invalid status or concurrent update"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi/{responsiId}/editors": {
+         "put": {
+            "operationId": "assignEducationResponsiEditors",
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "responsiId",
+                  "required": true,
+                  "schema": {
+                     "type": "string"
+                  }
+               }
+            ],
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "properties": {
+                           "editorIds": {
+                              "items": {
+                                 "type": "string"
+                              },
+                              "maxItems": 100,
+                              "type": "array"
+                           }
+                        },
+                        "required": [
+                           "editorIds"
+                        ],
+                        "type": "object"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EducationResponsiDetailResponse"
+                        }
+                     }
+                  },
+                  "description": "Summary updated"
+               },
+               "400": {
+                  "description": "Invalid input"
+               },
+               "403": {
+                  "description": "manage_education required"
+               },
+               "404": {
+                  "description": "Summary not found"
+               },
+               "409": {
+                  "description": "Invalid status or concurrent update"
                }
             },
             "security": [

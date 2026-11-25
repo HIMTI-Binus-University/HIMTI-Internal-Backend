@@ -1,7 +1,9 @@
 import type { Prisma, ResponsiStatus } from '@prisma/client';
 import { AppError } from '@/utils/appError.js';
 import { educationRepository as repo } from './educationRepository.js';
+import { summaryPermissions } from './educationTypes.js';
 import type {
+   SummaryActor,
    CourseGroupList,
    CreateCourseGroup,
    CreateResponsi,
@@ -11,6 +13,40 @@ import type {
 } from './educationTypes.js';
 
 class EducationService {
+   async summaryActor(id: string): Promise<SummaryActor> {
+      const permissions = await repo.getSummaryPermissions(id);
+      if (
+         !Object.values(summaryPermissions).some((name) =>
+            permissions.has(name),
+         )
+      ) {
+         throw new AppError('Education summary permission required', 403);
+      }
+      return { id, permissions };
+   }
+
+   private requireSummaryPermission(actor: SummaryActor, permission: string) {
+      if (
+         !actor.permissions.has(summaryPermissions.legacy) &&
+         !actor.permissions.has(permission)
+      ) {
+         throw new AppError('Education summary permission required', 403);
+      }
+   }
+
+   private requireAssignedEditor(
+      actor: SummaryActor,
+      editors: { userId: string }[],
+   ) {
+      this.requireSummaryPermission(actor, summaryPermissions.edit);
+      if (
+         !actor.permissions.has(summaryPermissions.legacy) &&
+         !editors.some(({ userId }) => userId === actor.id)
+      ) {
+         throw new AppError('You are not assigned to edit this summary', 403);
+      }
+   }
+
    // Course Groups
    listCourseGroups(query: CourseGroupList) {
       return repo.listCourseGroups(query);
@@ -59,6 +95,8 @@ class EducationService {
       createdAt: Date;
       updatedAt: Date | null;
       course: { id: string; name: string; code: string | null };
+      editors?: { userId: string }[];
+      approvedById?: string | null;
    }) {
       return {
          id: row.id,
@@ -72,6 +110,8 @@ class EducationService {
          pic: row.pic,
          status: row.status,
          content: row.content,
+         editorIds: row.editors?.map(({ userId }) => userId),
+         approvedById: row.approvedById,
          lastUpdated: (row.updatedAt ?? row.createdAt).toISOString(),
          createdAt: row.createdAt.toISOString(),
       };
@@ -143,7 +183,8 @@ class EducationService {
       return this.formatResponsi(row);
    }
 
-   async createResponsi(data: CreateResponsi) {
+   async createResponsi(data: CreateResponsi, actor: SummaryActor) {
+      this.requireSummaryPermission(actor, summaryPermissions.create);
       const status = data.status ?? 'DRAFT';
       if (status !== 'DRAFT' && status !== 'UNDER_REVIEW') {
          throw new AppError(
@@ -162,26 +203,48 @@ class EducationService {
          pic: data.pic,
          content: data.content ?? '',
          status,
+         ...(actor.permissions.has(summaryPermissions.edit) && {
+            editorId: actor.id,
+         }),
       });
 
       return this.formatResponsi(created);
    }
 
-   async updateResponsi(id: string, data: UpdateResponsi, actorId: string) {
+   async updateResponsi(id: string, data: UpdateResponsi, actor: SummaryActor) {
       const existing = await repo.findResponsiById(id);
       if (!existing) {
          throw new AppError('Responsi not found', 404);
       }
 
+      if (data.status === 'PUBLISHED' && existing.status !== 'PUBLISHED') {
+         this.requireSummaryPermission(actor, summaryPermissions.publish);
+      }
+      if (data.status === 'ARCHIVED' && existing.status !== 'ARCHIVED') {
+         this.requireSummaryPermission(actor, summaryPermissions.archive);
+      }
+      const courseChanged =
+         data.course !== undefined &&
+         data.course !== existing.courseId &&
+         data.course !== existing.course.name;
+      if (courseChanged) this.requireAssignedEditor(actor, existing.editors);
       const isPublishing =
          data.status === 'PUBLISHED' && existing.status !== 'PUBLISHED';
       if (isPublishing && existing.status !== 'UNDER_REVIEW') {
          throw new AppError('Summary must be in review before publishing', 409);
       }
 
-      const courseId = data.course
-         ? await this.resolveCourseId(data.course)
-         : existing.courseId;
+      if (isPublishing && !existing.approvedById) {
+         throw new AppError(
+            'A reviewer must approve the summary before publishing',
+            409,
+         );
+      }
+
+      const courseId =
+         courseChanged && data.course
+            ? await this.resolveCourseId(data.course)
+            : existing.courseId;
       const changed =
          courseId !== existing.courseId ||
          (data.title !== undefined && data.title !== existing.title) ||
@@ -193,6 +256,15 @@ class EducationService {
          (data.pic !== undefined && data.pic !== existing.pic) ||
          (data.content !== undefined && data.content !== existing.content);
 
+      if (
+         changed ||
+         (data.status !== undefined &&
+            data.status !== existing.status &&
+            data.status !== 'PUBLISHED' &&
+            data.status !== 'ARCHIVED')
+      ) {
+         this.requireAssignedEditor(actor, existing.editors);
+      }
       if (isPublishing && changed) {
          throw new AppError('Save changes before publishing the summary', 409);
       }
@@ -217,14 +289,50 @@ class EducationService {
             content: data.content,
             courseId,
             status: nextStatus,
+            ...(changed ||
+            (nextStatus !== existing.status && nextStatus !== 'PUBLISHED')
+               ? { approvedById: null }
+               : {}),
          },
-         isPublishing ? actorId : undefined,
+         isPublishing ? actor.id : undefined,
       );
 
       return this.formatResponsi(updated);
    }
 
-   async deleteResponsi(id: string) {
+   async approveResponsi(id: string, actor: SummaryActor) {
+      this.requireSummaryPermission(actor, summaryPermissions.review);
+      const existing = await repo.findResponsiById(id);
+      if (!existing) throw new AppError('Responsi not found', 404);
+      if (existing.status !== 'UNDER_REVIEW') {
+         throw new AppError('Only summaries in review can be approved', 409);
+      }
+      const updated = await repo.updateResponsi(
+         { id, status: existing.status, updatedAt: existing.updatedAt },
+         { approvedById: actor.id },
+      );
+      return this.formatResponsi(updated);
+   }
+
+   async assignResponsiEditors(
+      id: string,
+      editorIds: string[],
+      actor: SummaryActor,
+   ) {
+      this.requireSummaryPermission(actor, summaryPermissions.legacy);
+      const existing = await repo.findResponsiById(id);
+      if (!existing) throw new AppError('Responsi not found', 404);
+      const updated = await repo.updateResponsi(
+         { id, status: existing.status, updatedAt: existing.updatedAt },
+         { approvedById: null, updatedAt: new Date() },
+         undefined,
+         editorIds,
+      );
+      return this.formatResponsi(updated);
+   }
+
+   async deleteResponsi(id: string, actor: SummaryActor) {
+      this.requireSummaryPermission(actor, summaryPermissions.legacy);
       await this.getResponsiById(id);
       await repo.deleteResponsi(id);
       return { message: 'Responsi deleted successfully' };
@@ -233,7 +341,7 @@ class EducationService {
    async restoreResponsiVersion(
       id: string,
       versionId: string,
-      actorId: string,
+      actor: SummaryActor,
    ) {
       const version = await repo.findResponsiVersion(id, versionId);
       if (!version) {
@@ -242,7 +350,7 @@ class EducationService {
       return this.updateResponsi(
          id,
          { content: version.content, status: 'UNDER_REVIEW' },
-         actorId,
+         actor,
       );
    }
 
@@ -256,6 +364,8 @@ class EducationService {
          content: row.content,
          status: row.status,
          createdBy: row.createdBy,
+         reviewerId: row.reviewerId,
+         editorIds: row.editorIds,
          createdAt: row.createdAt.toISOString(),
       }));
    }

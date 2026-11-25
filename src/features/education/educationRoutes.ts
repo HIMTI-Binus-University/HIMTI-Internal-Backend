@@ -10,6 +10,8 @@ import {
    updateVideo,
 } from './videoController.js';
 import {
+   approveResponsi,
+   assignResponsiEditors,
    createCourseGroup,
    createResponsi,
    deleteResponsi,
@@ -23,13 +25,24 @@ import {
    updateResponsi,
 } from './educationController.js';
 
+import { summaryPermissions } from './educationTypes.js';
+
 const router: Router = express.Router();
 
 // Education scope protection
 router.use(
-   '/internal/education',
+   '/internal/education/videos',
    requireAuth,
    requirePermission('manage_education'),
+);
+router.use('/internal/education/course-groups', requireAuth);
+router.use(
+   '/internal/education/responsi',
+   requireAuth,
+   requirePermission(
+      summaryPermissions.legacy,
+      ...Object.values(summaryPermissions),
+   ),
 );
 
 router.route('/internal/education/videos').get(listVideos).post(createVideo);
@@ -43,13 +56,25 @@ router
 // Course Groups
 router
    .route('/internal/education/course-groups')
-   .get(listCourseGroups)
-   .post(createCourseGroup);
+   .get(
+      requirePermission(
+         summaryPermissions.legacy,
+         ...Object.values(summaryPermissions),
+      ),
+      listCourseGroups,
+   )
+   .post(requirePermission(summaryPermissions.legacy), createCourseGroup);
 
 router
    .route('/internal/education/course-groups/:courseId')
-   .get(getCourseGroup)
-   .patch(updateCourseGroup);
+   .get(
+      requirePermission(
+         summaryPermissions.legacy,
+         ...Object.values(summaryPermissions),
+      ),
+      getCourseGroup,
+   )
+   .patch(requirePermission(summaryPermissions.legacy), updateCourseGroup);
 
 // Responsi
 router
@@ -70,6 +95,15 @@ router
 router.post(
    '/internal/education/responsi/:responsiId/versions/:versionId/restore',
    restoreResponsiVersion,
+);
+
+router.post(
+   '/internal/education/responsi/:responsiId/approve',
+   approveResponsi,
+);
+router.put(
+   '/internal/education/responsi/:responsiId/editors',
+   assignResponsiEditors,
 );
 
 export default router;

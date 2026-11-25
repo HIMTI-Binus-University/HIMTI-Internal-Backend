@@ -23,6 +23,11 @@ export const PERMISSION_NAMES = [
    'manage_elections',
    'manage_certificates',
    'manage_education',
+   'create_education_summary',
+   'edit_education_summary',
+   'review_education_summary',
+   'publish_education_summary',
+   'archive_education_summary',
    'manage_himti_kit',
 ] as const;
 
@@ -45,6 +50,11 @@ export const ADMIN_ONLY_PERMISSIONS: ReadonlySet<string> = new Set([
    'view_event_attendance',
    'correct_event_attendance',
    'manage_elections',
+   'create_education_summary',
+   'edit_education_summary',
+   'review_education_summary',
+   'publish_education_summary',
+   'archive_education_summary',
 ]);
 
 export function defaultRolesFor(permissionName: string): string[] {

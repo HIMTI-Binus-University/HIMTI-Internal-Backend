@@ -318,4 +318,56 @@ export const registerEducationDocs = (registry: OpenAPIRegistry) => {
          409: { description: 'Concurrent update' },
       },
    });
+   registry.registerPath({
+      method: 'post',
+      path: '/api/internal/education/responsi/{responsiId}/approve',
+      operationId: 'approveEducationResponsi',
+      tags: ['Internal Education'],
+      security: [{ sessionCookie: [] }],
+      request: {
+         params: z.object({ responsiId: z.string() }),
+      },
+      responses: {
+         200: {
+            description: 'Summary updated',
+            content: { 'application/json': { schema: ResponsiDetailResponse } },
+         },
+         400: { description: 'Invalid input' },
+         403: {
+            description:
+               'review_education_summary or manage_education required',
+         },
+         404: { description: 'Summary not found' },
+         409: { description: 'Invalid status or concurrent update' },
+      },
+   });
+
+   registry.registerPath({
+      method: 'put',
+      path: '/api/internal/education/responsi/{responsiId}/editors',
+      operationId: 'assignEducationResponsiEditors',
+      tags: ['Internal Education'],
+      security: [{ sessionCookie: [] }],
+      request: {
+         params: z.object({ responsiId: z.string() }),
+         body: {
+            required: true,
+            content: {
+               'application/json': {
+                  schema: z.object({ editorIds: z.array(z.string()).max(100) }),
+               },
+            },
+         },
+      },
+      responses: {
+         200: {
+            description: 'Summary updated',
+            content: { 'application/json': { schema: ResponsiDetailResponse } },
+         },
+         400: { description: 'Invalid input' },
+         403: { description: 'manage_education required' },
+         404: { description: 'Summary not found' },
+         409: { description: 'Invalid status or concurrent update' },
+      },
+   });
 };

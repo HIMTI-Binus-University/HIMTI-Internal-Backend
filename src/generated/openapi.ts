@@ -1109,6 +1109,38 @@ export interface paths {
         patch: operations["updateEducationResponsi"];
         trace?: never;
     };
+    "/api/internal/education/responsi/{responsiId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["approveEducationResponsi"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internal/education/responsi/{responsiId}/editors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["assignEducationResponsiEditors"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internal/education/responsi/{responsiId}/versions": {
         parameters: {
             query?: never;
@@ -9607,10 +9639,12 @@ export interface components {
         EducationResponsiDetailResponse: {
             data: {
                 academicPeriod: string;
+                approvedById?: string | null;
                 content: string;
                 course: string;
                 courseId: string;
                 createdAt: string;
+                editorIds?: string[];
                 examType: string;
                 id: string;
                 lastUpdated: string;
@@ -9651,8 +9685,10 @@ export interface components {
                 content: string;
                 createdAt: string;
                 createdBy: string | null;
+                editorIds: string[];
                 id: string;
                 responsiId: string;
+                reviewerId: string | null;
                 /** @enum {string} */
                 status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
                 version: string;
@@ -12707,6 +12743,112 @@ export interface operations {
                 content?: never;
             };
             /** @description Review required, unsaved edits, or concurrent update */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    approveEducationResponsi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Summary updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiDetailResponse"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description review_education_summary or manage_education required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Summary not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid status or concurrent update */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    assignEducationResponsiEditors: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                responsiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    editorIds: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description Summary updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationResponsiDetailResponse"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Summary not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid status or concurrent update */
             409: {
                 headers: {
                     [name: string]: unknown;

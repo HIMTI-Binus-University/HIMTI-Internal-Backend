@@ -122,10 +122,36 @@ class EducationRepository {
       return await prisma.responsi.count({ where });
    }
 
+   async getSummaryPermissions(userId: string) {
+      const roles = await prisma.userHasRole.findMany({
+         where: {
+            userId,
+            user: { status: 'ACTIVE' },
+            role: { status: 'ACTIVE' },
+         },
+         select: {
+            role: {
+               select: {
+                  roleHasPermissions: {
+                     where: { permission: { status: 'ACTIVE' } },
+                     select: { permission: { select: { name: true } } },
+                  },
+               },
+            },
+         },
+      });
+      return new Set(
+         roles.flatMap(({ role }) =>
+            role.roleHasPermissions.map(({ permission }) => permission.name),
+         ),
+      );
+   }
+
    async findResponsiById(id: string) {
       return await prisma.responsi.findUnique({
          where: { id },
          include: {
+            editors: { select: { userId: true } },
             course: {
                select: {
                   id: true,
@@ -146,9 +172,14 @@ class EducationRepository {
       pic: string;
       content: string;
       status: ResponsiStatus;
+      editorId?: string;
    }) {
+      const { editorId, ...fields } = data;
       return await prisma.responsi.create({
-         data,
+         data: {
+            ...fields,
+            ...(editorId && { editors: { create: { userId: editorId } } }),
+         },
          include: {
             course: {
                select: {
@@ -165,6 +196,7 @@ class EducationRepository {
       where: Prisma.ResponsiWhereInput & { id: string },
       data: Prisma.ResponsiUncheckedUpdateInput,
       publisherId?: string,
+      editorIds?: string[],
    ) {
       return prisma.$transaction(async (tx) => {
          const { count } = await tx.responsi.updateMany({ where, data });
@@ -174,9 +206,31 @@ class EducationRepository {
                409,
             );
          }
+         if (editorIds) {
+            const activeEditors = await tx.user.count({
+               where: { id: { in: editorIds }, status: 'ACTIVE' },
+            });
+            if (activeEditors !== editorIds.length) {
+               throw new AppError(
+                  'Every assigned editor must be an active user',
+                  400,
+               );
+            }
+            await tx.responsiEditor.deleteMany({
+               where: { responsiId: where.id },
+            });
+            await tx.responsiEditor.createMany({
+               data: editorIds.map((userId) => ({
+                  responsiId: where.id,
+                  userId,
+               })),
+            });
+         }
+
          const updated = await tx.responsi.findUniqueOrThrow({
             where: { id: where.id },
             include: {
+               editors: { select: { userId: true } },
                course: { select: { id: true, name: true, code: true } },
             },
          });
@@ -192,6 +246,8 @@ class EducationRepository {
                   content: updated.content,
                   status: 'PUBLISHED',
                   createdBy: publisherId,
+                  reviewerId: updated.approvedById,
+                  editorIds: updated.editors.map(({ userId }) => userId),
                },
             });
          }

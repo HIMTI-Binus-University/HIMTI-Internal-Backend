@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '@/config/prisma.js';
 
-export const requirePermission = (permissionName: string) => {
+export const requirePermission = (
+   permissionName: string,
+   ...alternatives: string[]
+) => {
    return async (_req: Request, res: Response, next: NextFunction) => {
       const user = res.locals.user;
       const userWithPermission = await prisma.user.findFirst({
@@ -15,7 +18,7 @@ export const requirePermission = (permissionName: string) => {
                      roleHasPermissions: {
                         some: {
                            permission: {
-                              name: permissionName,
+                              name: { in: [permissionName, ...alternatives] },
                               status: 'ACTIVE',
                            },
                         },
