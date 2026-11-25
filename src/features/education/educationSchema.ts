@@ -8,6 +8,7 @@ export const CreateCourseGroupSchema = z.object({
    name: z.string().trim().min(1, 'Course name is required').max(255),
    code: z.string().trim().max(50).optional().nullable(),
    description: z.string().trim().max(2000).optional().nullable(),
+   semester: z.number().int().min(1).max(2147483647).nullable().optional(),
 });
 
 export const UpdateCourseGroupSchema = z.object({
@@ -20,6 +21,7 @@ export const UpdateCourseGroupSchema = z.object({
    code: z.string().trim().max(50).optional().nullable(),
    description: z.string().trim().max(2000).optional().nullable(),
    status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+   semester: CreateCourseGroupSchema.shape.semester,
 });
 
 export const CourseGroupIdParamSchema = z.object({
@@ -31,6 +33,7 @@ export const CourseGroupSchema = z.object({
    name: z.string(),
    code: z.string().nullable(),
    description: z.string().nullable().optional(),
+   semester: CreateCourseGroupSchema.shape.semester,
    status: z.enum(['ACTIVE', 'INACTIVE']),
 });
 
@@ -39,7 +42,15 @@ export const CourseGroupSingleResponseSchema = z.object({
 });
 
 export const CourseGroupListResponseSchema = z.object({
-   data: z.array(CourseGroupSchema),
+   data: z.array(
+      CourseGroupSchema.extend({
+         counts: z.object({
+            summaries: z.number().int().nonnegative(),
+            schedules: z.number().int().nonnegative(),
+            videos: z.number().int().nonnegative(),
+         }),
+      }),
+   ),
 });
 
 // ==========================================

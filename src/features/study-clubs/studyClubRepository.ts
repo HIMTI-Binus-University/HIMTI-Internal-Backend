@@ -47,6 +47,7 @@ class StudyClubRepository {
       const recordingView = query.view === 'recent-recordings';
       const where: Prisma.StudyClubSessionWhereInput = {
          isDemo: false,
+         isPublic: true,
          course: { status: 'ACTIVE' },
          courseId: query.courseId,
          startsAt: {

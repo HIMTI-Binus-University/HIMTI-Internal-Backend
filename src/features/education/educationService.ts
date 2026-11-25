@@ -1,5 +1,6 @@
 import type { Prisma, ResponsiStatus } from '@prisma/client';
 import { AppError } from '@/utils/appError.js';
+import { publicDocument } from '@/features/public-education/publicEducationService.js';
 import { educationRepository as repo } from './educationRepository.js';
 import { summaryPermissions } from './educationTypes.js';
 import type {
@@ -11,6 +12,17 @@ import type {
    UpdateCourseGroup,
    UpdateResponsi,
 } from './educationTypes.js';
+
+function assertPublicDocument(content: string) {
+   try {
+      publicDocument(content);
+   } catch {
+      throw new AppError(
+         'Summary Markdown cannot be published as a public document',
+         400,
+      );
+   }
+}
 
 class EducationService {
    async summaryActor(id: string): Promise<SummaryActor> {
@@ -268,6 +280,8 @@ class EducationService {
       if (isPublishing && changed) {
          throw new AppError('Save changes before publishing the summary', 409);
       }
+
+      if (isPublishing) assertPublicDocument(existing.content);
 
       const nextStatus =
          existing.status === 'PUBLISHED' &&

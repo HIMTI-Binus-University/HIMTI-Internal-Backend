@@ -17,6 +17,7 @@ import educationRoutes from '@/features/education/educationRoutes.js';
 import studyClubRoutes, {
    publicStudyClubRoutes,
 } from '@/features/study-clubs/studyClubRoutes.js';
+import publicEducationRoutes from '@/features/public-education/publicEducationRoutes.js';
 import {
    electionRouter,
    internalElectionRouter,
@@ -38,6 +39,7 @@ router.get('/health', (_req: Request, res: Response) => {
 router.use('/url', urlRoutes);
 router.use('/link-workspaces', linkWorkspaceRoutes);
 router.use('/membership', membershipRoutes);
+router.use('/public', publicEducationRoutes);
 router.use('/internal/education/study-clubs', studyClubRoutes);
 router.use(publicStudyClubRoutes);
 router.use('/', educationRoutes);

@@ -20,7 +20,7 @@ class EducationRepository {
          }),
       };
 
-      return await prisma.course.findMany({
+      const courses = await prisma.course.findMany({
          where,
          orderBy: { name: 'asc' },
          select: {
@@ -28,9 +28,25 @@ class EducationRepository {
             name: true,
             code: true,
             description: true,
+            semester: true,
             status: true,
+            _count: { select: { responsies: true, studyClubSessions: true } },
+            studyClubSessions: {
+               select: { _count: { select: { videos: true } } },
+            },
          },
       });
+      return courses.map(({ _count, studyClubSessions, ...course }) => ({
+         ...course,
+         counts: {
+            summaries: _count.responsies,
+            schedules: _count.studyClubSessions,
+            videos: studyClubSessions.reduce(
+               (total, session) => total + session._count.videos,
+               0,
+            ),
+         },
+      }));
    }
 
    async findCourseGroupById(id: string) {
@@ -41,6 +57,7 @@ class EducationRepository {
             name: true,
             code: true,
             description: true,
+            semester: true,
             status: true,
          },
       });
@@ -53,6 +70,7 @@ class EducationRepository {
             id: true,
             name: true,
             code: true,
+            semester: true,
             description: true,
             status: true,
          },
@@ -65,12 +83,14 @@ class EducationRepository {
             name: data.name,
             code: data.code ? data.code : null,
             description: data.description ? data.description : null,
+            semester: data.semester,
          },
          select: {
             id: true,
             name: true,
             code: true,
             description: true,
+            semester: true,
             status: true,
          },
       });
@@ -88,12 +108,14 @@ class EducationRepository {
                description: data.description ? data.description : null,
             }),
             ...(data.status !== undefined && { status: data.status }),
+            semester: data.semester,
          },
          select: {
             id: true,
             name: true,
             code: true,
             description: true,
+            semester: true,
             status: true,
          },
       });
