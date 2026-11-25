@@ -1004,6 +1004,10 @@
                         "nullable": true,
                         "type": "string"
                      },
+                     "collaborationRevision": {
+                        "minimum": 0,
+                        "type": "integer"
+                     },
                      "content": {
                         "type": "string"
                      },
@@ -1019,6 +1023,24 @@
                      "editorIds": {
                         "items": {
                            "type": "string"
+                        },
+                        "type": "array"
+                     },
+                     "editors": {
+                        "items": {
+                           "properties": {
+                              "id": {
+                                 "type": "string"
+                              },
+                              "name": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "id",
+                              "name"
+                           ],
+                           "type": "object"
                         },
                         "type": "array"
                      },
@@ -1181,6 +1203,10 @@
                "data": {
                   "items": {
                      "properties": {
+                        "author": {
+                           "nullable": true,
+                           "type": "string"
+                        },
                         "content": {
                            "type": "string"
                         },
@@ -1197,6 +1223,12 @@
                            },
                            "type": "array"
                         },
+                        "editorNames": {
+                           "items": {
+                              "type": "string"
+                           },
+                           "type": "array"
+                        },
                         "id": {
                            "type": "string"
                         },
@@ -1204,6 +1236,10 @@
                            "type": "string"
                         },
                         "reviewerId": {
+                           "nullable": true,
+                           "type": "string"
+                        },
+                        "reviewerName": {
                            "nullable": true,
                            "type": "string"
                         },
@@ -1228,6 +1264,9 @@
                         "status",
                         "createdBy",
                         "reviewerId",
+                        "author",
+                        "reviewerName",
+                        "editorNames",
                         "editorIds",
                         "createdAt"
                      ],
@@ -12250,6 +12289,72 @@
                },
                "409": {
                   "description": "Concurrent update"
+               }
+            },
+            "security": [
+               {
+                  "sessionCookie": []
+               }
+            ],
+            "tags": [
+               "Internal Education"
+            ]
+         }
+      },
+      "/api/internal/education/responsi/editor-candidates": {
+         "get": {
+            "operationId": "listEducationResponsiEditorCandidates",
+            "parameters": [
+               {
+                  "in": "query",
+                  "name": "search",
+                  "required": true,
+                  "schema": {
+                     "maxLength": 100,
+                     "minLength": 2,
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "properties": {
+                              "data": {
+                                 "items": {
+                                    "properties": {
+                                       "id": {
+                                          "type": "string"
+                                       },
+                                       "name": {
+                                          "type": "string"
+                                       }
+                                    },
+                                    "required": [
+                                       "id",
+                                       "name"
+                                    ],
+                                    "type": "object"
+                                 },
+                                 "type": "array"
+                              }
+                           },
+                           "required": [
+                              "data"
+                           ],
+                           "type": "object"
+                        }
+                     }
+                  },
+                  "description": "Active education editors matching the search"
+               },
+               "400": {
+                  "description": "Invalid search"
+               },
+               "403": {
+                  "description": "manage_education required"
                }
             },
             "security": [

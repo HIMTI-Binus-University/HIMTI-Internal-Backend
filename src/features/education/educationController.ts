@@ -115,3 +115,12 @@ export const assignResponsiEditors = async (req: Request, res: Response) => {
    );
    res.json({ data: result });
 };
+
+export const listResponsiEditorCandidates = async (
+   req: Request,
+   res: Response,
+) => {
+   const search = z.string().trim().min(2).max(100).parse(req.query.search);
+   const actor = await service.summaryActor(res.locals.user.id);
+   res.json({ data: await service.findEditorCandidates(search, actor) });
+};

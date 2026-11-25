@@ -351,6 +351,7 @@ model Course {
   updatedAt DateTime? @updatedAt
 
   responsies Responsi[]
+  summaryPublications ResponsiPublication[]
   studyClubSessions StudyClubSession[]
 
   @@map("courses")
@@ -372,10 +373,27 @@ model Responsi {
 
   course   Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   versions ResponsiVersion[]
+  publication ResponsiPublication?
   editors ResponsiEditor[]
   approvedById String?
+  collaborationState Bytes?
+  collaborationRevision Int @default(0)
 
   @@map("responsies")
+}
+
+model ResponsiPublication {
+  id String @id
+  courseId String
+  title String @db.VarChar(255)
+  academicPeriod String @db.VarChar(50)
+  examType String @db.VarChar(50)
+  content String @db.Text
+  summary Responsi @relation(fields: [id], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@map("responsi_publications")
 }
 
 model ResponsiEditor {

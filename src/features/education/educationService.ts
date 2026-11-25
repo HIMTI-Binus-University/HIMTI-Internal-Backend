@@ -1,3 +1,11 @@
+import { getSchema } from '@tiptap/core';
+import { MarkdownManager } from '@tiptap/markdown';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import Mathematics from '@tiptap/extension-mathematics';
+import { TableKit } from '@tiptap/extension-table';
+import { TiptapTransformer } from '@hocuspocus/transformer';
+import { applyUpdate, encodeStateAsUpdate, type Doc } from 'yjs';
 import type { Prisma, ResponsiStatus } from '@prisma/client';
 import { AppError } from '@/utils/appError.js';
 import { publicDocument } from '@/features/public-education/publicEducationService.js';
@@ -24,7 +32,52 @@ function assertPublicDocument(content: string) {
    }
 }
 
+const collaborationExtensions = [
+   StarterKit.configure({ undoRedo: false, trailingNode: false }),
+   Image,
+   Mathematics,
+   TableKit,
+];
+const collaborationSchema = getSchema(collaborationExtensions);
+const collaborationMarkdown = new MarkdownManager({
+   extensions: collaborationExtensions,
+});
+
+export function parseCollaborationRoom(name: string) {
+   const match = /^([A-Za-z0-9_-]{1,128}):([0-9]{1,10})$/.exec(name);
+   if (!match) throw new AppError('Invalid summary room', 400);
+   return { id: match[1]!, revision: Number(match[2]) };
+}
+
 class EducationService {
+   private collaborationDocuments?: ReadonlyMap<string, Doc>;
+
+   useCollaborationDocuments(documents: ReadonlyMap<string, Doc>) {
+      this.collaborationDocuments = documents;
+   }
+
+   private readCollaborationMarkdown(document: Doc) {
+      const json = TiptapTransformer.fromYdoc(document, 'default');
+      collaborationSchema.nodeFromJSON(json).check();
+      return collaborationMarkdown.serialize(json);
+   }
+
+   private requireStoredCollaboration(row: {
+      id: string;
+      collaborationRevision: number;
+      content: string;
+   }) {
+      const active = this.collaborationDocuments?.get(
+         row.id + ':' + row.collaborationRevision,
+      );
+      if (active && this.readCollaborationMarkdown(active) !== row.content) {
+         throw new AppError(
+            'Live edits are still saving. Try again in a moment.',
+            409,
+         );
+      }
+   }
+
    async summaryActor(id: string): Promise<SummaryActor> {
       const permissions = await repo.getSummaryPermissions(id);
       if (
@@ -59,6 +112,64 @@ class EducationService {
       }
    }
 
+   async authorizeCollaboration(name: string, actor: SummaryActor) {
+      const { id, revision } = parseCollaborationRoom(name);
+      const row = await repo.findCollaborationDocument(id);
+      if (
+         !row ||
+         row.collaborationRevision !== revision ||
+         (row.status !== 'DRAFT' && row.status !== 'UNDER_REVIEW')
+      ) {
+         throw new AppError('Reload the summary to continue editing', 409);
+      }
+      this.requireAssignedEditor(actor, row.editors);
+      return row;
+   }
+
+   async loadCollaboration(name: string, actor: SummaryActor, document: Doc) {
+      const row = await this.authorizeCollaboration(name, actor);
+      if (row.collaborationState) {
+         applyUpdate(document, row.collaborationState);
+         return;
+      }
+
+      const parsed = collaborationMarkdown.parse(row.content);
+      const initial = parsed.content?.length
+         ? parsed
+         : { type: 'doc', content: [{ type: 'paragraph' }] };
+      const seed = TiptapTransformer.toYdoc(
+         initial,
+         'default',
+         collaborationExtensions,
+      );
+      try {
+         applyUpdate(document, encodeStateAsUpdate(seed));
+      } finally {
+         seed.destroy();
+      }
+   }
+
+   async storeCollaboration(name: string, document: Doc) {
+      const { id, revision } = parseCollaborationRoom(name);
+      const markdown = this.readCollaborationMarkdown(document);
+      const state = encodeStateAsUpdate(document);
+      if (
+         Buffer.byteLength(markdown) > 256 * 1024 ||
+         state.byteLength > 4 * 1024 * 1024
+      ) {
+         throw new AppError(
+            'Summary exceeds the collaboration size limit',
+            400,
+         );
+      }
+      await repo.storeCollaborationDocument(
+         id,
+         revision,
+         new Uint8Array(state),
+         markdown,
+      );
+   }
+
    // Course Groups
    listCourseGroups(query: CourseGroupList) {
       return repo.listCourseGroups(query);
@@ -82,13 +193,17 @@ class EducationService {
    }
 
    // Responsi Helpers
-   private async resolveCourseId(courseIdentifier: string) {
+   private async resolveCourseId(
+      courseIdentifier: string,
+      actor: SummaryActor,
+   ) {
       let course = await repo.findCourseGroupById(courseIdentifier);
       if (!course) {
          course = await repo.findCourseGroupByName(courseIdentifier);
       }
       if (!course) {
-         // Auto-create course group if name given is not in DB yet
+         this.requireSummaryPermission(actor, summaryPermissions.legacy);
+         // Legacy Education clients can create a course by name.
          course = await repo.createCourseGroup({ name: courseIdentifier });
       }
       return course.id;
@@ -107,8 +222,9 @@ class EducationService {
       createdAt: Date;
       updatedAt: Date | null;
       course: { id: string; name: string; code: string | null };
-      editors?: { userId: string }[];
+      editors?: { userId: string; user: { name: string } }[];
       approvedById?: string | null;
+      collaborationRevision?: number;
    }) {
       return {
          id: row.id,
@@ -123,7 +239,12 @@ class EducationService {
          status: row.status,
          content: row.content,
          editorIds: row.editors?.map(({ userId }) => userId),
+         editors: row.editors?.map(({ userId, user }) => ({
+            id: userId,
+            name: user.name,
+         })),
          approvedById: row.approvedById,
+         collaborationRevision: row.collaborationRevision,
          lastUpdated: (row.updatedAt ?? row.createdAt).toISOString(),
          createdAt: row.createdAt.toISOString(),
       };
@@ -204,7 +325,7 @@ class EducationService {
             400,
          );
       }
-      const courseId = await this.resolveCourseId(data.course);
+      const courseId = await this.resolveCourseId(data.course, actor);
 
       const created = await repo.createResponsi({
          title: data.title,
@@ -223,7 +344,12 @@ class EducationService {
       return this.formatResponsi(created);
    }
 
-   async updateResponsi(id: string, data: UpdateResponsi, actor: SummaryActor) {
+   async updateResponsi(
+      id: string,
+      data: UpdateResponsi,
+      actor: SummaryActor,
+      restore = false,
+   ) {
       const existing = await repo.findResponsiById(id);
       if (!existing) {
          throw new AppError('Responsi not found', 404);
@@ -255,7 +381,7 @@ class EducationService {
 
       const courseId =
          courseChanged && data.course
-            ? await this.resolveCourseId(data.course)
+            ? await this.resolveCourseId(data.course, actor)
             : existing.courseId;
       const changed =
          courseId !== existing.courseId ||
@@ -269,6 +395,7 @@ class EducationService {
          (data.content !== undefined && data.content !== existing.content);
 
       if (
+         restore ||
          changed ||
          (data.status !== undefined &&
             data.status !== existing.status &&
@@ -281,6 +408,12 @@ class EducationService {
          throw new AppError('Save changes before publishing the summary', 409);
       }
 
+      if (
+         isPublishing ||
+         (data.status === 'ARCHIVED' && existing.status !== 'ARCHIVED')
+      ) {
+         this.requireStoredCollaboration(existing);
+      }
       if (isPublishing) assertPublicDocument(existing.content);
 
       const nextStatus =
@@ -303,7 +436,17 @@ class EducationService {
             content: data.content,
             courseId,
             status: nextStatus,
-            ...(changed ||
+            ...(restore ||
+            (data.content !== undefined && data.content !== existing.content) ||
+            (nextStatus !== existing.status &&
+               (nextStatus === 'ARCHIVED' || nextStatus === 'PUBLISHED'))
+               ? {
+                    collaborationState: null,
+                    collaborationRevision: { increment: 1 },
+                 }
+               : {}),
+            ...(restore ||
+            changed ||
             (nextStatus !== existing.status && nextStatus !== 'PUBLISHED')
                ? { approvedById: null }
                : {}),
@@ -321,11 +464,17 @@ class EducationService {
       if (existing.status !== 'UNDER_REVIEW') {
          throw new AppError('Only summaries in review can be approved', 409);
       }
+      this.requireStoredCollaboration(existing);
       const updated = await repo.updateResponsi(
          { id, status: existing.status, updatedAt: existing.updatedAt },
          { approvedById: actor.id },
       );
       return this.formatResponsi(updated);
+   }
+
+   findEditorCandidates(search: string, actor: SummaryActor) {
+      this.requireSummaryPermission(actor, summaryPermissions.legacy);
+      return repo.findEditorCandidates(search);
    }
 
    async assignResponsiEditors(
@@ -365,12 +514,27 @@ class EducationService {
          id,
          { content: version.content, status: 'UNDER_REVIEW' },
          actor,
+         true,
       );
    }
 
    async listResponsiVersions(responsiId: string) {
       await this.getResponsiById(responsiId);
       const rows = await repo.listResponsiVersions(responsiId);
+      const ids = [
+         ...new Set(
+            rows.flatMap((row) =>
+               [row.createdBy, row.reviewerId, ...row.editorIds].filter(
+                  (id) => id !== null,
+               ),
+            ),
+         ),
+      ];
+      const names = new Map(
+         (ids.length ? await repo.findCreditNames(ids) : []).map(
+            ({ id, name }) => [id, name],
+         ),
+      );
       return rows.map((row) => ({
          id: row.id,
          responsiId: row.responsiId,
@@ -379,6 +543,15 @@ class EducationService {
          status: row.status,
          createdBy: row.createdBy,
          reviewerId: row.reviewerId,
+         author:
+            row.createdBy === null
+               ? null
+               : (names.get(row.createdBy) ?? row.createdBy),
+         reviewerName:
+            row.reviewerId === null
+               ? null
+               : (names.get(row.reviewerId) ?? null),
+         editorNames: row.editorIds.map((id) => names.get(id) ?? id),
          editorIds: row.editorIds,
          createdAt: row.createdAt.toISOString(),
       }));

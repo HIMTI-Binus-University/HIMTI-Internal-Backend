@@ -297,6 +297,19 @@ async function main() {
       });
 
       if (item.status === 'PUBLISHED') {
+         await prisma.responsiPublication.upsert({
+            where: { id: responsi.id },
+            update: {},
+            create: {
+               id: responsi.id,
+               courseId: responsi.courseId,
+               title: responsi.title,
+               academicPeriod: responsi.academicPeriod,
+               examType: responsi.examType,
+               content: responsi.content,
+            },
+         });
+
          await prisma.responsiVersion.upsert({
             where: { id: `${item.id}-v1` },
             update: {},

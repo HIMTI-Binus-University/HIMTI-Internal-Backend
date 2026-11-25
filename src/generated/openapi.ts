@@ -1173,6 +1173,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internal/education/responsi/editor-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEducationResponsiEditorCandidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internal/education/study-clubs": {
         parameters: {
             query?: never;
@@ -9777,11 +9793,16 @@ export interface components {
             data: {
                 academicPeriod: string;
                 approvedById?: string | null;
+                collaborationRevision?: number;
                 content: string;
                 course: string;
                 courseId: string;
                 createdAt: string;
                 editorIds?: string[];
+                editors?: {
+                    id: string;
+                    name: string;
+                }[];
                 examType: string;
                 id: string;
                 lastUpdated: string;
@@ -9819,13 +9840,16 @@ export interface components {
         };
         EducationResponsiVersionListResponse: {
             data: {
+                author: string | null;
                 content: string;
                 createdAt: string;
                 createdBy: string | null;
                 editorIds: string[];
+                editorNames: string[];
                 id: string;
                 responsiId: string;
                 reviewerId: string | null;
+                reviewerName: string | null;
                 /** @enum {string} */
                 status: "DRAFT" | "UNDER_REVIEW" | "PUBLISHED" | "ARCHIVED";
                 version: string;
@@ -13136,6 +13160,47 @@ export interface operations {
             };
             /** @description Concurrent update */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listEducationResponsiEditorCandidates: {
+        parameters: {
+            query: {
+                search: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active education editors matching the search */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            name: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Invalid search */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description manage_education required */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

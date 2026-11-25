@@ -1,9 +1,11 @@
+import { createServer } from 'node:http';
 import './config/network.js';
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import docsRoutes from '@/docs/docsRoutes.js';
 import routes from '@/routes/routes.js';
+import { attachEducationCollaboration } from '@/features/education/educationRoutes.js';
 import { globalErrorHandler } from './middleware/errorMiddleware.js';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './utils/auth.js';
@@ -42,7 +44,12 @@ if (shouldEnableApiDocs) {
 app.use('/api', routes);
 app.use(globalErrorHandler);
 
-app.listen(
+const server = createServer(app);
+if (process.env.EDUCATION_COLLABORATION === 'true') {
+   attachEducationCollaboration(server);
+}
+
+server.listen(
    port,
    process.env.ENABLE_DEV_AUTO_LOGIN === 'true' && !process.env.CONTAINER
       ? '127.0.0.1'

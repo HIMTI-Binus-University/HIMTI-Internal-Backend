@@ -7,6 +7,27 @@ import type {
    UpdateCourseGroup,
 } from './educationTypes.js';
 
+const eligibleEditor = {
+   status: 'ACTIVE',
+   userHasRoles: {
+      some: {
+         role: {
+            status: 'ACTIVE',
+            roleHasPermissions: {
+               some: {
+                  permission: {
+                     name: {
+                        in: ['edit_education_summary', 'manage_education'],
+                     },
+                     status: 'ACTIVE',
+                  },
+               },
+            },
+         },
+      },
+   },
+} satisfies Prisma.UserWhereInput;
+
 class EducationRepository {
    // Course Groups
    async listCourseGroups(query: CourseGroupList) {
@@ -144,6 +165,56 @@ class EducationRepository {
       return await prisma.responsi.count({ where });
    }
 
+   findEditorCandidates(search: string) {
+      return prisma.user.findMany({
+         where: {
+            name: { contains: search, mode: 'insensitive' },
+            ...eligibleEditor,
+         },
+         orderBy: [{ name: 'asc' }, { id: 'asc' }],
+         take: 20,
+         select: { id: true, name: true },
+      });
+   }
+
+   findCollaborationDocument(id: string) {
+      return prisma.responsi.findUnique({
+         where: { id },
+         select: {
+            status: true,
+            content: true,
+            collaborationState: true,
+            collaborationRevision: true,
+            editors: { select: { userId: true } },
+         },
+      });
+   }
+
+   async storeCollaborationDocument(
+      id: string,
+      collaborationRevision: number,
+      collaborationState: Uint8Array<ArrayBuffer>,
+      content: string,
+   ) {
+      await prisma.$transaction(async (tx) => {
+         const where = {
+            id,
+            collaborationRevision,
+            status: { in: ['DRAFT', 'UNDER_REVIEW'] as ResponsiStatus[] },
+         };
+         const { count } = await tx.responsi.updateMany({
+            where: { ...where, content: { not: content } },
+            data: { content, approvedById: null, collaborationState },
+         });
+         if (!count) {
+            await tx.responsi.updateMany({
+               where: { ...where, content },
+               data: { collaborationState },
+            });
+         }
+      });
+   }
+
    async getSummaryPermissions(userId: string) {
       const roles = await prisma.userHasRole.findMany({
          where: {
@@ -173,7 +244,9 @@ class EducationRepository {
       return await prisma.responsi.findUnique({
          where: { id },
          include: {
-            editors: { select: { userId: true } },
+            editors: {
+               select: { userId: true, user: { select: { name: true } } },
+            },
             course: {
                select: {
                   id: true,
@@ -230,11 +303,11 @@ class EducationRepository {
          }
          if (editorIds) {
             const activeEditors = await tx.user.count({
-               where: { id: { in: editorIds }, status: 'ACTIVE' },
+               where: { id: { in: editorIds }, ...eligibleEditor },
             });
             if (activeEditors !== editorIds.length) {
                throw new AppError(
-                  'Every assigned editor must be an active user',
+                  'Every assigned editor must be active and have edit permission',
                   400,
                );
             }
@@ -252,12 +325,31 @@ class EducationRepository {
          const updated = await tx.responsi.findUniqueOrThrow({
             where: { id: where.id },
             include: {
-               editors: { select: { userId: true } },
+               editors: {
+                  select: { userId: true, user: { select: { name: true } } },
+               },
                course: { select: { id: true, name: true, code: true } },
             },
          });
 
+         if (data.status === 'ARCHIVED') {
+            await tx.responsiPublication.deleteMany({
+               where: { id: updated.id },
+            });
+         }
          if (publisherId) {
+            const publication = {
+               courseId: updated.courseId,
+               title: updated.title,
+               academicPeriod: updated.academicPeriod,
+               examType: updated.examType,
+               content: updated.content,
+            };
+            await tx.responsiPublication.upsert({
+               where: { id: updated.id },
+               create: { id: updated.id, ...publication },
+               update: publication,
+            });
             const versions = await tx.responsiVersion.count({
                where: { responsiId: updated.id },
             });
@@ -285,6 +377,13 @@ class EducationRepository {
    findResponsiVersion(responsiId: string, versionId: string) {
       return prisma.responsiVersion.findFirst({
          where: { id: versionId, responsiId, status: 'PUBLISHED' },
+      });
+   }
+
+   findCreditNames(ids: string[]) {
+      return prisma.user.findMany({
+         where: { id: { in: ids } },
+         select: { id: true, name: true },
       });
    }
 

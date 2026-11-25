@@ -33,6 +33,31 @@ export const registerEducationDocs = (registry: OpenAPIRegistry) => {
       UpdateCourseGroupSchema,
    );
 
+   registry.registerPath({
+      method: 'get',
+      path: '/api/internal/education/responsi/editor-candidates',
+      operationId: 'listEducationResponsiEditorCandidates',
+      tags: ['Internal Education'],
+      security: [{ sessionCookie: [] }],
+      request: { query: z.object({ search: z.string().min(2).max(100) }) },
+      responses: {
+         200: {
+            description: 'Active education editors matching the search',
+            content: {
+               'application/json': {
+                  schema: z.object({
+                     data: z.array(
+                        z.object({ id: z.string(), name: z.string() }),
+                     ),
+                  }),
+               },
+            },
+         },
+         400: { description: 'Invalid search' },
+         403: { description: 'manage_education required' },
+      },
+   });
+
    // Responsi Responses and Bodies
    const ResponsiListResponse = registry.register(
       'EducationResponsiListResponse',

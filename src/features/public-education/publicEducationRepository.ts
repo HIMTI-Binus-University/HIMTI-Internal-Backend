@@ -7,17 +7,14 @@ const publicCourse = {
    code: { not: null, notIn: [''] },
 } satisfies Prisma.CourseWhereInput;
 
-const publishedSummary = {
-   status: 'PUBLISHED',
-   examType: { in: ['Mid Exam', 'Final Exam'] },
-} satisfies Prisma.ResponsiWhereInput;
+const allowedExams = { in: ['Mid Exam', 'Final Exam'] };
 
 const summaryFields = {
    id: true,
    title: true,
    academicPeriod: true,
    examType: true,
-} satisfies Prisma.ResponsiSelect;
+} satisfies Prisma.ResponsiPublicationSelect;
 
 export const publicEducationRepository = {
    catalog() {
@@ -32,8 +29,8 @@ export const publicEducationRepository = {
                   name: true,
                   semester: true,
                   description: true,
-                  responsies: {
-                     where: publishedSummary,
+                  summaryPublications: {
+                     where: { examType: allowedExams },
                      orderBy: [{ title: 'asc' }, { id: 'asc' }],
                      select: summaryFields,
                   },
@@ -64,8 +61,8 @@ export const publicEducationRepository = {
    },
 
    summary(id: string) {
-      return prisma.responsi.findFirst({
-         where: { id, ...publishedSummary, course: publicCourse },
+      return prisma.responsiPublication.findFirst({
+         where: { id, examType: allowedExams, course: publicCourse },
          select: {
             ...summaryFields,
             content: true,

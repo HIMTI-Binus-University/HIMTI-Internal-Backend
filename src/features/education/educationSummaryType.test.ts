@@ -118,7 +118,7 @@ test('approval and publish require distinct permissions and edits invalidate app
       ...row,
       status: 'UNDER_REVIEW',
       approvedById: null as string | null,
-      editors: [{ userId: 'editor-1' }],
+      editors: [{ userId: 'editor-1', user: { name: 'Editor' } }],
    };
    t.mock.method(repo, 'findResponsiById', async () => current);
    const update = t.mock.method(repo, 'updateResponsi', async () => current);

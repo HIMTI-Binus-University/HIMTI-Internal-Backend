@@ -144,7 +144,7 @@ export const publicEducationService = {
          });
          if (!course.success) continue;
          courses.push(course.data);
-         for (const summary of row.responsies) {
+         for (const summary of row.summaryPublications) {
             const result = metadata(summary, row);
             if (result.success) summaries.push(result.data);
          }
