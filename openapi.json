@@ -430,6 +430,9 @@
                   "format": "date-time",
                   "type": "string"
                },
+               "isPublic": {
+                  "type": "boolean"
+               },
                "location": {
                   "maxLength": 255,
                   "type": "string"
@@ -792,6 +795,28 @@
                            "nullable": true,
                            "type": "string"
                         },
+                        "counts": {
+                           "properties": {
+                              "schedules": {
+                                 "minimum": 0,
+                                 "type": "integer"
+                              },
+                              "summaries": {
+                                 "minimum": 0,
+                                 "type": "integer"
+                              },
+                              "videos": {
+                                 "minimum": 0,
+                                 "type": "integer"
+                              }
+                           },
+                           "required": [
+                              "summaries",
+                              "schedules",
+                              "videos"
+                           ],
+                           "type": "object"
+                        },
                         "description": {
                            "nullable": true,
                            "type": "string"
@@ -801,6 +826,12 @@
                         },
                         "name": {
                            "type": "string"
+                        },
+                        "semester": {
+                           "maximum": 2147483647,
+                           "minimum": 1,
+                           "nullable": true,
+                           "type": "integer"
                         },
                         "status": {
                            "enum": [
@@ -814,7 +845,8 @@
                         "id",
                         "name",
                         "code",
-                        "status"
+                        "status",
+                        "counts"
                      ],
                      "type": "object"
                   },
@@ -843,6 +875,12 @@
                      },
                      "name": {
                         "type": "string"
+                     },
+                     "semester": {
+                        "maximum": 2147483647,
+                        "minimum": 1,
+                        "nullable": true,
+                        "type": "integer"
                      },
                      "status": {
                         "enum": [
@@ -882,6 +920,12 @@
                   "maxLength": 255,
                   "minLength": 1,
                   "type": "string"
+               },
+               "semester": {
+                  "maximum": 2147483647,
+                  "minimum": 1,
+                  "nullable": true,
+                  "type": "integer"
                }
             },
             "required": [
@@ -1191,6 +1235,12 @@
                   "maxLength": 255,
                   "minLength": 1,
                   "type": "string"
+               },
+               "semester": {
+                  "maximum": 2147483647,
+                  "minimum": 1,
+                  "nullable": true,
+                  "type": "integer"
                },
                "status": {
                   "enum": [
@@ -5535,6 +5585,292 @@
             ],
             "type": "object"
          },
+         "PublicEducationCatalog": {
+            "properties": {
+               "courses": {
+                  "items": {
+                     "properties": {
+                        "code": {
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "description": {
+                           "type": "string"
+                        },
+                        "id": {
+                           "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                           "type": "string"
+                        },
+                        "name": {
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "semester": {
+                           "exclusiveMinimum": true,
+                           "minimum": 0,
+                           "type": "integer"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "name",
+                        "code",
+                        "semester",
+                        "description"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "events": {
+                  "items": {
+                     "properties": {
+                        "courseId": {
+                           "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                           "type": "string"
+                        },
+                        "description": {
+                           "type": "string"
+                        },
+                        "endsAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "id": {
+                           "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                           "type": "string"
+                        },
+                        "location": {
+                           "type": "string"
+                        },
+                        "quota": {
+                           "minimum": 0,
+                           "type": "integer"
+                        },
+                        "recordingUrl": {
+                           "type": "string"
+                        },
+                        "startsAt": {
+                           "format": "date-time",
+                           "type": "string"
+                        },
+                        "title": {
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "type": {
+                           "enum": [
+                              "Study Club",
+                              "Responsi"
+                           ],
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "title",
+                        "courseId",
+                        "type",
+                        "startsAt",
+                        "endsAt",
+                        "location",
+                        "description"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "summaries": {
+                  "items": {
+                     "properties": {
+                        "academicPeriod": {
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "contributors": {
+                           "items": {
+                              "properties": {
+                                 "displayName": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                 },
+                                 "id": {
+                                    "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                                    "type": "string"
+                                 }
+                              },
+                              "required": [
+                                 "id",
+                                 "displayName"
+                              ],
+                              "type": "object"
+                           },
+                           "type": "array"
+                        },
+                        "courseId": {
+                           "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                           "type": "string"
+                        },
+                        "examType": {
+                           "enum": [
+                              "Mid Exam",
+                              "Final Exam"
+                           ],
+                           "type": "string"
+                        },
+                        "id": {
+                           "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                           "type": "string"
+                        },
+                        "semester": {
+                           "exclusiveMinimum": true,
+                           "minimum": 0,
+                           "type": "integer"
+                        },
+                        "title": {
+                           "minLength": 1,
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "title",
+                        "courseId",
+                        "academicPeriod",
+                        "semester",
+                        "examType",
+                        "contributors"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               }
+            },
+            "required": [
+               "courses",
+               "summaries",
+               "events"
+            ],
+            "type": "object"
+         },
+         "PublicEducationError": {
+            "properties": {
+               "error": {
+                  "properties": {
+                     "code": {
+                        "type": "string"
+                     },
+                     "message": {
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "code",
+                     "message"
+                  ],
+                  "type": "object"
+               }
+            },
+            "required": [
+               "error"
+            ],
+            "type": "object"
+         },
+         "PublicEducationSummary": {
+            "properties": {
+               "academicPeriod": {
+                  "minLength": 1,
+                  "type": "string"
+               },
+               "content": {
+                  "properties": {
+                     "content": {
+                        "items": {
+                           "additionalProperties": {
+                              "nullable": true
+                           },
+                           "properties": {
+                              "type": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "type"
+                           ],
+                           "type": "object"
+                        },
+                        "type": "array"
+                     },
+                     "type": {
+                        "enum": [
+                           "doc"
+                        ],
+                        "type": "string"
+                     }
+                  },
+                  "required": [
+                     "type",
+                     "content"
+                  ],
+                  "type": "object"
+               },
+               "contributors": {
+                  "items": {
+                     "properties": {
+                        "displayName": {
+                           "minLength": 1,
+                           "type": "string"
+                        },
+                        "id": {
+                           "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                           "type": "string"
+                        }
+                     },
+                     "required": [
+                        "id",
+                        "displayName"
+                     ],
+                     "type": "object"
+                  },
+                  "type": "array"
+               },
+               "courseId": {
+                  "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                  "type": "string"
+               },
+               "examType": {
+                  "enum": [
+                     "Mid Exam",
+                     "Final Exam"
+                  ],
+                  "type": "string"
+               },
+               "id": {
+                  "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                  "type": "string"
+               },
+               "semester": {
+                  "exclusiveMinimum": true,
+                  "minimum": 0,
+                  "type": "integer"
+               },
+               "title": {
+                  "minLength": 1,
+                  "type": "string"
+               }
+            },
+            "required": [
+               "id",
+               "title",
+               "courseId",
+               "academicPeriod",
+               "semester",
+               "examType",
+               "contributors",
+               "content"
+            ],
+            "type": "object"
+         },
          "RegistrationOptionsResponse": {
             "properties": {
                "data": {
@@ -5921,6 +6257,9 @@
                         "isDemo": {
                            "type": "boolean"
                         },
+                        "isPublic": {
+                           "type": "boolean"
+                        },
                         "location": {
                            "maxLength": 255,
                            "type": "string"
@@ -6038,6 +6377,9 @@
                         "type": "string"
                      },
                      "isDemo": {
+                        "type": "boolean"
+                     },
+                     "isPublic": {
                         "type": "boolean"
                      },
                      "location": {
@@ -6355,6 +6697,9 @@
                "endsAt": {
                   "format": "date-time",
                   "type": "string"
+               },
+               "isPublic": {
+                  "type": "boolean"
                },
                "location": {
                   "maxLength": 255,
@@ -11245,7 +11590,7 @@
                         }
                      }
                   },
-                  "description": "Course groups available to Education."
+                  "description": "Course groups with totals for all linked summaries, sessions, and videos."
                },
                "403": {
                   "description": "manage_education permission required"
@@ -28674,6 +29019,119 @@
             "summary": "Private proof content for its uploader or scoped reviewer with view_payment_proofs",
             "tags": [
                "Event Payments"
+            ]
+         }
+      },
+      "/api/public/catalog": {
+         "get": {
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PublicEducationCatalog"
+                        }
+                     }
+                  },
+                  "description": "Complete public catalog without document bodies"
+               },
+               "429": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PublicEducationError"
+                        }
+                     }
+                  },
+                  "description": "Rate limit exceeded"
+               },
+               "500": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PublicEducationError"
+                        }
+                     }
+                  },
+                  "description": "Could not load resources"
+               }
+            },
+            "security": [],
+            "summary": "List public Education resources",
+            "tags": [
+               "Public Education"
+            ]
+         }
+      },
+      "/api/public/summaries/{id}": {
+         "get": {
+            "parameters": [
+               {
+                  "in": "path",
+                  "name": "id",
+                  "required": true,
+                  "schema": {
+                     "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                     "type": "string"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PublicEducationSummary"
+                        }
+                     }
+                  },
+                  "description": "Read-only Tiptap 3 document and metadata"
+               },
+               "400": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PublicEducationError"
+                        }
+                     }
+                  },
+                  "description": "Invalid summary ID"
+               },
+               "404": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PublicEducationError"
+                        }
+                     }
+                  },
+                  "description": "Summary does not exist or is not public"
+               },
+               "429": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PublicEducationError"
+                        }
+                     }
+                  },
+                  "description": "Rate limit exceeded"
+               },
+               "500": {
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PublicEducationError"
+                        }
+                     }
+                  },
+                  "description": "Could not load resources"
+               }
+            },
+            "security": [],
+            "summary": "Read a published summary",
+            "tags": [
+               "Public Education"
             ]
          }
       },

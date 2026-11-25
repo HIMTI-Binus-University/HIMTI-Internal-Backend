@@ -26,6 +26,7 @@ const sessionFields = z
       meetingUrl: optionalLink,
       registrationUrl: optionalLink,
       capacity: z.number().int().min(1).max(2_147_483_647).nullable(),
+      isPublic: z.boolean().optional(),
    })
    .strict();
 
